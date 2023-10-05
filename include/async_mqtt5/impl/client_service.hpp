@@ -198,6 +198,12 @@ public:
 		_cancel_ping.emit(asio::cancellation_type::terminal);
 		_cancel_sentry.emit(asio::cancellation_type::terminal);
 
+		// cancelling the receive channel invokes all pending handlers with
+		// ec = asio::experimental::error::channel_cancelled
+		// adding another ec to the list of the possible client ecs
+
+		// TODO: close() the channel instead, and open() it on the next run()
+		_rec_channel.cancel();
 		_replies.cancel_unanswered();
 		_async_sender.cancel();
 		_stream.close();

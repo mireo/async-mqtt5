@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\test\unit\src\run_tests.cpp" />
+    <ClCompile Include="..\..\test\unit\test\cancellation.cpp" />
     <ClCompile Include="..\..\test\unit\test\client_broker.cpp" />
     <ClCompile Include="..\..\test\unit\test\coroutine.cpp" />
     <ClCompile Include="..\..\test\unit\test\publish_send_op.cpp" />

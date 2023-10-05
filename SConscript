@@ -23,6 +23,7 @@ test_sources = [
 	'test/unit/test/publish_send_op.cpp',
 	'test/unit/test/client_broker.cpp',
 	'test/unit/test/coroutine.cpp',
+	'test/unit/test/cancellation.cpp',
 	'test/unit/src/run_tests.cpp'
 ]
 
