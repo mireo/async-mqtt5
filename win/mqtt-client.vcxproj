@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\async_mqtt5.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\detail\async_mutex.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\detail\async_traits.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\detail\cancellable_handler.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\detail\control_packet.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\detail\internal_types.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\detail\ring_buffer.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\detail\spinlock.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\error.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\assemble_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\async_sender.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\autoconnect_stream.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\client_service.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\connect_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\disconnect_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\endpoints.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\alloc\memory.h" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\alloc\memory_resource.h" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\alloc\string.h" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\alloc\vector.h" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\codecs\base_decoders.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\codecs\base_encoders.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\codecs\message_decoders.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\codecs\message_encoders.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\internal\codecs\traits.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\ping_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\publish_rec_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\publish_send_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\read_message_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\read_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\reconnect_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\replies.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\sentry_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\subscribe_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\unsubscribe_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\impl\write_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\property_types.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\types.hpp" />
+    <ClInclude Include="..\include\mqtt_client.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\example\openssl-tls.cpp" />
+    <ClCompile Include="..\example\src\run_examples.cpp" />
+    <ClCompile Include="..\example\tcp.cpp" />
+    <ClCompile Include="..\example\websocket-tcp.cpp" />
+    <ClCompile Include="..\example\websocket-tls.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{303ba426-05b5-47fb-9f00-e932257fb28f}</ProjectGuid>
+    <RootNamespace>mqttclient</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NOMINMAX;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;WIN32_LEAN_AND_MEAN;WIN32;_WIN32_WINDOWS=0x0601;_WIN32_WINNT=0x0601;_DEBUG;_CONSOLE;_FILE_OFFSET_BITS=64;BOOST_ALL_NO_LIB;BOOST_UUID_RANDOM_PROVIDER_FORCE_WINCRYPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\include;$(DevRoot)3rdParty\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>crypt32.lib;openssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DevRoot)Components\Bin\libd\x64\MT</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NOMINMAX;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;WIN32_LEAN_AND_MEAN;WIN32;_WIN32_WINDOWS=0x0601;_WIN32_WINNT=0x0601;_CONSOLE;NDEBUG;_FILE_OFFSET_BITS=64;BOOST_ALL_NO_LIB;BOOST_UUID_RANDOM_PROVIDER_FORCE_WINCRYPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>..\include;$(DevRoot)3rdParty\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>crypt32.lib;openssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DevRoot)Components\Bin\libd\x64\MT</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
