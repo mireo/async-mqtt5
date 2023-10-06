@@ -4,13 +4,13 @@
 #include <concepts>
 #include <type_traits>
 
-#include <boost/asio/buffer.hpp>
+#include <boost/asio/associated_executor.hpp>
 #include <boost/asio/prefer.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/asio/associated_executor.hpp>
+
 #include <boost/beast/core/stream_traits.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/types.hpp>
 
 namespace async_mqtt5 {
 
@@ -44,7 +44,7 @@ template <typename T, typename B>
 concept has_async_write = requires(T a) {
 	a.async_write(
 		std::declval<B>(),
-		[](boost::system::error_code, size_t) {}
+		[](error_code, size_t) {}
 	);
 };
 
@@ -144,14 +144,10 @@ decltype(auto) async_write(
 
 template <typename TlsContext, typename Stream>
 void setup_tls_sni(const authority_path& ap, TlsContext& ctx, Stream& s) {
-	if constexpr (has_tls_handshake<Stream>) {
-		using tls_stream_type = Stream;
+	if constexpr (has_tls_handshake<Stream>) 
 		assign_tls_sni(ap, ctx, s);
-	}
-	else if constexpr (has_next_layer<Stream>) {
-		using next_layer_type = typename Stream::next_layer_type;
+	else if constexpr (has_next_layer<Stream>)
 		setup_tls_sni(ap, ctx, next_layer(s));
-	}
 }
 
 } // end namespace detail

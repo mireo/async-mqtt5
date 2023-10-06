@@ -13,29 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\test">
-      <UniqueIdentifier>{237ad32b-00b2-42f0-8b54-e4f62a437742}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\test_common">
       <UniqueIdentifier>{6361a7f6-7954-4ea3-a2a7-f3b15537a3ac}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\test\unit\test\client_broker.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\unit\test\coroutine.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\unit\test\publish_send_op.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\unit\test\serialization.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\unit\src\run_tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <Filter Include="Source Files\test">
+      <UniqueIdentifier>{cf0bb550-9227-400c-9e0a-8b38fe2c32a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\test\unit\include\test_common\delayed_op.hpp">
@@ -59,5 +42,22 @@
     <ClInclude Include="..\..\test\unit\include\test_common\test_stream.hpp">
       <Filter>Header Files\test_common</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\test\unit\test\client_broker.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\unit\test\coroutine.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\unit\test\publish_send_op.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\unit\test\serialization.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\unit\src\run_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -4,14 +4,14 @@
 #include <chrono>
 #include <memory>
 
-#include <boost/asio/prepend.hpp>
 #include <boost/asio/consign.hpp>
+#include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>
-#include <boost/asio/cancellation_state.hpp>
 #include <boost/asio/steady_timer.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
+#include <async_mqtt5/detail/internal_types.hpp>
+
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {

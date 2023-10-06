@@ -1,15 +1,16 @@
 #ifndef ASYNC_MQTT5_TEST_PACKET_UTIL_HPP
 #define ASYNC_MQTT5_TEST_PACKET_UTIL_HPP
 
-#include <unordered_map>
 #include <string>
+
+#include <async_mqtt5/detail/control_packet.hpp>
 
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
-#include <async_mqtt5/detail/control_packet.hpp> 
 
 namespace async_mqtt5::test {
 
+using error_code = boost::system::error_code;
 
 inline qos_e extract_qos(uint8_t flags) {
 	auto byte = (flags & 0b0110) >> 1;

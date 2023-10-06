@@ -3,18 +3,18 @@
 
 #include <boost/asio/experimental/concurrent_channel.hpp>
 
-#include <async_mqtt5/error.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 
-#include <async_mqtt5/impl/autoconnect_stream.hpp>
-#include <async_mqtt5/impl/replies.hpp>
-#include <async_mqtt5/impl/async_sender.hpp>
 #include <async_mqtt5/impl/assemble_op.hpp>
+#include <async_mqtt5/impl/async_sender.hpp>
+#include <async_mqtt5/impl/autoconnect_stream.hpp>
 #include <async_mqtt5/impl/ping_op.hpp>
+#include <async_mqtt5/impl/replies.hpp>
 #include <async_mqtt5/impl/sentry_op.hpp>
 
 namespace async_mqtt5::detail {
 
+namespace asio = boost::asio;
 
 template <typename StreamType, typename TlsContext>
 class stream_context;
@@ -95,8 +95,8 @@ template <
 	typename TlsContext = std::monostate
 >
 class client_service {
-	using stream_context_type = detail::stream_context<StreamType, TlsContext>;
-	using stream_type = detail::autoconnect_stream<
+	using stream_context_type = stream_context<StreamType, TlsContext>;
+	using stream_type = autoconnect_stream<
 		StreamType, stream_context_type
 	>;
 public:
@@ -108,26 +108,26 @@ private:
 	>;
 
 	template <typename ClientService>
-	friend class detail::async_sender;
+	friend class async_sender;
 
 	template <typename ClientService, typename Handler>
-	friend class detail::assemble_op;
+	friend class assemble_op;
 
 	template <typename ClientService>
-	friend class detail::ping_op;
+	friend class ping_op;
 
 	template <typename ClientService>
-	friend class detail::sentry_op;
+	friend class sentry_op;
 
 	stream_context_type _stream_context;
 	stream_type _stream;
 
 	packet_id_allocator _pid_allocator;
-	detail::replies _replies;
-	detail::async_sender<client_service> _async_sender;
+	replies _replies;
+	async_sender<client_service> _async_sender;
 
 	std::string _read_buff;
-	detail::data_span _active_span;
+	data_span _active_span;
 
 	receive_channel _rec_channel;
 
@@ -231,7 +231,7 @@ public:
 	template <typename CompletionToken>
 	decltype(auto) async_assemble(duration wait_for, CompletionToken&& token) {
 		auto initiation = [this] (auto handler, duration wait_for) mutable {
-			detail::assemble_op {
+			assemble_op {
 				*this, std::move(handler),
 				_read_buff, _active_span
 			}.perform(wait_for, asio::transfer_at_least(0));

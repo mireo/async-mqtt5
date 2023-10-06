@@ -9,18 +9,18 @@
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/cancellation_signal.hpp>
-#include <boost/asio/bind_cancellation_slot.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
+
+#include <boost/asio/ip/tcp.hpp>
 
 #include <boost/test/included/unit_test.hpp>
 
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 
-#include "test_common/protocol_logging.hpp"
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
+#include "test_common/protocol_logging.hpp"
 
 
 namespace async_mqtt5::test {

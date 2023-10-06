@@ -7,15 +7,9 @@
 #include <string>
 #include <vector>
 
-#include <boost/asio/append.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/asio/steady_timer.hpp>
-
 #include "test_common/delayed_op.hpp"
 
 namespace async_mqtt5::test {
-
-namespace asio = boost::asio;
 
 using error_code = boost::system::error_code;
 using time_stamp = std::chrono::time_point<std::chrono::steady_clock>;

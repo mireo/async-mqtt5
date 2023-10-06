@@ -1,15 +1,16 @@
+#include <boost/test/unit_test.hpp>
+
 #include <chrono>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 
-#include <async_mqtt5.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
-#include "test_common/test_stream.hpp"
-#include "test_common/message_exchange.hpp"
+#include <async_mqtt5.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include "test_common/message_exchange.hpp"
+#include "test_common/test_stream.hpp"
 
 using namespace async_mqtt5;
 

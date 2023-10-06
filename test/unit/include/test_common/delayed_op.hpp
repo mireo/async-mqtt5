@@ -4,9 +4,8 @@
 #include <chrono>
 
 #include <boost/asio/append.hpp>
-#include <boost/asio/cancellation_signal.hpp>
-#include <boost/asio/cancellation_state.hpp>
 #include <boost/asio/bind_cancellation_slot.hpp>
+#include <boost/asio/cancellation_signal.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>

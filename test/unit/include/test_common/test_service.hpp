@@ -1,15 +1,16 @@
 #ifndef ASYNC_MQTT5_TEST_TEST_SERVICE_HPP
 #define ASYNC_MQTT5_TEST_TEST_SERVICE_HPP
 
-#include <string>
-
 #include <boost/asio/any_io_executor.hpp>
+#include <boost/asio/associated_executor.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/impl/client_service.hpp>
 
 namespace async_mqtt5::test {
+
+namespace asio = boost::asio;
 
 template <
 	typename StreamType,
@@ -31,13 +32,13 @@ public:
 		CompletionToken&& token
 	) {
 		auto initiation = [this](auto handler) {
-			auto ex = boost::asio::get_associated_executor(handler, _ex);
-			boost::asio::post(ex,
-				boost::asio::prepend(std::move(handler), error_code {})
+			auto ex = asio::get_associated_executor(handler, _ex);
+			asio::post(ex,
+				asio::prepend(std::move(handler), error_code {})
 			);
 		};
 
-		return boost::asio::async_initiate<
+		return asio::async_initiate<
 			CompletionToken, void (error_code)
 		> (std::move(initiation), token);
 	}

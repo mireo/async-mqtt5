@@ -3,18 +3,17 @@
 
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/execution_context.hpp>
-#include <boost/asio/recycling_allocator.hpp>
-#include <boost/asio/prepend.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/asio/prepend.hpp>
+#include <boost/asio/recycling_allocator.hpp>
+
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/experimental/channel.hpp>
 
 #include "test_common/test_broker.hpp"
 
 namespace async_mqtt5::test {
 
 namespace asio = boost::asio;
-namespace asioex = asio::experimental;
 
 using error_code = boost::system::error_code;
 using time_stamp = std::chrono::time_point<std::chrono::steady_clock>;

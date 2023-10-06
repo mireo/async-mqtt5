@@ -3,24 +3,20 @@
 
 #include <utility>
 
-#include <boost/asio/connect.hpp>
-#include <boost/asio/read.hpp>
-#include <boost/asio/write.hpp>
-#include <boost/asio/completion_condition.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/async_mutex.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>
 
 #include <async_mqtt5/impl/endpoints.hpp>
-#include <async_mqtt5/impl/reconnect_op.hpp>
 #include <async_mqtt5/impl/read_op.hpp>
+#include <async_mqtt5/impl/reconnect_op.hpp>
 #include <async_mqtt5/impl/write_op.hpp>
 
 namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
+using error_code = boost::system::error_code;
 
 template <
 	typename StreamType,

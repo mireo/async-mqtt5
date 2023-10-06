@@ -1,7 +1,7 @@
 #include <fmt/format.h>
-#include <iostream>
 
 #include <boost/asio/io_context.hpp>
+
 #include <boost/asio/ip/tcp.hpp>
 
 #include <async_mqtt5.hpp>

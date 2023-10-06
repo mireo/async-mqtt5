@@ -1,12 +1,10 @@
 #ifndef ASYNC_MQTT5_ASYNC_MUTEX_HPP
 #define ASYNC_MQTT5_ASYNC_MUTEX_HPP
 
-#include <boost/asio/bind_cancellation_slot.hpp>
-#include <boost/asio/bind_executor.hpp>
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/post.hpp>
-#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/any_completion_handler.hpp>
+#include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_cancellation_slot.hpp>
+#include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/execution.hpp>
 
 #include <async_mqtt5/detail/async_traits.hpp>
@@ -25,7 +23,7 @@ private:
 	using queued_op_t = asio::any_completion_handler<
 		void (boost::system::error_code)
 	>;
-	using queue_t = detail::ring_buffer<queued_op_t>;
+	using queue_t = ring_buffer<queued_op_t>;
 
 	// Handler with assigned tracking executor.
 	// Objects of this type are type-erased by any_completion_handler

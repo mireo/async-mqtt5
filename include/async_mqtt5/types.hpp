@@ -3,11 +3,11 @@
 
 #include <cstdint>
 #include <string>
+
 #include <boost/system/error_code.hpp>
 
-#include <async_mqtt5/property_types.hpp>
 #include <async_mqtt5/error.hpp>
-
+#include <async_mqtt5/property_types.hpp>
 
 namespace async_mqtt5 {
 

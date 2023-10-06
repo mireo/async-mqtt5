@@ -1,7 +1,5 @@
 #include <boost/test/unit_test.hpp>
 
-#include <async_mqtt5.hpp>
-
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
@@ -9,6 +7,8 @@
 #include <boost/asio/use_awaitable.hpp>
 
 #include <boost/beast/websocket.hpp>
+
+#include <async_mqtt5.hpp>
 
 BOOST_AUTO_TEST_SUITE(coroutine/*, *boost::unit_test::disabled()*/)
 

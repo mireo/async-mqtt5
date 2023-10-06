@@ -1,16 +1,19 @@
 #ifndef ASYNC_MQTT5_ENDPOINTS_HPP
 #define ASYNC_MQTT5_ENDPOINTS_HPP
 
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/prepend.hpp>
 #include <boost/asio/append.hpp>
 #include <boost/asio/deferred.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/post.hpp>
+#include <boost/asio/prepend.hpp>
+
 #include <boost/asio/experimental/parallel_group.hpp>
+
+#include <boost/asio/ip/tcp.hpp>
 
 #include <boost/spirit/home/x3.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
-#include <async_mqtt5/detail/async_traits.hpp>
+#include <async_mqtt5/types.hpp>
 
 namespace async_mqtt5::detail {
 

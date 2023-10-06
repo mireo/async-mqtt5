@@ -1,13 +1,16 @@
 #ifndef ASYNC_MQTT5_SENTRY_OP_HPP
 #define ASYNC_MQTT5_SENTRY_OP_HPP
 
+#include <boost/asio/cancellation_signal.hpp>
 #include <boost/asio/error.hpp>
-#include <boost/asio/recycling_allocator.hpp>
 #include <boost/asio/prepend.hpp>
-#include <boost/asio/cancellation_state.hpp>
+#include <boost/asio/recycling_allocator.hpp>
 #include <boost/asio/steady_timer.hpp>
 
+#include <async_mqtt5/error.hpp>
 #include <async_mqtt5/types.hpp>
+
+#include <async_mqtt5/impl/disconnect_op.hpp>
 
 namespace async_mqtt5::detail {
 

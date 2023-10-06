@@ -55,9 +55,9 @@
     <ClInclude Include="..\include\async_mqtt5\impl\subscribe_op.hpp" />
     <ClInclude Include="..\include\async_mqtt5\impl\unsubscribe_op.hpp" />
     <ClInclude Include="..\include\async_mqtt5\impl\write_op.hpp" />
+    <ClInclude Include="..\include\async_mqtt5\mqtt_client.hpp" />
     <ClInclude Include="..\include\async_mqtt5\property_types.hpp" />
     <ClInclude Include="..\include\async_mqtt5\types.hpp" />
-    <ClInclude Include="..\include\mqtt_client.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\example\openssl-tls.cpp" />

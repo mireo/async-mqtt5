@@ -1,14 +1,15 @@
 #ifndef ASYNC_MQTT5_DISCONNECT_OP_HPP
 #define ASYNC_MQTT5_DISCONNECT_OP_HPP
 
-#include <boost/asio/prepend.hpp>
 #include <boost/asio/consign.hpp>
 #include <boost/asio/dispatch.hpp>
+#include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/types.hpp>
-#include <async_mqtt5/detail/async_traits.hpp>
+
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
+
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
@@ -119,18 +120,18 @@ decltype(auto) async_disconnect(
 	using Signature = void (error_code);
 
 	auto initiate = [](
-		auto handler, detail::disconnect_context ctx, bool terminal,
+		auto handler, disconnect_context ctx,
 		const std::shared_ptr<ClientService>& svc_ptr
 	) {
-		detail::disconnect_op {
+		disconnect_op {
 			svc_ptr, std::move(ctx), std::move(handler)
 		}.perform();
 	};
 
 	return asio::async_initiate<CompletionToken, Signature>(
 		std::move(initiate), token,
-		detail::disconnect_context { reason_code, props, terminal },
-		terminal, svc_ptr
+		disconnect_context { reason_code, props, terminal },
+		svc_ptr
 	);
 }
 

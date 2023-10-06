@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+
 #include <test_common/protocol_logging.hpp>
 
 boost::unit_test::test_suite* init_tests(

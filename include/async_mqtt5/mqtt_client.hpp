@@ -1,9 +1,14 @@
 #ifndef ASYNC_MQTT5_MQTT_CLIENT_HPP
 #define ASYNC_MQTT5_MQTT_CLIENT_HPP
 
+#include <boost/system/error_code.hpp>
+
+#include <async_mqtt5/error.hpp>
+#include <async_mqtt5/types.hpp>
+
 #include <async_mqtt5/impl/client_service.hpp>
-#include <async_mqtt5/impl/read_message_op.hpp>
 #include <async_mqtt5/impl/publish_send_op.hpp>
+#include <async_mqtt5/impl/read_message_op.hpp>
 #include <async_mqtt5/impl/subscribe_op.hpp>
 #include <async_mqtt5/impl/unsubscribe_op.hpp>
 

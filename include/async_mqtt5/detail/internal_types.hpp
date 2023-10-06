@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 
+#include <async_mqtt5/error.hpp>
 #include <async_mqtt5/types.hpp>
 
 namespace async_mqtt5::detail {

@@ -5,6 +5,7 @@
 #include <string>
 
 #include <async_mqtt5/detail/internal_types.hpp>
+
 #include <async_mqtt5/impl/internal/codecs/base_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 

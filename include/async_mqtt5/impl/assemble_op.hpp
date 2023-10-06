@@ -1,16 +1,20 @@
 #ifndef ASYNC_MQTT5_ASSEMBLE_OP_HPP
 #define ASYNC_MQTT5_ASSEMBLE_OP_HPP
 
+#include <string>
+
+#include <boost/asio/append.hpp>
 #include <boost/asio/buffer.hpp>
+#include <boost/asio/completion_condition.hpp>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
-#include <boost/asio/append.hpp>
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/completion_condition.hpp>
 
 #include <async_mqtt5/error.hpp>
-#include <async_mqtt5/detail/internal_types.hpp>
+
 #include <async_mqtt5/detail/control_packet.hpp>
+#include <async_mqtt5/detail/internal_types.hpp>
+
 #include <async_mqtt5/impl/internal/codecs/base_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 

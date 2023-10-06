@@ -5,13 +5,12 @@
 
 #include <async_mqtt5/error.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
-#include <async_mqtt5/detail/async_traits.hpp>
-#include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/cancellable_handler.hpp>
+#include <async_mqtt5/detail/control_packet.hpp>
+#include <async_mqtt5/detail/internal_types.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 

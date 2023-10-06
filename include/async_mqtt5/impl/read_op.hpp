@@ -1,8 +1,9 @@
 #ifndef ASYNC_MQTT5_READ_OP_HPP
 #define ASYNC_MQTT5_READ_OP_HPP
 
-#include <boost/asio/prepend.hpp>
 #include <boost/asio/deferred.hpp>
+#include <boost/asio/prepend.hpp>
+
 #include <boost/asio/experimental/parallel_group.hpp>
 
 #include <async_mqtt5/detail/internal_types.hpp>
@@ -57,7 +58,6 @@ public:
 				asioex::wait_for_one(),
 				asio::prepend(std::move(*this), on_read {}, stream_ptr)
 			);
-
 		}
 		else
 			(*this)(

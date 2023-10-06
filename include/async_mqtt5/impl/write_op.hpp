@@ -1,11 +1,10 @@
 #ifndef ASYNC_MQTT5_WRITE_OP_HPP
 #define ASYNC_MQTT5_WRITE_OP_HPP
 
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/asio/dispatch.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>
 
 namespace async_mqtt5::detail {

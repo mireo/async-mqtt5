@@ -3,9 +3,11 @@
 
 #include <cstddef>
 #include <cstdint>
+
 #include <boost/endian/conversion.hpp>
 
 #include <async_mqtt5/property_types.hpp>
+
 #include <async_mqtt5/impl/internal/codecs/traits.hpp>
 
 namespace async_mqtt5::encoders {

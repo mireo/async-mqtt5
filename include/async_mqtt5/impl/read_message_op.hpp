@@ -7,10 +7,13 @@
 #include <boost/asio/recycling_allocator.hpp>
 
 #include <async_mqtt5/types.hpp>
+
 #include <async_mqtt5/detail/control_packet.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/publish_rec_op.hpp>
+
 #include <async_mqtt5/impl/disconnect_op.hpp>
+#include <async_mqtt5/impl/publish_rec_op.hpp>
+
+#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -76,6 +79,7 @@ public:
 
 private:
 
+	// TODO: ec & packet_id are not used here
 	void dispatch(
 		error_code ec, uint16_t packet_id, uint8_t control_byte,
 		byte_citer first, byte_citer last
@@ -106,6 +110,7 @@ private:
 			}
 			break;
 		}
+
 		perform();
 	}
 

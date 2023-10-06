@@ -1,9 +1,6 @@
 #ifndef ASYNC_MQTT5_MEMORY_H
 #define ASYNC_MQTT5_MEMORY_H
 
-#include <string>
-#include <vector>
-
 #include "memory_resource.h"
 
 namespace pma {

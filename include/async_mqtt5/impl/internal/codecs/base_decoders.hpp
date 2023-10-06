@@ -3,11 +3,12 @@
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/binary/binary.hpp>
+
 #include <boost/fusion/adapted/std_tuple.hpp>
 
 #include <async_mqtt5/property_types.hpp>
-#include <async_mqtt5/impl/internal/codecs/traits.hpp>
 
+#include <async_mqtt5/impl/internal/codecs/traits.hpp>
 
 namespace async_mqtt5::decoders {
 

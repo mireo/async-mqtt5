@@ -1,16 +1,15 @@
 #ifndef ASYNC_MQTT5_CANCELLABLE_HANDLER_HPP
 #define ASYNC_MQTT5_CANCELLABLE_HANDLER_HPP
 
-#include <boost/asio/cancellation_type.hpp>
+#include <memory>
+
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_cancellation_slot.hpp>
-#include <boost/asio/associated_executor.hpp>
-#include <boost/asio/error.hpp>
-#include <boost/asio/prepend.hpp>
-#include <boost/asio/post.hpp>
+#include <boost/asio/cancellation_type.hpp>
 #include <boost/asio/dispatch.hpp>
-#include <boost/asio/bind_executor.hpp>
-#include <memory>
+#include <boost/asio/error.hpp>
+#include <boost/asio/post.hpp>
+#include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/detail/async_traits.hpp>
 

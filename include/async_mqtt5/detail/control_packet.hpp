@@ -10,7 +10,6 @@
 
 namespace async_mqtt5 {
 
-namespace asio = boost::asio;
 
 enum class control_code_e : std::uint8_t {
 	no_packet = 0b00000000, // 0

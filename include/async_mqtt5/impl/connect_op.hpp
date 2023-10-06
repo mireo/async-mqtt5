@@ -1,26 +1,26 @@
 #ifndef ASYNC_MQTT5_CONNECT_OP_HPP
 #define ASYNC_MQTT5_CONNECT_OP_HPP
 
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/consign.hpp>
-#include <boost/asio/prepend.hpp>
 #include <boost/asio/append.hpp>
+#include <boost/asio/consign.hpp>
 #include <boost/asio/dispatch.hpp>
+#include <boost/asio/prepend.hpp>
 #include <boost/asio/read.hpp>
-#include <boost/asio/post.hpp>
 #include <boost/asio/write.hpp>
 
 #include <boost/beast/websocket.hpp>
 
+#include <boost/asio/ip/tcp.hpp>
+
 #include <async_mqtt5/error.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
+#include <async_mqtt5/detail/internal_types.hpp>
 
 #include <async_mqtt5/impl/internal/codecs/base_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -71,7 +71,7 @@ public:
 	}
 
 	void perform(
-		const connect_op::epoints& eps, authority_path ap
+		const epoints& eps, authority_path ap
 	) {
 		lowest_layer(_stream).async_connect(
 			*std::begin(eps),
@@ -83,7 +83,7 @@ public:
 	}
 
 	void operator()(
-		on_connect, error_code ec, connect_op::endpoint ep, authority_path ap
+		on_connect, error_code ec, endpoint ep, authority_path ap
 	) {
 		if (ec)
 			return complete(ec);
@@ -91,7 +91,7 @@ public:
 		do_tls_handshake(std::move(ep), std::move(ap));
 	}
 
-	void do_tls_handshake(connect_op::endpoint ep, authority_path ap) {
+	void do_tls_handshake(endpoint ep, authority_path ap) {
 		if constexpr (has_tls_handshake<Stream>) {
 			_stream.async_handshake(
 				tls_handshake_type<Stream>::client,
@@ -116,7 +116,7 @@ public:
 
 	void operator()(
 		on_tls_handshake, error_code ec,
-		connect_op::endpoint ep, authority_path ap
+		endpoint ep, authority_path ap
 	) {
 		if (ec)
 			return complete(ec);
@@ -124,7 +124,7 @@ public:
 		do_ws_handshake(std::move(ep), std::move(ap));
 	}
 
-	void do_ws_handshake(connect_op::endpoint ep, authority_path ap) {
+	void do_ws_handshake(endpoint ep, authority_path ap) {
 		if constexpr (has_ws_handshake<Stream>) {
 			using namespace boost::beast;
 
@@ -173,7 +173,7 @@ public:
 
 		const auto& wire_data = packet.wire_data();
 
-		async_mqtt5::detail::async_write(
+		detail::async_write(
 			_stream, asio::buffer(wire_data),
 			asio::consign(
 				asio::prepend(std::move(*this), on_send_connect{}),
