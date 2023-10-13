@@ -1,14 +1,41 @@
 project async_mqtt5/doc ;
 
-import boostbook ;
-import quickbook ;
-
 import os ;
-local BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
-# echo $(BOOST_ROOT) ;
+local BOOST_ROOT = [ os.environ DevRoot ] ;
+
+using boostbook
+  : $(BOOST_ROOT)3rdParty/boost-doc/boostbook/docbook-xsl-1.79.1
+  : $(BOOST_ROOT)3rdParty/boost-doc/boostbook/docbook-dtd-4.2
+  : $(BOOST_ROOT)3rdParty/boost-doc/boostbook
+;
+
+using xsltproc ;
+using doxygen ;
+
+# we shall use os.platform to correctly map quickbook executable
+# echo [ os.platform ] ;
+
+if [ os.name ] = MACOSX
+{
+	using saxonhe
+	: $(BOOST_ROOT)3rdParty/boost-doc/saxon/Saxon-HE.jar
+	: /usr/bin/java
+	;
+	using quickbook : $(BOOST_ROOT)build/macos-arm64-release/bin/quickbook ;
+}
+else if [ os.name ] = LINUX
+{
+	using saxonhe
+	: $(BOOST_ROOT)3rdParty/boost-doc/saxon/Saxon-HE.jar
+	: /usr/bin/java
+	;
+	using quickbook : $(BOOST_ROOT)build/linux-debian7-x64-release/bin/quickbook ;
+}
+
+import boostbook ;
 
 # unfortunately, it can only import docca.jam in relative path format
-import ../../../../../../../../d/boost_1_82_0/tools/docca/docca.jam ;
+import ../../../../3rdParty/boost-doc/docca/docca.jam ;
 
 local doxygen_exclussions =
 	detail
@@ -59,7 +86,7 @@ docca.reference reference.qbk
 
 install stylesheets
 	:
-		$(BOOST_ROOT)/doc/src/boostbook.css
+		$(BOOST_ROOT)3rdParty/boost-doc/style/boostbook.css
 	:
 		<location>html/
 	;
@@ -68,7 +95,7 @@ explicit stylesheets ;
 
 install callouts
 	:
-		[ glob $(BOOST_ROOT)/doc/src/images/callouts/*.png ]
+		[ glob $(BOOST_ROOT)3rdParty/boost-doc/style/images/callouts/*.png ]
 	:
 		<location>html/images/callouts
 	;
@@ -77,7 +104,7 @@ explicit callout ;
 
 install images
 	:
-		[ glob $(BOOST_ROOT)/doc/src/images/*.png ]
+		[ glob $(BOOST_ROOT)3rdParty/boost-doc/style/images/*.png ]
 	:
 		<location>html/images
 	;
@@ -108,7 +135,6 @@ boostbook async_mqtt5
 		<xsl:param>toc.max.depth=8
 		<xsl:param>generate.toc="chapter toc,title section nop reference nop part toc"
 		<xsl:param>html.stylesheet=boostbook.css
-		<include>$(BOOST_ROOT)tools/boostbook/dtd
 	:
 		<dependency>stylesheets
 		<dependency>images
