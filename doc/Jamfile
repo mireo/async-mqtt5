@@ -1,0 +1,124 @@
+project async_mqtt5/doc ;
+
+import boostbook ;
+import quickbook ;
+
+import os ;
+local BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
+# echo $(BOOST_ROOT) ;
+
+# unfortunately, it can only import docca.jam in relative path format
+import ../../../../../../../../d/boost_1_82_0/tools/docca/docca.jam ;
+
+local doxygen_exclussions =
+	detail
+	impl
+;
+
+docca.reference reference.qbk
+	:
+		xsl/custom-overrides.xsl
+		[ glob-tree-ex ../include/async_mqtt5/ : *.hpp : $(doxygen_exclussions) ]
+	:
+		<doxygen:param>PROJECT_NAME=async_mqtt5
+		<doxygen:param>PROJECT_BRIEF="MQTT C++ Client Library"
+		<doxygen:param>DISTRIBUTE_GROUP_DOC=YES
+		<doxygen:param>ENABLE_PREPROCESSING=YES
+		<doxygen:param>MACRO_EXPANSION=YES
+		<doxygen:param>EXPAND_ONLY_PREDEF=YES
+		<doxygen:param>SEARCH_INCLUDES=NO
+		<doxygen:param>"PREDEFINED=\\
+			\"BOOST_ASIO_INITFN_RESULT_TYPE(t,a)=auto\" \\
+			\"BOOST_ASIO_COMPLETION_TOKEN_FOR(sig)=class\" \\
+			\"BOOST_ASIO_INITFN_AUTO_RESULT_TYPE(ct,sig)=auto\" \\
+			\"BOOST_ASIO_DEFAULT_COMPLETION_TOKEN_TYPE(ex)=\" \\
+			\"BOOST_ASIO_DEFAULT_COMPLETION_TOKEN(ex)=\" \\
+			\"protected=private\" \\
+			\"BOOST_CXX14_CONSTEXPR=constexpr\" \\
+			"
+		<doxygen:param>SKIP_FUNCTION_MACROS=NO
+		<doxygen:param>OUTPUT_LANGUAGE=English
+		<doxygen:param>INLINE_INHERITED_MEMB=YES
+		<doxygen:param>AUTOLINK_SUPPORT=NO
+		<doxgen:param>BRIEF_MEMBER_DESC=NO
+		<doxygen:param>EXTRACT_ALL=YES
+		<doxygen:param>HAVE_DOT=NO
+		<doxygen:param>HIDE_UNDOC_MEMBERS=YES
+		<doxygen:param>HIDE_UNDOC_CLASSES=YES
+		<doxygen:param>HIDE_FRIEND_COMPOUNDS=YES
+		<doxygen:param>CASE_SENSE_NAMES=YES
+		<doxygen:param>SHOW_INCLUDE_FILES=NO
+		<doxygen:param>INLINE_INFO=NO
+		<doxygen:param>SORT_MEMBER_DOCS=NO
+		<doxygen:param>SORT_MEMBERS_CTORS_1ST=YES
+		<doxygen:param>SHOW_USED_FILES=NO
+		<doxygen:param>SHOW_FILES=NO
+		<doxygen:param>SHOW_NAMESPACES=NO
+		<doxygen:param>QUIET=NO
+;
+
+install stylesheets
+	:
+		$(BOOST_ROOT)/doc/src/boostbook.css
+	:
+		<location>html/
+	;
+
+explicit stylesheets ;
+
+install callouts
+	:
+		[ glob $(BOOST_ROOT)/doc/src/images/callouts/*.png ]
+	:
+		<location>html/images/callouts
+	;
+
+explicit callout ;
+
+install images
+	:
+		[ glob $(BOOST_ROOT)/doc/src/images/*.png ]
+	:
+		<location>html/images
+	;
+
+explicit images ;
+
+xml async_mqtt5_doc
+	:
+		qbk/00_main.qbk
+	:
+		<dependency>reference.qbk
+		<dependency>images
+	;
+
+explicit async_mqtt5_doc ;
+
+boostbook async_mqtt5
+	:
+		async_mqtt5_doc
+	:
+		<xsl:param>"boost.root=https://www.boost.org/doc/libs/1_82_0"
+		<xsl:param>boost.graphics.root=images/
+		<xsl:param>nav.layout=none
+		<xsl:param>chapter.autolabel=1
+		<xsl:param>chunk.section.depth=8
+		<xsl:param>chunk.first.sections=1
+		<xsl:param>toc.section.depth=8
+		<xsl:param>toc.max.depth=8
+		<xsl:param>generate.toc="chapter toc,title section nop reference nop part toc"
+		<xsl:param>html.stylesheet=boostbook.css
+		<include>$(BOOST_ROOT)tools/boostbook/dtd
+	:
+		<dependency>stylesheets
+		<dependency>images
+	;
+
+# These are used to inform the build system of the
+# means to build the integrated and stand-alone docs.
+
+alias boostdoc ;
+explicit boostdoc ;
+
+alias boostrelease : async_mqtt5 ;
+explicit boostrelease ;

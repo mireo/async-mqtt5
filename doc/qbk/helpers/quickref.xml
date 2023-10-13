@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN" "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+
+<!--
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+-->
+
+<informaltable frame="all">
+  <tgroup cols="4">
+    <colspec colname="a"/><colspec colname="b"/><colspec colname="c"/><colspec colname="d"/>
+    <tbody><row>
+      <entry valign="top">
+        <bridgehead renderas="sect3">Classes</bridgehead>
+        <simplelist type="vert" columns="1">
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__authority_path">authority_path</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__mqtt_client">mqtt_client</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__reason_code">reason_code</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__subscribe_options">subscribe_options</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__subscribe_topic">subscribe_topic</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__will">will</link></member>
+        </simplelist>
+      </entry>
+      <entry valign="top">
+        <bridgehead renderas="sect3">Type aliases</bridgehead>
+        <simplelist type="vert" columns="1">
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__error_code">error_code</link></member>
+        </simplelist>
+        <bridgehead renderas="sect3">Concepts</bridgehead>
+        <simplelist type="vert" columns="1">
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__ExecutionContext">ExecutionContext</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__StreamType">StreamType</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__TlsContext">TlsContext</link></member>
+        </simplelist>
+      </entry>
+      <entry valign="top">
+        <bridgehead renderas="sect3">Enumerations</bridgehead>
+        <simplelist type="vert" columns="1">
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__client__error">client_error</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__disconnect_rc_e">disconnect_rc_e</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__qos_e">qos_e</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__retain_e">retain_e</link></member>
+        </simplelist>
+        <bridgehead renderas="sect3">Constants</bridgehead>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__Reason_codes">Reason codes</link></member>
+        <simplelist type="vert" columns="1">
+        </simplelist>
+      </entry>
+      <entry valign="top">
+        <bridgehead renderas="sect3">Functions</bridgehead>
+        <simplelist type="vert" columns="1">
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__client__get_error_code_category">get_error_code_category</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__client__make_error_code">make_error_code</link></member>
+        </simplelist>
+      </entry>
+    </row></tbody>
+  </tgroup>
+</informaltable>

@@ -1,0 +1,53 @@
+[library async_mqtt5
+    [quickbook 1.7]
+    [copyright 2023 Mireo]
+    [id async_mqtt5]
+    [purpose MQTT C++ client library]
+    [license
+        Distributed under the Boost Software License, Version 1.0.
+        (See accompanying file LICENSE_1_0.txt or copy at
+        [@http://www.boost.org/LICENSE_1_0.txt])
+    ]
+    [authors [A,B,C]]
+    [category template]
+    [category generic]
+]
+
+[template nochunk[] [block '''<?dbhtml stop-chunking?>''']]
+[template mdash[] '''&mdash; ''']
+[template include_file[path][^<'''<ulink url="GITHUB_LINK">'''[path]'''</ulink>'''>]]
+[template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
+[template indexterm2[term1 term2] '''<indexterm><primary>'''[term1]'''</primary><secondary>'''[term2]'''</secondary></indexterm>''']
+
+[template reflink2[id text][link async_mqtt5.ref.async_mqtt5__[id] [^[text]]]]
+[template reflink[id][reflink2 [id] [id]]]
+[template refmem[class mem][reflink2 [class].[mem] [class]::[mem]]]
+[template refmemunq[class mem][reflink2 [class].[mem] [mem]]]
+[template asioreflink[id term][@boost:/doc/html/boost_asio/reference/[id].html [^boost::asio::[term]]]]
+[template beastreflink[id term][@boost:/libs/beast/doc/html/beast/ref/[id].html [^boost::beast::[term]]]]
+[template beastconceptslink[id term][@boost:/libs/beast/doc/html/beast/concepts/[id].html [term]]]
+
+[def __ExecutionContext__ [reflink2 ExecutionContext ['ExecutionContext]]]
+[def __StreamType__ [reflink2 StreamType ['StreamType]]]
+[def __TlsContext__ [reflink2 TlsContext ['TlsContext]]]
+
+[def __Boost__ [@https://www.boost.org/ Boost]]
+[def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]
+[def __Self__ [async_mqtt5]]
+
+[/ MQTT stuff]
+[def __MQTT__ [@https://mqtt.org/ MQTT]]
+
+[include 01_intro.qbk]
+
+[section:ref Reference]
+[xinclude helpers/quickref.xml]
+[block'''<part label="Two: Reference">''']
+[include reference.qbk]
+[include helpers/ExecutionContext.qbk]
+[include helpers/StreamType.qbk]
+[include helpers/TlsContext.qbk]
+[include helpers/Reason_codes.qbk]
+[block'''</part>''']
+[endsect]
+

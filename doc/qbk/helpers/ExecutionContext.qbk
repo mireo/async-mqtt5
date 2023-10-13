@@ -1,0 +1,16 @@
+[/
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:async_mqtt5__ExecutionContext ExecutionContext concept]
+
+`ExecutionContext` represents a place where function objects will be executed.
+
+`ExecutionContext` type must be convertible to [asioreflink execution_context execution_context] which
+is a base class for concrete execution context types. 
+The [asioreflink io_context io_context] type is an example of a derived type.
+
+[endsect]

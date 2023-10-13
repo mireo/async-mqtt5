@@ -7,11 +7,21 @@
 #include <boost/asio/error.hpp>
 
 namespace async_mqtt5 {
-
-
+/**
+ * \brief A representation of Disconnect Reason Code.
+ *
+ * \details Represents all Reason Codes that the Client can send to the Server
+ * in the DISCONNECT packet as the reason for the disconnection.
+ */
 enum class disconnect_rc_e : std::uint8_t {
+	/// Close the connection normally. Do not send the \ref will Message.
 	normal_disconnection = 0x00,
+
+	/// The Client wishes to disconnect but requires that
+	/// the Server also publishes its \ref will Message.
 	disconnect_with_will_message = 0x04,
+
+	// TODO: these reason codes should not be available to the user, only the client
 	unspecified_error = 0x80,
 	malformed_packet = 0x81,
 	protocol_error = 0x82,
@@ -27,18 +37,35 @@ enum class disconnect_rc_e : std::uint8_t {
 };
 
 namespace client {
-
-
+/**
+ * \brief MQTT client error codes.
+ *
+ * \details Represents error that occur on the client side. 
+ */
 enum class error : int {
+	/// [unused] A fatal error occurred.
 	fatal_error = 100,
+
+	/// Malformed packet has been detected.
 	malformed_packet,
+
+	/// There are no more available Packet Identifiers to use.
 	pid_overrun,
+
+	/// [unused] The Client has reconnected.
 	reconnected,
+
+	/// The Client has been disconnected.
 	disconnected,
 
-	// publish 
+	// publish
+	/// The Server does not support the specified \ref qos_e.
 	qos_not_supported,
+
+	/// The Server dos not support retained messages.
 	retain_not_available,
+
+	/// The Client attempted to send a Topic Alias that is greater than Topic Alias Maximum.
 	topic_alias_maximum_reached
 };
 
@@ -50,9 +77,9 @@ inline std::string client_error_to_string(error err) {
 		case fatal_error:
 			return "A fatal error occurred";
 		case malformed_packet:
-			return "Malformed packet has been received";
+			return "Malformed packet has been detected";
 		case pid_overrun:
-			return "Ran out of the available packet ids to use";
+			return "There are no more available Packet Identifiers to use.";
 		case reconnected:
 			return "The Client has reconnected";
 		case disconnected:
@@ -100,11 +127,21 @@ enum class category : uint8_t {
 
 } // end namespace reason_codes
 
-
+/**
+ * \brief A class holding Reason Code values originating from Control Packets.
+ *
+ * \details A Reason Code is a one byte unsigned value that indicates the result of an operation.
+ *  Reason Codes less than 0x80 indicate successful completion of an operation.
+ *  The normal Reason Code for success is 0.
+ *  Reason Code values of 0x80 or greater indicate failure.
+ *	The CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, DISCONNECT and AUTH Control Packets have a single Reason Code as part of the Variable Header.
+ *	The SUBACK and UNSUBACK packets contain a list of one or more Reason Codes in the Payload.
+ */
 class reason_code {
 	uint8_t _code;
 	reason_codes::category _category { reason_codes::category::none };
 public:
+/// @cond INTERNAL
 	constexpr reason_code() : _code(0xff) {}
 
 	constexpr reason_code(uint8_t code, reason_codes::category cat)
@@ -112,31 +149,49 @@ public:
 	{}
 
 	constexpr reason_code(uint8_t code) : _code(code) {}
+/// @endcond 
 
+	/// Copy constructor.
 	reason_code(const reason_code&) = default;
+
+	/// Move constructor.
 	reason_code(reason_code&&) = default;
 
+	/**
+	 * \brief Indication if the object holds a Reason Code indicating an error.
+	 *
+	 * \details Any Reason Code holding a value equal or greater than 0x80.
+	 */
 	explicit operator bool() const noexcept {
 		return _code >= 0x80;
 	}
 
+	/**
+	 * \brief Returns the byte value of the Reason Code.
+	 */
 	constexpr uint8_t value() const noexcept {
 		return _code;
 	}
 
+	/// Insertion operator.
 	friend std::ostream& operator<<(std::ostream& os, const reason_code& rc) {
 		os << rc.message();
 		return os;
 	}
 
+	/// Operator less than.
 	friend bool operator<(const reason_code& lhs, const reason_code& rhs) {
 		return lhs._code < rhs._code;
 	}
 
+	/// Equality operator.
 	friend bool operator==(const reason_code& lhs, const reason_code& rhs) {
 		return lhs._code == rhs._code && lhs._category == rhs._category;
 	}
 
+	/**
+	 * \brief Returns a message describing the meaning behind the Reason Code.
+	 */
 	std::string message() const {
 		switch (_code) {
 			case 0x00:

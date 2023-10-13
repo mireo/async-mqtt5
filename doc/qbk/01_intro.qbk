@@ -1,0 +1,45 @@
+[section:intro Introduction]
+[nochunk]
+
+__Self__ is a C++ client for the __MQTT__ protocol, based on __Asio__.
+
+[heading Motivation]
+
+[...motivation here...]
+
+The design goals of this library are:
+
+* reason 1
+* reason 2
+* ...
+
+Non-goals:
+
+* reason 1
+* reason 2
+* ...
+
+[heading When to use]
+
+If any of the following statements is true, you may consider using __Self__:
+
+* reason 1
+* reason 2
+* ...
+
+It may not be a good fit for you if:
+
+* reason 1
+* reason 2
+* ...
+
+
+[heading Tested compilers and systems]
+
+[...some text here...]
+
+[heading Acknowledgements]
+
+[...some acknowledgements here...]
+
+[endsect] [/intro]

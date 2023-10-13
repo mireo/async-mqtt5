@@ -1,0 +1,23 @@
+[/
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:async_mqtt5__StreamType StreamType concept]
+
+`StreamType` represents the transport protocol type used to transfer stream of bytes.
+
+`StreamType` should meet the [beastconceptslink streams Stream] concept.
+
+Additionally, it should follow Asio's layered stream model by having a `lowest_layer_type` member type,
+and a `lowest_layer` member function, returing a `lowest_layer_type&`. 
+The `lowest_layer_type` should inherit from [asioreflink basic_stream_socket basic_stream_socket].
+
+The types [asioreflink basic_stream_socket basic_stream_socket<Protocol, Executor>],
+[asioreflink ssl__stream ssl::stream<Stream>], and 
+[beastreflink boost__beast__websocket__stream websocket::stream<NextLayer>]
+meet these requirements.
+
+[endsect]
