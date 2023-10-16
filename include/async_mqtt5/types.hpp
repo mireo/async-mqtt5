@@ -6,12 +6,11 @@
 
 #include <boost/system/error_code.hpp>
 
-#include <async_mqtt5/error.hpp>
 #include <async_mqtt5/property_types.hpp>
 
 namespace async_mqtt5 {
 
-/// An alias for `boost::system::error_code`;
+/** An alias for `boost::system::error_code`; */
 using error_code = boost::system::error_code;
 
 struct authority_path {
@@ -25,14 +24,14 @@ struct authority_path {
  * to the receiver.
  */
 enum class qos_e : std::uint8_t {
-	///	The message arrives at the receiver either once or not at all.
+	/** The message arrives at the receiver either once or not at all. */
 	at_most_once = 0b00,
 
-	/// Ensures the message arrives at the receiver at least once.
+	/** Ensures the message arrives at the receiver at least once. */
 	at_least_once = 0b01,
 
-	/// All messages arrive at the receiver exactly once without
-	/// loss or duplication of the messages.
+	/** All messages arrive at the receiver exactly once without
+	 loss or duplication of the messages. */
 	exactly_once = 0b10
 };
 
@@ -43,16 +42,16 @@ enum class qos_e : std::uint8_t {
  * store the current message.
  */
 enum class retain_e : std::uint8_t {
-	/// The Server will replace any existing retained message for this Topic
-	/// with this message.
+	/** The Server will replace any existing retained message for this Topic
+	 with this message. */
 	yes = 0b1,
 
-	/// The Server will not store this message and will not remove or replace
-	///	any existing retained message.
+	/** The Server will not store this message and will not remove or replace
+	 any existing retained message. */
 	no = 0b0
 };
 
-// TODO: should this be moved to internal types?
+
 enum class dup_e : std::uint8_t {
 	yes = 0b1, no = 0b0
 };
@@ -62,7 +61,9 @@ enum class dup_e : std::uint8_t {
  * \brief Represents the Options associated with each Subscription.
  */
 struct subscribe_options {
+
 	/**
+	 *
 	 * \brief Representation of the No Local Subscribe Option.
 	 *
 	 * \details A Subscribe Option indicating whether or not Application Messages
@@ -70,10 +71,10 @@ struct subscribe_options {
 	 * publishing connection.
 	 */
 	enum class no_local_e : std::uint8_t {
-		/// Application Messages can be forwarded to a connection with equal ClientID.
+		/** Application Messages can be forwarded to a connection with equal ClientID. */
 		no = 0b0,
 
-		/// Application Messages MUST NOT be forwarded to a connection with equal ClientID.
+		/** Application Messages MUST NOT be forwarded to a connection with equal ClientID. */
 		yes = 0b1
 	};
 
@@ -84,10 +85,10 @@ struct subscribe_options {
 	 * using this subscription keep the \ref retain_e flag they were published with.
 	 */
 	enum class retain_as_published_e : std::uint8_t {
-		/// Application Messages have the \ref retain_e flag set to 0.
+		/** Application Messages have the \ref retain_e flag set to 0. */
 		dont = 0b0,
 
-		/// Application Messages keep the \ref retain_e flag they were published with.
+		/** Application Messages keep the \ref retain_e flag they were published with. */
 		retain = 0b1
 	};
 
@@ -98,17 +99,16 @@ struct subscribe_options {
 	 * when the subscription is established.
 	 */
 	enum class retain_handling_e : std::uint8_t {
-		/// Send retained messages at the time of subscribe.
+		/** Send retained messages at the time of subscribe. */
 		send = 0b00,
 
-		/// Send retained message only if the subscription does not currently exist.
+		/** Send retained message only if the subscription does not currently exist. */
 		new_subscription_only = 0b01,
 
-		/// Do not send retained messages at the time of subscribe.
-		not_send = 0b10
+		/** Do not send retained messages at the time of subscribe. */
+		not_send = 0b100
 	};
 
-	//TODO: figure out how to properly link qos_e to link to its page
 
 	/// Maximum \ref qos_e level at which the Server can send Application Messages to the Client.
 	qos_e max_qos = qos_e::exactly_once;
@@ -131,7 +131,7 @@ struct subscribe_topic {
 	/// An UTF-8 Encoded String indicating the Topics to which the Client wants to subscribe.
 	std::string topic_filter;
 
-	/// \ref subscribe_options associated with the subscription.
+	/// The \ref subscribe_options associated with the subscription.
 	subscribe_options sub_opts;
 };
 
@@ -295,14 +295,35 @@ class will_props : public prop::properties<
 	prop::user_property
 >{};
 
+
+/**
+ * \brief Represents the Will Message.
+ *
+ * \details A Will Message is an Application Message that
+ * the Broker should publish after the Network Connection is closed
+ * in cases where the Network Connection is not closed normally.
+ */
 class will : public will_props {
 	std::string _topic;
 	std::string _message;
 	qos_e _qos; retain_e _retain;
 
 public:
+	/**
+	 * \brief Constructs an empty Will Message.
+	 */
 	will() = default;
 
+	/**
+	 * \brief Construct a Will Message.
+	 *
+	 * \param topic Topic, identification of the information channel to which
+	 * the Will Message will be published.
+	 * \param message The message that will be published.
+	 * \param qos The \ref qos_e level used when publishing the Will Message.
+	 * \param retain The \ref retain_e flag specifying if the Will Message
+	 * is to be retained when it is published.
+	 */
 	will(
 		std::string topic, std::string message,
 		qos_e qos = qos_e::at_most_once, retain_e retain = retain_e::no
@@ -311,6 +332,17 @@ public:
 		_qos(qos), _retain(retain)
 	{}
 
+	/**
+	 * \brief Construct a Will Message.
+	 *
+	 * \param topic Topic name, identification of the information channel to which
+	 * the Will Message will be published.
+	 * \param message The message that will be published.
+	 * \param qos The \ref qos_e level used when publishing the Will Message.
+	 * \param retain The \ref retain_e flag specifying if the Will Message
+	 * is to be retained when it is published.
+	 * \param props Will properties.
+	 */
 	will(
 		std::string topic, std::string message,
 		qos_e qos, retain_e retain, will_props props
@@ -321,21 +353,34 @@ public:
 	{}
 
 	// just to make sure that we don't accidentally make a copy
+	/// Copy constructor.
 	will(const will&) = delete;
+
+	/// Move constructor.
 	will(will&&) noexcept = default;
 
+	/// Copy assignment operator.
 	will& operator=(const will&) = delete;
+
+	/// Move assignment operator.
 	will& operator=(will&&) noexcept = default;
 
+	/// Get the Topic Name.
 	constexpr std::string_view topic() const {
 		return _topic;
 	}
+
+	/// Get the Application Message.
 	constexpr std::string_view message() const {
 		return _message;
 	}
+
+	/// Get the \ref qos_e.
 	constexpr qos_e qos() const {
 		return _qos;
 	}
+
+	/// Get the \ref retain_e.
 	constexpr retain_e retain() const {
 		return _retain;
 	}

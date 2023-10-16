@@ -126,7 +126,8 @@ public:
 	/**
 	 * \brief Cancel all asynchronous operations.
 	 *
-	 * \details All outstanding operations will complete with `boost::asio::error::operation_aborted`.
+	 * \details All outstanding operations will complete
+	 * with `boost::asio::error::operation_aborted`.
 	 */
 	void cancel() {
 		get_executor().execute([svc_ptr = _svc_ptr]() {
@@ -137,7 +138,9 @@ public:
 	/**
 	 * \brief Assign a \ref will Message.
 	 *
-	 * \details The \ref will Message that will be published after the Network Connection is closed.
+	 * \details The \ref will Message that the Broker should publish
+	 * after the Network Connection is closed and it is not
+	 * closed normally.
 	 */
 	mqtt_client& will(will will) {
 		_svc_ptr->will(std::move(will));
@@ -324,7 +327,7 @@ public:
 	 * to Topics that the Client subscribed to. The PUBLISH packets can be received
 	 * with \ref mqtt_client::async_receive function.
 	 *
-	 * \param topic \ref subscribe_topic of interest.
+	 * \param topic A \ref subscribe_topic of interest.
 	 * \param props SUBSCRIBE properties.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
@@ -519,7 +522,8 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::error::try_again` -- why?
+	 *		- `boost::asio::operation_aborted`\n
+	 *		- `boost::asio::no_recovery`\n
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_disconnect(
@@ -555,7 +559,8 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::error::try_again` -- why?
+	 *		- `boost::asio::operation_aborted`\n
+	 *		- `boost::asio::no_recovery`\n
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_disconnect(CompletionToken&& token) {

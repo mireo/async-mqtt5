@@ -9,33 +9,33 @@
 
 namespace async_mqtt5::prop {
 
-constexpr std::integral_constant<uint8_t, 0x01> payload_format_indicator{};
-constexpr std::integral_constant<uint8_t, 0x02> message_expiry_interval{};
-constexpr std::integral_constant<uint8_t, 0x03> content_type{};
-constexpr std::integral_constant<uint8_t, 0x08> response_topic{};
-constexpr std::integral_constant<uint8_t, 0x09> correlation_data{};
-constexpr std::integral_constant<uint8_t, 0x0b> subscription_identifier{};
-constexpr std::integral_constant<uint8_t, 0x11> session_expiry_interval{};
-constexpr std::integral_constant<uint8_t, 0x12> assigned_client_identifier{};
-constexpr std::integral_constant<uint8_t, 0x13> server_keep_alive{};
-constexpr std::integral_constant<uint8_t, 0x15> authentication_method{};
-constexpr std::integral_constant<uint8_t, 0x16> authentication_data{};
-constexpr std::integral_constant<uint8_t, 0x17> request_problem_information{};
-constexpr std::integral_constant<uint8_t, 0x18> will_delay_interval{};
-constexpr std::integral_constant<uint8_t, 0x19> request_response_information{};
-constexpr std::integral_constant<uint8_t, 0x1a> response_information{};
-constexpr std::integral_constant<uint8_t, 0x1c> server_reference{};
-constexpr std::integral_constant<uint8_t, 0x1f> reason_string{};
-constexpr std::integral_constant<uint8_t, 0x21> receive_maximum{};
-constexpr std::integral_constant<uint8_t, 0x22> topic_alias_maximum{};
-constexpr std::integral_constant<uint8_t, 0x23> topic_alias{};
-constexpr std::integral_constant<uint8_t, 0x24> maximum_qos{};
-constexpr std::integral_constant<uint8_t, 0x25> retain_available{};
-constexpr std::integral_constant<uint8_t, 0x26> user_property{};
-constexpr std::integral_constant<uint8_t, 0x27> maximum_packet_size{};
-constexpr std::integral_constant<uint8_t, 0x28> wildcard_subscription_available{};
-constexpr std::integral_constant<uint8_t, 0x29> subscription_identifier_available{};
-constexpr std::integral_constant<uint8_t, 0x2a> shared_subscription_available{};
+constexpr std::integral_constant<uint8_t, 0x01> payload_format_indicator {};
+constexpr std::integral_constant<uint8_t, 0x02> message_expiry_interval {};
+constexpr std::integral_constant<uint8_t, 0x03> content_type {};
+constexpr std::integral_constant<uint8_t, 0x08> response_topic {};
+constexpr std::integral_constant<uint8_t, 0x09> correlation_data {};
+constexpr std::integral_constant<uint8_t, 0x0b> subscription_identifier {};
+constexpr std::integral_constant<uint8_t, 0x11> session_expiry_interval {};
+constexpr std::integral_constant<uint8_t, 0x12> assigned_client_identifier {};
+constexpr std::integral_constant<uint8_t, 0x13> server_keep_alive {};
+constexpr std::integral_constant<uint8_t, 0x15> authentication_method {};
+constexpr std::integral_constant<uint8_t, 0x16> authentication_data {};
+constexpr std::integral_constant<uint8_t, 0x17> request_problem_information {};
+constexpr std::integral_constant<uint8_t, 0x18> will_delay_interval {};
+constexpr std::integral_constant<uint8_t, 0x19> request_response_information {};
+constexpr std::integral_constant<uint8_t, 0x1a> response_information {};
+constexpr std::integral_constant<uint8_t, 0x1c> server_reference {};
+constexpr std::integral_constant<uint8_t, 0x1f> reason_string {};
+constexpr std::integral_constant<uint8_t, 0x21> receive_maximum {};
+constexpr std::integral_constant<uint8_t, 0x22> topic_alias_maximum {};
+constexpr std::integral_constant<uint8_t, 0x23> topic_alias {};
+constexpr std::integral_constant<uint8_t, 0x24> maximum_qos {};
+constexpr std::integral_constant<uint8_t, 0x25> retain_available {};
+constexpr std::integral_constant<uint8_t, 0x26> user_property {};
+constexpr std::integral_constant<uint8_t, 0x27> maximum_packet_size {};
+constexpr std::integral_constant<uint8_t, 0x28> wildcard_subscription_available {};
+constexpr std::integral_constant<uint8_t, 0x29> subscription_identifier_available {};
+constexpr std::integral_constant<uint8_t, 0x2a> shared_subscription_available {};
 
 template <std::integral_constant p>
 struct property_traits;

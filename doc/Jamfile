@@ -29,7 +29,7 @@ else if [ os.name ] = LINUX
 	: $(BOOST_ROOT)3rdParty/boost-doc/saxon/Saxon-HE.jar
 	: /usr/bin/java
 	;
-	using quickbook : $(BOOST_ROOT)build/linux-debian7-x64-release/bin/quickbook ;
+	using quickbook : $(BOOST_ROOT)build/linux-native-x64-release/bin/quickbook ;
 }
 
 import boostbook ;
@@ -67,7 +67,7 @@ docca.reference reference.qbk
 		<doxygen:param>OUTPUT_LANGUAGE=English
 		<doxygen:param>INLINE_INHERITED_MEMB=YES
 		<doxygen:param>AUTOLINK_SUPPORT=NO
-		<doxgen:param>BRIEF_MEMBER_DESC=NO
+		<doxygen:param>BRIEF_MEMBER_DESC=NO
 		<doxygen:param>EXTRACT_ALL=YES
 		<doxygen:param>HAVE_DOT=NO
 		<doxygen:param>HIDE_UNDOC_MEMBERS=YES

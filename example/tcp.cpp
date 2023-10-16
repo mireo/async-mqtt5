@@ -24,7 +24,7 @@ void publish_qos0_tcp() {
 
 	c.async_publish<qos_e::at_most_once>(
 		"test/mqtt-test", "hello world with qos0!",
-		retain_e::no, publish_props {},
+		retain_e::no, publish_props{},
 		[&c](error_code ec) {
 			fmt::print("\terror_code: {}\n", ec.message());
 			c.cancel();

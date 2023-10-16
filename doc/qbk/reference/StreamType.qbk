@@ -9,7 +9,7 @@
 
 `StreamType` represents the transport protocol type used to transfer stream of bytes.
 
-`StreamType` should meet the [beastconceptslink streams Stream] concept.
+`StreamType` should meet the [beastconceptslink streams AsyncStream] concept.
 
 Additionally, it should follow Asio's layered stream model by having a `lowest_layer_type` member type,
 and a `lowest_layer` member function, returing a `lowest_layer_type&`. 
