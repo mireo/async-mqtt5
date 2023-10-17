@@ -13,6 +13,10 @@ namespace async_mqtt5 {
 /** An alias for `boost::system::error_code`; */
 using error_code = boost::system::error_code;
 
+/**
+ * \brief A data structure used to store information related to an authority
+ * such as the host name, port, and path.
+ */
 struct authority_path {
 	std::string host, port, path;
 };

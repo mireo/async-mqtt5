@@ -1,0 +1,47 @@
+[/
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:async_mqtt5__CONNACK_props CONNACK properties]
+The last field in the Variable header of CONNACK packet is a set of Properties.
+A set contains a Property Length followed by the Properties.
+A Property consists of an Identifier and a value.
+
+This section lists all possible CONNACK Properties and describes their usage:
+
+[table:connack_props CONNACK properties
+	[[Identifier] [Value type] [Description]]
+	[[session_expiry_interval] [`int32_t`] [Represents the Session Expiry Internal in seconds.]]
+	[[receive_maximum] [`int16_t`] [The maximum number of QoS 1 and QoS 2 publications that the Server is willing to process concurrently.]]
+	[[maximum_qos] [`uint8_t`] [The highest QoS the Server supports.]]
+	[[retain_available] [`uint8_t`] [A value of 0 means that retained message are not supported. A value of 1 means they are supported.]]
+	[[maximum_packet_size] [`int32_t`] [The maximum __PACKET_SIZE__ in bytes that the Server is willing to accept.]]
+	[[assigned_client_identifier] [`std::string`] [The Client Identifier which was assigned by the Server because a zero length Client Identifier was found in the CONNECT packet]]
+	[[topic_alias_maximum] [`uint16_t`] [The highest value that the Server will accept as a Topic Alias sent by the Client.]]
+	[[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
+	[[correlation_data] [`std::string`] [Binary Data used by the sender of the Request Message to identify which request the Response Message is for when it is received.]]
+	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
+		The meaning of these properties is not defined by the specification.]]
+	[[server_keep_alive] [`int16_t`] [The Keep Alive time assigned by the Server.]]
+	[[response_information] [`std::string`] [A UTF-8 Encoded String which is used as the basis for creating a Response Topic.]]
+	[[server_reference] [`std::string`] [A UTF-8 Encoded String which can be used by the Client to identfy another Server to use.]]
+	[[authentication_method] [`std::string`] [A UTF-8 Encoded String containing the name of the authentication method used for extended authentication.]]
+	[[authentication_data] [`std::string`] [Binary Data containing authentication data. The contents of the data are defined by the authentication method.]]
+]
+
+[h4 Usage]
+After obtaining an instance of `async_mqtt5::connack_props`, the subscript operator can be used to access a Property.
+
+The Identifiers listed in the table above are available within the `async_mqtt5::prop` namespace for Property access.
+
+[h4 Example]
+
+[!c++]
+	async_mqtt5::connack_props props;
+	props[async_mqtt5::prop::maximum_packet_size] = 65535;
+	props[async_mqtt5::prop::assigned_client_identifier] = "ClientID";
+
+[endsect]
