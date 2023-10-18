@@ -7,7 +7,8 @@
 
 [section:async_mqtt5__TlsContext TlsContext concept]
 
-// TODO
+`TlsContext` represents an object that defines user's configuration
+for establishing TLS/SSL connections.
 
 The type [asioreflink ssl__context ssl::context] meets these requirements.
 

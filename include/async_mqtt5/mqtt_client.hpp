@@ -17,7 +17,7 @@ namespace async_mqtt5 {
 namespace asio = boost::asio;
 
 /**
- * \brief MQTT client used to connect and communicate with a Broker.
+ * \brief \__MQTT\__ client used to connect and communicate with a Broker.
  *
  * \tparam StreamType Type of the underlying transport protocol used to transfer
  * the stream of bytes between the Client and the Broker. The transport must be
@@ -71,7 +71,9 @@ public:
 	 * \param tls_context A context object used in TLS/SLL connection.
 	 *
 	 * \par Precondition
-	 * `std::is_convertible_v<ExecutionContext&, asio::execution_context&>`
+	 * \code
+	 * std::is_convertible_v<ExecutionContext&, asio::execution_context&>
+	 * \endcode
 	 */
 	template <typename ExecutionContext>
 	requires (std::is_convertible_v<ExecutionContext&, asio::execution_context&>)
@@ -103,8 +105,14 @@ public:
 	/**
 	 * \brief Get the context object used in TLS/SSL connection.
 	 *
+	 * \note This function may only be invoked
+	 * when the template parameter \__TlsContext\__ was configured
+	 * with non-default type during the creation of a \ref mqtt_client.
+	 *
 	 * \par Precondition
-	 * `!std::is_same_v<TlsContext, std::monostate>`.
+	 * \code
+	 * !std::is_same_v<TlsContext, std::monostate>
+	 * \endcode
 	 */
 	decltype(auto) tls_context()
 	requires (!std::is_same_v<TlsContext, std::monostate>) {
@@ -124,10 +132,12 @@ public:
 
 	// TODO: channel cancel
 	/**
-	 * \brief Cancel all asynchronous operations.
+	 * \brief Cancel all asynchronous operations. This function has terminal effects.
 	 *
 	 * \details All outstanding operations will complete
 	 * with `boost::asio::error::operation_aborted`.
+	 *
+	 * \note The Client cannot be used before calling \ref mqtt_client::run again.
 	 */
 	void cancel() {
 		get_executor().execute([svc_ptr = _svc_ptr]() {
@@ -167,15 +177,25 @@ public:
 	/**
 	 * \brief Assign a list of Brokers that the Client will attempt to connect to.
 	 *
+	 * \details The Client will cycle through the list of hosts,
+	 * attempting to establish a connection with each
+	 * until it successfully establishes a connection.
+	 *
 	 * \param hosts List of Broker addresses and ports.
 	 * Address and ports are separated with a colon `:` while
 	 * pairs of addresses and ports are separated with a comma `,`.
 	 * \param default_port Default port to connect to in case the port is not
 	 * explicitly specified in the hosts list.
 	 *
-	 * \details Examples of a valid hosts string:\n
-	 *		- broker1:1883, broker2, broker3:1883\n
-	 *		- broker1
+	 *
+	 * \par Example
+	 * Some valid hosts string:
+	 *
+	 * \code
+	 *		std::string valid_hosts_1 = "broker1:1883, broker2, broker3:1883";
+	 *		std::string valid_hosts_2 = "broker1";
+	 * \endcode
+	 *
 	 */
 	mqtt_client& brokers(std::string hosts, uint16_t default_port = 1883) {
 		_svc_ptr->brokers(std::move(hosts), default_port);
@@ -183,9 +203,8 @@ public:
 	}
 
 
-	// TODO: doc props
 	/**
-	 * \brief Send a PUBLISH packet to Broker to transport an
+	 * \brief Send a \__PUBLISH\__ packet to Broker to transport an
 	 * Application Message.
 	 *
 	 * \tparam qos_type The \ref qos_e level of assurance for delivery.
@@ -193,35 +212,35 @@ public:
 	 * Payload data is published.
 	 * \param payload The Application Message that is being published.
 	 * \param retain The \ref retain_e flag.
-	 * \param props PUBLISH properties. 
+	 * \param props An instance of \__PUBLISH_PROPS\__. 
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation depends on the \ref qos_e specified:\n
+	 * \par Handler signature
+	 * The handler signature for this operation depends on the \ref qos_e specified:\n
 	 *
 	 *	- `qos_e::at_most_once`:
 	 *		\code
 	 *			void (
-	 *				boost::system::error_code	// Result of operation
+	 *				__ERROR_CODE__	// Result of operation
 	 *			)
 	 *		\endcode
 	 *
 	 *	- `qos_e::at_least_once`:
 	 *		\code
 	 *			void (
-	 *				boost::system::error_code,	// Result of operation.
-	 *				async_mqtt5::reason_code,	// Reason Code received from Broker.
-	 *				puback_props	// Properties received in the PUBACK packet.
+	 *				__ERROR_CODE__,	// Result of operation.
+	 *				__REASON_CODE__,	// Reason Code received from Broker.
+	 *				__PUBACK_PROPS__	// Properties received in the PUBACK packet.
 	 *			)
 	 *		\endcode
 	 *
 	 *	- `qos_e::exactly_once`:
 	 *		\code
 	 *			void (
-	 *				boost::system::error_code,	// Result of operation.
-	 *				async_mqtt5::reason_code,	// Reason Code received from Broker.
-	 *				pubcomp_props	// Properties received in the PUBCOMP packet.
+	 *				__ERROR_CODE__,	// Result of operation.
+	 *				__REASON_CODE__,	// Reason Code received from Broker.
+	 *				__PUBCOMP_PROPS__	// Properties received in the PUBCOMP packet.
 	 *			)
 	 *		\endcode
 	 *
@@ -264,28 +283,28 @@ public:
 
 	// TODO: perhaps there is a way to not copy documentation (\copybrief, \copydetails)
 	/**
-	 * \brief Send a SUBSCRIBE packet to Broker to create a subscription
+	 * \brief Send a \__SUBSCRIBE\__ packet to Broker to create a subscription
 	 * to one or more Topics of interest.
 	 *
 	 * \details After the subscription has been established, the Broker will send
 	 * PUBLISH packets to the Client to forward Application Messages that were published
-	 * to Topics that the Client subscribed to. The PUBLISH packets can be received
+	 * to Topics that the Client subscribed to. The \__PUBLISH\__ packets can be received
 	 * with \ref mqtt_client::async_receive function.
 	 *
 	 * \param topics A list of \ref subscribe_topic of interest.
-	 * \param props SUBSCRIBE properties.
+	 * \param props An instance of \__SUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation:
+	 * \par Handler signature
+	 * The handler signature for this operation:
 	 *	\code
 	 *		void (
-	 *			boost::system::error_code,	// Result of operation.
-	 *			std::vector<reason_code>,	// Vector of Reason Codes indicating
-	 *										// the subscription result for each Topic
-	 *										// in the SUBSCRIBE packet.
-	 *			suback_props,	// Properties received in the SUBACK packet.
+	 *			__ERROR_CODE__,	// Result of operation.
+	 *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes indicating
+	 *													// the subscription result for each Topic
+	 *													// in the SUBSCRIBE packet.
+	 *			__SUBACK_PROPS__,	// Properties received in the SUBACK packet.
 	 *		)
 	 *	\endcode
 	 *
@@ -319,28 +338,28 @@ public:
 	}
 
 	/**
-	 * \brief Send a SUBSCRIBE packet to Broker to create a subscription
+	 * \brief Send a \__SUBSCRIBE\__ packet to Broker to create a subscription
 	 * to one Topics of interest.
 	 *
 	 * \details After the subscription has been established, the Broker will send
-	 * PUBLISH packets to the Client to forward Application Messages that were published
-	 * to Topics that the Client subscribed to. The PUBLISH packets can be received
+	 * \__PUBLISH\__ packets to the Client to forward Application Messages that were published
+	 * to Topics that the Client subscribed to. The \__PUBLISH\__ packets can be received
 	 * with \ref mqtt_client::async_receive function.
 	 *
 	 * \param topic A \ref subscribe_topic of interest.
-	 * \param props SUBSCRIBE properties.
+	 * \param props An instance of \__SUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation:
+	 * \par Handler signature
+	 * The handler signature for this operation:
 	 *	\code
 	 *		void (
-	 *			boost::system::error_code,	// Result of operation.
-	 *			std::vector<reason_code>,	// Vector of Reason Codes containing the
-	 *										// single subscription result for the Topic
-	 *										// in the SUBSCRIBE packet.
-	 *			suback_props,	// Properties received in the SUBACK packet.
+	 *			__ERROR_CODE__,	// Result of operation.
+	 *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes containing the
+	 *													// single subscription result for the Topic
+	 *													// in the SUBSCRIBE packet.
+	 *			__SUBACK_PROPS__,	// Properties received in the SUBACK packet.
 	 *		)
 	 *	\endcode
 	 *
@@ -363,27 +382,27 @@ public:
 
 
 	/**
-	 * \brief Send an UNSUBSCRIBE packet to Broker to unsubscribe from one
+	 * \brief Send an \__UNSUBSCRIBE\__ packet to Broker to unsubscribe from one
 	 * or more Topics.
 	 *
-	 * \note The Client MAY receive PUBLISH packets with Application
+	 * \note The Client MAY receive \__PUBLISH\__ packets with Application
 	 * Messages from Topics the Client just unsubscribed to if
 	 * they were buffered for delivery on the Broker side beforehand.
 	 *
 	 * \param topics List of Topics to unsubscribe from.
-	 * \param props UNSUBSCRIBE properties.
+	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation:
+	 * \par Handler signature
+	 * The handler signature for this operation:
 	 *	\code
 	 *		void (
-	 *			boost::system::error_code, // Result of operation.
-	 *			std::vector<reason_code>,	// Vector of Reason Codes indicating
-	 *										// the result of unsubscribe operation
-	 *										// for each Topic in the UNSUBSCRIBE packet.
-	 *			unsuback_props, // Properties received in the UNSUBACK packet.
+	 *			__ERROR_CODE__, // Result of operation.
+	 *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes indicating
+	 *													// the result of unsubscribe operation
+	 *													// for each Topic in the UNSUBSCRIBE packet.
+	 *			__UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
 	 *		)
 	 *	\endcode
 	 *
@@ -417,27 +436,27 @@ public:
 	}
 
 	/**
-	 * \brief Send an UNSUBSCRIBE packet to Broker to unsubscribe
+	 * \brief Send an \__UNSUBSCRIBE\__ packet to Broker to unsubscribe
 	 * from one Topic.
 	 *
-	 * \note The Client MAY receive PUBLISH packets with Application
+	 * \note The Client MAY receive \__PUBLISH\__ packets with Application
 	 * Messages from Topics the Client just unsubscribed to if
 	 * they were buffered for delivery on the Broker side beforehand.
 	 *
 	 * \param topic Topic to unsubscribe from.
-	 * \param props UNSUBSCRIBE properties.
+	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation:
+	 * \par Handler signature
+	 * The handler signature for this operation:
 	 *	\code
 	 *		void (
-	 *			boost::system::error_code, // Result of operation.
-	 *			std::vector<reason_code>,	// Vector of Reason Codes containing
-	 *										// the result of unsubscribe operation
-	 *										// for the Topic in the UNSUBSCRIBE packet.
-	 *			unsuback_props, // Properties received in the UNSUBACK packet.
+	 *			__ERROR_CODE__, // Result of operation.
+	 *			std::vector<__REASON__CODE__>,	// Vector of Reason Codes containing
+	 *													// the result of unsubscribe operation
+	 *													// for the Topic in the UNSUBSCRIBE packet.
+	 *			__UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
 	 *		)
 	 *	\endcode
 	 *
@@ -458,11 +477,13 @@ public:
 		);
 	}
 
+
+	// TODO: cancel the channel!
 	/**
 	 * \brief Asynchronously receive an Application Message.
 	 *
 	 * \details The Client will receive and complete deliveries for all the
-	 * PUBLISH packets received from the Broker throughout its lifetime.
+	 * \__PUBLISH\__ packets received from the Broker throughout its lifetime.
 	 * The Client will store them internally in order they were delivered.
 	 * Calling this function will attempt to receive an Application Message
 	 * from internal storage.
@@ -473,14 +494,14 @@ public:
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation:
+	 * \par Handler signature
+	 * The handler signature for this operation:
 	 *	\code
 	 *		void (
-	 *			boost::system::error_code, // Result of operation.
+	 *			__ERROR_CODE__, // Result of operation.
 	 *			std::string,	// Topic, the origin of the Application Message.
 	 *			std::string,	// Payload, the content of the Application Message.
-	 *			publish_props, // Properties received in the PUBLISH packet.
+	 *			__PUBLISH_PROPS__, // Properties received in the PUBLISH packet.
 	 *		)
 	 *	\endcode
 	 *
@@ -498,24 +519,24 @@ public:
 	}
 
 	/**
-	 * \brief Disconnect the Client.
+	 * \brief Disconnect the Client. This function has terminal effects.
 	 *
-	 * \details Send a DISCONNECT packet to the Broker with a Reason Code
+	 * \details Send a \__DISCONNECT\__ packet to the Broker with a Reason Code
 	 * describing the reason for disconnection.
 	 *
-	 * \note This function has terminal effects and will close the Client.
+	 * \note This function will close the Client. See \ref mqtt_client::cancel.
 	 *
 	 * \param reason_code Reason Code to notify
 	 * the Broker of the reason for disconnection.
-	 * \param props DISCONNECT properties.
+	 * \param props An instance of \__DISCONNECT_PROPS\__.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation:
+	 * \par Handler signature
+	 * The handler signature for this operation:
 	 *	\code
 	 *		void (
-	 *			boost::system::error_code // Result of operation.
+	 *			__ERROR_CODE__ // Result of operation.
 	 *		)
 	 *	\endcode
 	 *
@@ -537,22 +558,22 @@ public:
 	}
 
 	/**
-	 * \brief Disconnect the Client.
+	 * \brief Disconnect the Client. This function has terminal effects.
 	 *
-	 * \details Send a DISCONNECT packet to the Broker with a Reason Code
+	 * \details Send a \__DISCONNECT\__ packet to the Broker with a Reason Code
 	 * \ref reason_codes::normal_disconnection describing
 	 * the reason for disconnection.
 	 *
-	 * \note This function has terminal effects and will close the Client.
+	 * \note This function will close the Client. See \ref mqtt_client::cancel.
 	 *
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
 	 *
-	 * \par Completion signature
-	 * The completion signature for this operation:
+	 * \par Handler signature
+	 * The handler signature for this operation:
 	 *	\code
 	 *		void (
-	 *			boost::system::error_code // Result of operation.
+	 *			__ERROR_CODE__ // Result of operation.
 	 *		)
 	 *	\endcode
 	 *

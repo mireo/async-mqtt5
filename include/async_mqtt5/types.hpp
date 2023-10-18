@@ -22,10 +22,11 @@ struct authority_path {
 };
 
 /**
- * \brief Represents the Quality of Service (QoS) property of the PUBLISH packets.
+ * \brief Represents the Quality of Service (\__QOS__\)
+ * property of the \__PUBLISH\__ packets.
  *
- * \details Determines how the PUBLISH packets are delivered from the sender
- * to the receiver.
+ * \details Determines how the \__PUBLISH\__ packets are delivered
+ * from the sender to the receiver.
  */
 enum class qos_e : std::uint8_t {
 	/** The message arrives at the receiver either once or not at all. */
@@ -40,7 +41,7 @@ enum class qos_e : std::uint8_t {
 };
 
 /**
- * \brief Represents the RETAIN flag in the PUBLISH packets.
+ * \brief Represents the RETAIN flag in the \__PUBLISH\__ packets.
  *
  * \details This flag informs the Server about whether or not it should
  * store the current message.
@@ -62,12 +63,11 @@ enum class dup_e : std::uint8_t {
 
 
 /**
- * \brief Represents the Options associated with each Subscription.
+ * \brief Represents the \__SUBSCRIBE_OPTIONS\__ associated with each Subscription.
  */
 struct subscribe_options {
 
 	/**
-	 *
 	 * \brief Representation of the No Local Subscribe Option.
 	 *
 	 * \details A Subscribe Option indicating whether or not Application Messages
@@ -190,6 +190,8 @@ reason codes:
 
 */
 
+/// \cond
+
 class connect_props : public prop::properties<
 	prop::session_expiry_interval,
 	prop::receive_maximum,
@@ -299,6 +301,7 @@ class will_props : public prop::properties<
 	prop::user_property
 >{};
 
+/// \endcond
 
 /**
  * \brief Represents the Will Message.

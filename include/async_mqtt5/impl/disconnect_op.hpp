@@ -86,6 +86,7 @@ public:
 			ec == asio::error::operation_aborted ||
 			ec == asio::error::no_recovery
 		)
+			// TODO: do we need two different errors here?
 			return complete(ec);
 
 		if (_context.terminal) {

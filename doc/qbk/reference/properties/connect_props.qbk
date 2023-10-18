@@ -5,22 +5,23 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__CONNECT_props CONNECT properties]
-The last field in the Variable header of CONNECT packet is a set of Properties.
+[section:async_mqtt5__connect_props CONNECT properties]
+The last field in the Variable header of __CONNECT__ packet is a set of Properties.
 A set contains a Property Length followed by the Properties.
 A Property consists of an Identifier and a value.
 
-This section lists all possible CONNECT Properties and describes their usage:
+This section lists all possible __CONNECT__ Properties and describes their usage:
 
 [table:connect_props CONNECT properties
 	[[Identifier] [Value type] [Description]]
 	[[session_expiry_interval] [`int32_t`] [Represents the Session Expiry Internal in seconds.]]
 	[[receive_maximum] [`int16_t`] [The maximum number of QoS 1 and QoS 2 publications that the Client is willing to process concurrently.]]
-	[[maximum_packet_size] [`int32_t`] [The maximum __PACKET_SIZE__ in bytes that the Client is willing to process.]]
+	[[maximum_packet_size] [`int32_t`] [The maximum __PACKET_SIZE__ in bytes as defined by the specification that the Client is willing to process.]]
 	[[topic_alias_maximum] [`uint16_t`] [The highest value that the Client will accept as a Topic Alias sent by the Server.]]
-	[[request_response_information] [`uint8_t`] [The value of 0 signals that the Server MUST NOT return Response Information in CONNACK. If the value if 1, it MAY return it.]]
-	[[request_problem_information] [`uint8_t`] [The value of 0 signals that the Server MAY return a Reason String or User Properties on a CONNACK or DISCONNECT packet, 
-		but MUST NOT send them on any packet other than PUBLISH, CONNACK, or DISCONNECT. If the value is 1, the Server MAY return a Reason String or User Properties where it is allowed.]]
+	[[request_response_information] [`uint8_t`] [The value of 0 signals that the Server MUST NOT return Response Information in __CONNACK__. If the value if 1, it MAY return it.]]
+	[[request_problem_information] [`uint8_t`] [The value of 0 signals that the Server MAY return a Reason String or User Properties on a __CONNACK__ or __DISCONNECT__ packet, 
+		but MUST NOT send them on any packet other than __PUBLISH__, __CONNACK__, or __DISCONNECT__. 
+		If the value is 1, the Server MAY return a Reason String or User Properties where it is allowed.]]
 	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
 		The meaning of these properties is not defined by the specification.]]
 	[[authentication_method] [`std::string`] [A UTF-8 Encoded String containing the name of the authentication method used for extended authentication.]]

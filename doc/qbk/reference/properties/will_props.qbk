@@ -5,12 +5,13 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__Will_props [reflink2 will Will] properties]
-The Will Properties consist of the properties that determine when to publish the Will Message and the Application Message properties to be sent with the Will Message.
+[section:async_mqtt5__will_props Will properties]
+The Will Properties consist of the properties that determine when to publish the [reflink2 will Will] Message 
+and the Application Message properties to be sent with the [reflink2 will Will] Message.
 The Will Properties consists of a Property Length and the Properties.
 A Property consists of an Identifier and a value.
 
-This section lists all possible Will Properties and describes their usage:
+This section lists all possible [reflink2 will Will] Properties and describes their usage:
 
 [table:will_props Will properties
 	[[Identifier] [Value type] [Description]]

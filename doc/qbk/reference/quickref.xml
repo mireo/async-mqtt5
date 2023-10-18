@@ -56,20 +56,20 @@
       <entry valign="top">
         <bridgehead renderas="sect3">Properties</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__Will_props">Will properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__CONNECT_props">CONNECT properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__CONNACK_props">CONNACK properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__PUBLISH_props">PUBLISH properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__PUBACK_props">PUBACK properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__PUBREC_props">PUBREC properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__PUBREL_props">PUBREL properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__PUBCOMP_props">PUBCOMP properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__SUBSCRIBE_props">SUBSCRIBE properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__SUBACK_props">SUBACK properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__UNSUBSCRIBE_props">UNSUBSCRIBE properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__UNSUBACK_props">UNSUBACK properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__DISCONNECT_props">DISCONNECT properties</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__AUTH_props">AUTH properties</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__will_props">will_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__connect_props">connect_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__connack_props">connack_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__publish_props">publish_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__puback_props">puback_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__pubrec_props">pubrec_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__pubrel_props">pubrel_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__pubcomp_props">pubcomp_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__subscribe_props">subscribe_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__suback_props">suback_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__unsubscribe_props">unsubscribe_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__unsuback_props">unsuback_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__disconnect_props">disconnect_props</link></member>
+          <member><link linkend="async_mqtt5.ref.async_mqtt5__auth_props">auth_props</link></member>
         </simplelist>
       </entry>
     </row></tbody>

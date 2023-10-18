@@ -5,12 +5,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__PUBREL_props PUBREL properties]
-The last field in the Variable header of PUBREL packet is a set of Properties.
+[section:async_mqtt5__pubrel_props PUBREL properties]
+The last field in the Variable header of __PUBREL__ packet is a set of Properties.
 A set contains a Property Length followed by the Properties.
 A Property consists of an Identifier and a value.
 
-This section lists all possible PUBREL Properties and describes their usage:
+This section lists all possible __PUBREL__ Properties and describes their usage:
 
 [table:pubrec_props PUBREL properties
 	[[Identifier] [Value type] [Description]]

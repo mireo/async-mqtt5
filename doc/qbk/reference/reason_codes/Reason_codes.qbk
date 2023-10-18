@@ -8,7 +8,7 @@
 
 [section:async_mqtt5__Reason_codes Reason codes]
 
-This section lists all possible reason codes that can be sent in a
+This section lists all possible [reflink2 reason_code reason codes] that can be sent in a
 MQTT Control Packet.
 
 [xinclude rcref.xml]

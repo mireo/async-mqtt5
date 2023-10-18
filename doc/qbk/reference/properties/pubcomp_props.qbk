@@ -5,12 +5,12 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__PUBCOMP_props PUBCOMP properties]
-The last field in the Variable header of PUBCOMP packet is a set of Properties.
+[section:async_mqtt5__pubcomp_props PUBCOMP properties]
+The last field in the Variable header of __PUBCOMP__ packet is a set of Properties.
 A set contains a Property Length followed by the Properties.
 A Property consists of an Identifier and a value.
 
-This section lists all possible PUBCOMP Properties and describes their usage:
+This section lists all possible __PUBCOMP__ Properties and describes their usage:
 
 [table:pubrec_props PUBCOMP properties
 	[[Identifier] [Value type] [Description]]

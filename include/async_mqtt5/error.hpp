@@ -7,18 +7,19 @@
 #include <boost/asio/error.hpp>
 
 namespace async_mqtt5 {
+
 /**
  * \brief A representation of Disconnect Reason Code.
  *
  * \details Represents all Reason Codes that the Client can send to the Server
- * in the DISCONNECT packet as the reason for the disconnection.
+ * in the \__DISCONNECT\__ packet as the reason for the disconnection.
  */
 enum class disconnect_rc_e : std::uint8_t {
-	/** Close the connection normally. Do not send the \ref will Message. */
+	/** Close the connection normally. Do not send the Will Message. */
 	normal_disconnection = 0x00,
 
 	/** The Client wishes to disconnect but requires that
-	 the Server also publishes its \ref will Message. */
+	 the Server also publishes its Will Message. */
 	disconnect_with_will_message = 0x04,
 
 	// TODO: these reason codes should not be available to the user, only the client
@@ -103,11 +104,13 @@ struct client_ec_category : public boost::system::error_category {
 	}
 };
 
+/// Returns the error category associated with \ref client::error.
 inline const client_ec_category& get_error_code_category() {
 	static client_ec_category cat;
 	return cat;
 }
 
+/// Creates an \ref error_code from a \ref client::error.
 inline boost::system::error_code make_error_code(error r) {
 	return { static_cast<int>(r), get_error_code_category() };
 }
@@ -115,6 +118,7 @@ inline boost::system::error_code make_error_code(error r) {
 
 } // end namespace client
 
+/// \cond internal
 namespace reason_codes {
 
 enum class category : uint8_t {
@@ -124,24 +128,26 @@ enum class category : uint8_t {
 	unsuback, auth, disconnect
 };
 
-
 } // end namespace reason_codes
+
+/// \endcond
 
 /**
  * \brief A class holding Reason Code values originating from Control Packets.
  *
  * \details A Reason Code is a one byte unsigned value that indicates the result of an operation.
- *  Reason Codes less than 0x80 indicate successful completion of an operation.
- *  The normal Reason Code for success is 0.
- *  Reason Code values of 0x80 or greater indicate failure.
- *	The CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, DISCONNECT and AUTH Control Packets have a single Reason Code as part of the Variable Header.
- *	The SUBACK and UNSUBACK packets contain a list of one or more Reason Codes in the Payload.
+ *	Reason Codes less than 0x80 indicate successful completion of an operation.
+ *	The normal Reason Code for success is 0.
+ *	Reason Code values of 0x80 or greater indicate failure.
+ *	The \__CONNACK\__,  \__PUBACK\__,  \__PUBREC\__,  \__PUBREL\__,  \__PUBCOMP\__,  \__DISCONNECT\__
+ *	and  \__AUTH\__ Control Packets have a single Reason Code as part of the Variable Header.
+ *	The \__SUBACK\__ and \__UNSUBACK\__ packets contain a list of one or more Reason Codes in the Payload.
  */
 class reason_code {
 	uint8_t _code;
 	reason_codes::category _category { reason_codes::category::none };
 public:
-/// @cond INTERNAL
+/// \cond INTERNAL
 	constexpr reason_code() : _code(0xff) {}
 
 	constexpr reason_code(uint8_t code, reason_codes::category cat)
@@ -149,7 +155,7 @@ public:
 	{}
 
 	constexpr reason_code(uint8_t code) : _code(code) {}
-/// @endcond 
+/// \endcond 
 
 	/// Copy constructor.
 	reason_code(const reason_code&) = default;

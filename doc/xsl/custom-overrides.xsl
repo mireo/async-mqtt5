@@ -28,6 +28,7 @@
   
 
     <xsl:variable name="emphasized-template-parameter-types" select="
+    'CompletionToken',
     'ExecutionContext',
     'StreamType',
     'TlsContext'

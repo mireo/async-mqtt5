@@ -5,29 +5,30 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__SUBACK_props SUBACK properties]
-The last field in the Variable header of SUBACK packet is a set of Properties.
+[section:async_mqtt5__disconnect_props DISCONNECT properties]
+The last field in the Variable header of __DISCONNECT__ packet is a set of Properties.
 A set contains a Property Length followed by the Properties.
 A Property consists of an Identifier and a value.
 
-This section lists all possible SUBACK Properties and describes their usage:
+This section lists all possible __DISCONNECT__ Properties and describes their usage:
 
-[table:suback_props SUBACK properties
+[table:disconnect_props DISCONNECT properties
 	[[Identifier] [Value type] [Description]]
+	[[session_expiry_interval] [`int32_t`] [Represents the Session Expiry Internal in seconds. Can only be sent by the Client.]]
 	[[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
 	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
 		This property may be used to provide additional diagnostic or other information. ]]
 ]
 
 [h4 Usage]
-After obtaining an instance of `async_mqtt5::suback_props`, the subscript operator can be used to access a Property.
+After obtaining an instance of `async_mqtt5::disconnect_props`, the subscript operator can be used to access a Property.
 
 The Identifiers listed in the table above are available within the `async_mqtt5::prop` namespace for Property access.
 
 [h4 Example]
 
 [!c++]
-	async_mqtt5::suback_props props;
-	props[async_mqtt5::prop::reason_string] = "Some reason...";
+	async_mqtt5::disconnect_props props;
+	props[async_mqtt5::prop::reason_string] = "Lost connection!";
 
 [endsect]
