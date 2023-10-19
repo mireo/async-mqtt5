@@ -1,0 +1,52 @@
+[/
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:async_mqtt5__Error_handling Error handling]
+
+The table below provides a reference of all __ERROR_CODE__ instances that asynchronous operations
+may complete with, along with the reasons for their occurrence.
+
+[table:error_codes Error codes
+	[[Error code] [Cause]]
+	[[`boost::system::errc::errc_t::success`] [The operation completed successfully.]]
+	[[`boost::asio::error::opreation_aborted`] [
+		The operation has been cancelled. 
+		The cancellation of the operation can be triggered by invoking either [refmem mqtt_client cancel]
+		or [refmem mqtt_client async_disconnect]. Furthermore, if a cancellation slot has been associated
+		with the __CompletionToken__ provided and the corresponding cancellation signal is emitted,
+		the operation will also finish with this error code (see __ASIO_PER_OP_CANCELLATION__).
+	]]
+	[[`boost::asio::experimental::error::channel_cancelled`] [
+		This error occurs in scenarios identical to those causing `boost::asio::error::operation_aborted` 
+		error code but it is exclusive to completion handlers associated with [refmem mqtt_client async_receive] calls.
+	]]
+	[[`async_mqtt5::client::error::pid_overrun`] [
+		This error code signifies that the Client was unable to allocate a Packet Identifier for
+		the current operation due to the exhaustion of the available identifiers.
+		This occurs when there are 65535 outgoing Packets awaiting their responses.
+	]]
+	[[`async_mqtt5::client::error::qos_not_supported`] [
+		The Client has attempted to publish an Application Message with __QOS__ higher
+		than the Maximum __QOS__ specified by the Server.
+		The Server does not support this __QOS__ (see __MAXIMUM_QOS__).
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_publish] calls.
+	]]
+	[[`async_mqtt5::client::error::retain_not_available`] [
+		The Client has attempted to publish an Application Message with the RETAIN flag set to 1.
+		However, the Server does not support retained messages (see __RETAIN_AVAILABLE__).
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_publish] calls.
+	]]
+	[[`async_mqtt5::client::error::topic_alias_maximum`] [
+		The Client has attempted to publish an Application Message with the Topic Alias 
+		exceeding the Server's supported Topic Alias Maximum. Additionally, this error code
+		will arise in instances when the Server does NOT support Topic Aliases, and the 
+		Client has attempted to use them. See __TOPIC_ALIAS_MAX__.
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_publish] calls.
+	]]
+]
+
+[endsect]

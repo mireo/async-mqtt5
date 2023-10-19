@@ -47,8 +47,10 @@ enum class error : int {
 	/** [unused] A fatal error occurred. */
 	fatal_error = 100,
 
+	/// \cond INTERNAL
 	/** Malformed packet has been detected. */
 	malformed_packet,
+	/// \endcond
 
 	/** There are no more available Packet Identifiers to use. */
 	pid_overrun,
@@ -56,7 +58,7 @@ enum class error : int {
 	/** [unused] The Client has reconnected. */
 	reconnected,
 
-	/** The Client has been disconnected. */
+	/** [unused] The Client has been disconnected. */
 	disconnected,
 
 	// publish
@@ -142,6 +144,8 @@ enum class category : uint8_t {
  *	The \__CONNACK\__,  \__PUBACK\__,  \__PUBREC\__,  \__PUBREL\__,  \__PUBCOMP\__,  \__DISCONNECT\__
  *	and  \__AUTH\__ Control Packets have a single Reason Code as part of the Variable Header.
  *	The \__SUBACK\__ and \__UNSUBACK\__ packets contain a list of one or more Reason Codes in the Payload.
+ *
+ *	\see See \__REASON_CODES\__ for a complete list of all possible instances of this class.
  */
 class reason_code {
 	uint8_t _code;

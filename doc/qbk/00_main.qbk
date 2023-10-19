@@ -28,6 +28,8 @@
 [template beastconceptslink[id term][@boost:/libs/beast/doc/html/beast/concepts/[id].html [term]]]
 [template mqttlink[id text][@https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc[id] [text]]]
 
+[def __ASIO_PER_OP_CANCELLATION__ [@boost:/doc/html/boost_asio/overview/core/cancellation.html Per-Operation Cancellation]]
+
 [def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers ['CompletionToken]]]
 [def __ExecutionContext__ [reflink2 ExecutionContext ['ExecutionContext]]]
 [def __StreamType__ [reflink2 StreamType ['StreamType]]]
@@ -42,7 +44,9 @@
 
 [def __UTF8_STRING_PAIR__ [mqttlink 3901013 `UTF-8 String Pair`]]
 [def __PACKET_SIZE__ [mqttlink 3901024 `packet size`]]
-
+[def __MAXIMUM_QOS__ [mqttlink 3901084 `Maximum QoS`]]
+[def __RETAIN_AVAILABLE__ [mqttlink 3901085 `Retain Available`]]
+[def __TOPIC_ALIAS_MAX__ [mqttlink 3901051 `Topic Alias Maximum`]]
 [def __QOS__ [mqttlink 3901234 `QoS`]]
 [def __SUBSCRIBE_OPTIONS__ [mqttlink 3901169 `Subscribe Options`]]
 
@@ -78,7 +82,10 @@
 [def __AUTH_PROPS__ [reflink2 auth_props async_mqtt5::auth_props]]
 
 [def __ERROR_CODE__ [reflink2 error_code `async_mqtt5::error_code`]]
-[def __REASON_CODE__ [reflink2 Reason_codes `async_mqtt5::reason_code`]]
+[def __REASON_CODE__ [reflink2 reason_code `async_mqtt5::reason_code`]]
+
+[def __REASON_CODES__ [reflink2 Reason_codes `Reason Codes`]]
+[def __ERROR_HANDLING__ [reflink2 Error_handling `Error handling`]]
 
 [include 01_intro.qbk]
 
@@ -87,9 +94,12 @@
 
 [block'''<part label="Two: Reference">''']
 [include reference.qbk]
-[include reference/ExecutionContext.qbk]
-[include reference/StreamType.qbk]
-[include reference/TlsContext.qbk]
+
+[include reference/Error_handling.qbk]
+
+[include reference/concepts/ExecutionContext.qbk]
+[include reference/concepts/StreamType.qbk]
+[include reference/concepts/TlsContext.qbk]
 
 [include reference/reason_codes/Reason_codes.qbk]
 

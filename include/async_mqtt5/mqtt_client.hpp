@@ -184,12 +184,12 @@ public:
 	 * \param hosts List of Broker addresses and ports.
 	 * Address and ports are separated with a colon `:` while
 	 * pairs of addresses and ports are separated with a comma `,`.
-	 * \param default_port Default port to connect to in case the port is not
-	 * explicitly specified in the hosts list.
+	 * \param default_port The default port to connect to in case the port is not
+	 * explicitly specified in the `hosts` list.
 	 *
 	 *
 	 * \par Example
-	 * Some valid hosts string:
+	 * Some valid `hosts` string:
 	 *
 	 * \code
 	 *		std::string valid_hosts_1 = "broker1:1883, broker2, broker3:1883";
@@ -247,11 +247,13 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::operation_aborted` \n
+	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link client::error::pid_overrun \endlink
 	 *		- \link client::error::qos_not_supported \endlink
 	 *		- \link client::error::retain_not_available \endlink
 	 *		- \link client::error::topic_alias_maximum_reached \endlink
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <qos_e qos_type, typename CompletionToken>
 	decltype(auto) async_publish(
@@ -311,8 +313,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::operation_aborted` \n
+	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link client::error::pid_overrun \endlink
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_subscribe(
@@ -366,8 +370,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::operation_aborted` \n
+	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link client::error::pid_overrun \endlink
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_subscribe(
@@ -409,8 +415,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::operation_aborted` \n
+	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link client::error::pid_overrun \endlink
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_unsubscribe(
@@ -453,7 +461,7 @@ public:
 	 *	\code
 	 *		void (
 	 *			__ERROR_CODE__, // Result of operation.
-	 *			std::vector<__REASON__CODE__>,	// Vector of Reason Codes containing
+	 *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes containing
 	 *													// the result of unsubscribe operation
 	 *													// for the Topic in the UNSUBSCRIBE packet.
 	 *			__UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
@@ -463,8 +471,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::operation_aborted` \n
+	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link client::error::pid_overrun \endlink
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_unsubscribe(
@@ -508,7 +518,9 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::experimental::error::channel_cancelled`
+	 *		- `boost::asio::experimental::error::channel_cancelled`
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_receive(CompletionToken&& token) {
@@ -543,8 +555,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::operation_aborted`\n
+	 *		- `boost::asio::error::operation_aborted`\n
 	 *		- `boost::asio::no_recovery`\n
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_disconnect(
@@ -580,8 +594,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::operation_aborted`\n
+	 *		- `boost::asio::error::operation_aborted`\n
 	 *		- `boost::asio::no_recovery`\n
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_disconnect(CompletionToken&& token) {
