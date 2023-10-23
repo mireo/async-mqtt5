@@ -15,62 +15,62 @@
       <entry valign="top">
         <bridgehead renderas="sect3">Classes</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__authority_path">authority_path</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__mqtt_client">mqtt_client</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__reason_code">reason_code</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__subscribe_options">subscribe_options</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__subscribe_topic">subscribe_topic</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__will">will</link></member>
+          <member><link linkend="async_mqtt5.ref.authority_path">authority_path</link></member>
+          <member><link linkend="async_mqtt5.ref.mqtt_client">mqtt_client</link></member>
+          <member><link linkend="async_mqtt5.ref.reason_code">reason_code</link></member>
+          <member><link linkend="async_mqtt5.ref.subscribe_options">subscribe_options</link></member>
+          <member><link linkend="async_mqtt5.ref.subscribe_topic">subscribe_topic</link></member>
+          <member><link linkend="async_mqtt5.ref.will">will</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Concepts</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__ExecutionContext">ExecutionContext</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__StreamType">StreamType</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__TlsContext">TlsContext</link></member>
+          <member><link linkend="async_mqtt5.ref.ExecutionContext">ExecutionContext</link></member>
+          <member><link linkend="async_mqtt5.ref.StreamType">StreamType</link></member>
+          <member><link linkend="async_mqtt5.ref.TlsContext">TlsContext</link></member>
         </simplelist>
       </entry>
       <entry valign="top">
         <bridgehead renderas="sect3">Type aliases</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__error_code">error_code</link></member>
+          <member><link linkend="async_mqtt5.ref.error_code">error_code</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Enumerations</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__client__error">client_error</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__disconnect_rc_e">disconnect_rc_e</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__qos_e">qos_e</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__retain_e">retain_e</link></member>
+          <member><link linkend="async_mqtt5.ref.client.error">client_error</link></member>
+          <member><link linkend="async_mqtt5.ref.disconnect_rc_e">disconnect_rc_e</link></member>
+          <member><link linkend="async_mqtt5.ref.qos_e">qos_e</link></member>
+          <member><link linkend="async_mqtt5.ref.retain_e">retain_e</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Functions</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__client__get_error_code_category">get_error_code_category</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__client__make_error_code">make_error_code</link></member>
+          <member><link linkend="async_mqtt5.ref.client.get_error_code_category">get_error_code_category</link></member>
+          <member><link linkend="async_mqtt5.ref.client.make_error_code">make_error_code</link></member>
         </simplelist>
       </entry>
       <entry valign="top">
         <bridgehead renderas="sect3">Properties</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__will_props">will_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__connect_props">connect_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__connack_props">connack_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__publish_props">publish_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__puback_props">puback_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__pubrec_props">pubrec_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__pubrel_props">pubrel_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__pubcomp_props">pubcomp_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__subscribe_props">subscribe_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__suback_props">suback_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__unsubscribe_props">unsubscribe_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__unsuback_props">unsuback_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__disconnect_props">disconnect_props</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__auth_props">auth_props</link></member>
+          <member><link linkend="async_mqtt5.ref.will_props">will_props</link></member>
+          <member><link linkend="async_mqtt5.ref.connect_props">connect_props</link></member>
+          <member><link linkend="async_mqtt5.ref.connack_props">connack_props</link></member>
+          <member><link linkend="async_mqtt5.ref.publish_props">publish_props</link></member>
+          <member><link linkend="async_mqtt5.ref.puback_props">puback_props</link></member>
+          <member><link linkend="async_mqtt5.ref.pubrec_props">pubrec_props</link></member>
+          <member><link linkend="async_mqtt5.ref.pubrel_props">pubrel_props</link></member>
+          <member><link linkend="async_mqtt5.ref.pubcomp_props">pubcomp_props</link></member>
+          <member><link linkend="async_mqtt5.ref.subscribe_props">subscribe_props</link></member>
+          <member><link linkend="async_mqtt5.ref.suback_props">suback_props</link></member>
+          <member><link linkend="async_mqtt5.ref.unsubscribe_props">unsubscribe_props</link></member>
+          <member><link linkend="async_mqtt5.ref.unsuback_props">unsuback_props</link></member>
+          <member><link linkend="async_mqtt5.ref.disconnect_props">disconnect_props</link></member>
+          <member><link linkend="async_mqtt5.ref.auth_props">auth_props</link></member>
         </simplelist>
       </entry>
       <entry valign="top">
         <bridgehead renderas="sect3">Reference tables</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__Reason_codes">Reason codes</link></member>
-          <member><link linkend="async_mqtt5.ref.async_mqtt5__Error_handling">Error handling</link></member>
+          <member><link linkend="async_mqtt5.ref.Reason_codes">Reason codes</link></member>
+          <member><link linkend="async_mqtt5.ref.Error_handling">Error handling</link></member>
         </simplelist>
       </entry>
     </row></tbody>

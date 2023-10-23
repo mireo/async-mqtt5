@@ -17,73 +17,14 @@ using doxygen ;
 
 if [ os.name ] = MACOSX
 {
-	using saxonhe
-	: $(BOOST_ROOT)3rdParty/boost-doc/saxon/Saxon-HE.jar
-	: /usr/bin/java
-	;
 	using quickbook : $(BOOST_ROOT)build/macos-arm64-release/bin/quickbook ;
 }
 else if [ os.name ] = LINUX
 {
-	using saxonhe
-	: $(BOOST_ROOT)3rdParty/boost-doc/saxon/Saxon-HE.jar
-	: /usr/bin/java
-	;
 	using quickbook : $(BOOST_ROOT)build/linux-native-x64-release/bin/quickbook ;
 }
 
 import boostbook ;
-
-# unfortunately, it can only import docca.jam in relative path format
-import ../../../../3rdParty/boost-doc/docca/docca.jam ;
-
-local doxygen_exclussions =
-	detail
-	impl
-	property_types.hpp
-;
-
-docca.reference reference.qbk
-	:
-		xsl/custom-overrides.xsl
-		[ glob-tree-ex ../include/async_mqtt5/ : *.hpp : $(doxygen_exclussions) ]
-	:
-		<doxygen:param>PROJECT_NAME=async_mqtt5
-		<doxygen:param>PROJECT_BRIEF="MQTT C++ Client Library"
-		<doxygen:param>DISTRIBUTE_GROUP_DOC=YES
-		<doxygen:param>ENABLE_PREPROCESSING=YES
-		<doxygen:param>MACRO_EXPANSION=YES
-		<doxygen:param>EXPAND_ONLY_PREDEF=YES
-		<doxygen:param>SEARCH_INCLUDES=NO
-		<doxygen:param>"PREDEFINED=\\
-			\"BOOST_ASIO_INITFN_RESULT_TYPE(t,a)=auto\" \\
-			\"BOOST_ASIO_COMPLETION_TOKEN_FOR(sig)=class\" \\
-			\"BOOST_ASIO_INITFN_AUTO_RESULT_TYPE(ct,sig)=auto\" \\
-			\"BOOST_ASIO_DEFAULT_COMPLETION_TOKEN_TYPE(ex)=\" \\
-			\"BOOST_ASIO_DEFAULT_COMPLETION_TOKEN(ex)=\" \\
-			\"protected=private\" \\
-			\"BOOST_CXX14_CONSTEXPR=constexpr\" \\
-			"
-		<doxygen:param>SKIP_FUNCTION_MACROS=NO
-		<doxygen:param>OUTPUT_LANGUAGE=English
-		<doxygen:param>INLINE_INHERITED_MEMB=YES
-		<doxygen:param>AUTOLINK_SUPPORT=NO
-		<doxygen:param>BRIEF_MEMBER_DESC=NO
-		<doxygen:param>EXTRACT_ALL=YES
-		<doxygen:param>HAVE_DOT=NO
-		<doxygen:param>HIDE_UNDOC_MEMBERS=YES
-		<doxygen:param>HIDE_UNDOC_CLASSES=YES
-		<doxygen:param>HIDE_FRIEND_COMPOUNDS=YES
-		<doxygen:param>CASE_SENSE_NAMES=YES
-		<doxygen:param>SHOW_INCLUDE_FILES=NO
-		<doxygen:param>INLINE_INFO=NO
-		<doxygen:param>SORT_MEMBER_DOCS=NO
-		<doxygen:param>SORT_MEMBERS_CTORS_1ST=YES
-		<doxygen:param>SHOW_USED_FILES=NO
-		<doxygen:param>SHOW_FILES=NO
-		<doxygen:param>SHOW_NAMESPACES=NO
-		<doxygen:param>QUIET=NO
-;
 
 install stylesheets
 	:
@@ -116,7 +57,7 @@ xml async_mqtt5_doc
 	:
 		qbk/00_main.qbk
 	:
-		<dependency>reference.qbk
+		<dependency>qbk/reference/reference.qbk
 		<dependency>images
 	;
 
@@ -132,8 +73,8 @@ boostbook async_mqtt5
 		<xsl:param>chapter.autolabel=1
 		<xsl:param>chunk.section.depth=8
 		<xsl:param>chunk.first.sections=1
-		<xsl:param>toc.section.depth=8
-		<xsl:param>toc.max.depth=8
+		<xsl:param>toc.section.depth=2
+		<xsl:param>toc.max.depth=1
 		<xsl:param>generate.toc="chapter toc,title section nop reference nop part toc"
 		<xsl:param>html.stylesheet=boostbook.css
 	:

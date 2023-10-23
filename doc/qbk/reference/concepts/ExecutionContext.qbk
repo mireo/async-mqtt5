@@ -5,7 +5,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__ExecutionContext ExecutionContext concept]
+[section:ExecutionContext ExecutionContext concept]
 
 `ExecutionContext` represents a place where function objects will be executed.
 

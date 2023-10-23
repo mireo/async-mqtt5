@@ -5,7 +5,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__Error_handling Error handling]
+[section:Error_handling Error handling]
 
 The table below provides a reference of all __ERROR_CODE__ instances that asynchronous operations
 may complete with, along with the reasons for their occurrence.

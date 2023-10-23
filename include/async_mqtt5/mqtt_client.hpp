@@ -219,14 +219,14 @@ public:
 	 * \par Handler signature
 	 * The handler signature for this operation depends on the \ref qos_e specified:\n
 	 *
-	 *	- `qos_e::at_most_once`:
+	 *	\ref qos_e == `qos_e::at_most_once`:
 	 *		\code
 	 *			void (
 	 *				__ERROR_CODE__	// Result of operation
 	 *			)
 	 *		\endcode
 	 *
-	 *	- `qos_e::at_least_once`:
+	 *	\ref qos_e == `qos_e::at_least_once`:
 	 *		\code
 	 *			void (
 	 *				__ERROR_CODE__,	// Result of operation.
@@ -235,7 +235,7 @@ public:
 	 *			)
 	 *		\endcode
 	 *
-	 *	- `qos_e::exactly_once`:
+	 *	\ref qos_e == `qos_e::exactly_once`:
 	 *		\code
 	 *			void (
 	 *				__ERROR_CODE__,	// Result of operation.

@@ -5,7 +5,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__disconnect_props DISCONNECT properties]
+[section:disconnect_props DISCONNECT properties]
 The last field in the Variable header of __DISCONNECT__ packet is a set of Properties.
 A set contains a Property Length followed by the Properties.
 A Property consists of an Identifier and a value.

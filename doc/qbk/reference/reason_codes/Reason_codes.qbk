@@ -5,7 +5,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__Reason_codes Reason codes]
+[section:Reason_codes Reason codes]
 
 This section lists all possible __REASON_CODE__ instances representing
 Reason Codes that can be found in MQTT Control Packets.

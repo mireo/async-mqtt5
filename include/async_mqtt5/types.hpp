@@ -41,7 +41,7 @@ enum class qos_e : std::uint8_t {
 };
 
 /**
- * \brief Represents the RETAIN flag in the \__PUBLISH\__ packets.
+ * \brief Represents the \__RETAIN\__ flag in the \__PUBLISH\__ packets.
  *
  * \details This flag informs the Server about whether or not it should
  * store the current message.

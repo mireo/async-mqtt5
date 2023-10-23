@@ -15,11 +15,12 @@
 
 [template nochunk[] [block '''<?dbhtml stop-chunking?>''']]
 [template mdash[] '''&mdash; ''']
+[template hr[] [br]'''<phrase role="silver">'''[mdash]'''</phrase>'''[br]]
 [template include_file[path][^<'''<ulink url="GITHUB_LINK">'''[path]'''</ulink>'''>]]
 [template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
 [template indexterm2[term1 term2] '''<indexterm><primary>'''[term1]'''</primary><secondary>'''[term2]'''</secondary></indexterm>''']
 
-[template reflink2[id text][link async_mqtt5.ref.async_mqtt5__[id] [^[text]]]]
+[template reflink2[id text][link async_mqtt5.ref.[id] [^[text]]]]
 [template reflink[id][reflink2 [id] [id]]]
 [template refmem[class mem][reflink2 [class].[mem] [class]::[mem]]]
 [template refmemunq[class mem][reflink2 [class].[mem] [mem]]]
@@ -48,6 +49,7 @@
 [def __RETAIN_AVAILABLE__ [mqttlink 3901085 `Retain Available`]]
 [def __TOPIC_ALIAS_MAX__ [mqttlink 3901051 `Topic Alias Maximum`]]
 [def __QOS__ [mqttlink 3901234 `QoS`]]
+[def __RETAIN__ [mqttlink 3901104 `RETAIN`]]
 [def __SUBSCRIBE_OPTIONS__ [mqttlink 3901169 `Subscribe Options`]]
 
 [def __CONNECT__ [mqttlink 3901033 `CONNECT`]]
@@ -89,34 +91,4 @@
 
 [include 01_intro.qbk]
 
-[section:ref Reference]
-[xinclude reference/quickref.xml]
-
-[block'''<part label="Two: Reference">''']
-[include reference.qbk]
-
-[include reference/Error_handling.qbk]
-
-[include reference/concepts/ExecutionContext.qbk]
-[include reference/concepts/StreamType.qbk]
-[include reference/concepts/TlsContext.qbk]
-
-[include reference/reason_codes/Reason_codes.qbk]
-
-[include reference/properties/will_props.qbk]
-[include reference/properties/connect_props.qbk]
-[include reference/properties/connack_props.qbk]
-[include reference/properties/publish_props.qbk]
-[include reference/properties/puback_props.qbk]
-[include reference/properties/pubrec_props.qbk]
-[include reference/properties/pubrel_props.qbk]
-[include reference/properties/pubcomp_props.qbk]
-[include reference/properties/subscribe_props.qbk]
-[include reference/properties/suback_props.qbk]
-[include reference/properties/unsubscribe_props.qbk]
-[include reference/properties/unsuback_props.qbk]
-[include reference/properties/disconnect_props.qbk]
-[include reference/properties/auth_props.qbk]
-[block'''</part>''']
-[endsect]
-
+[include reference/reference.qbk]

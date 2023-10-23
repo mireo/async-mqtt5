@@ -5,7 +5,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__StreamType StreamType concept]
+[section:StreamType StreamType concept]
 
 `StreamType` represents the transport protocol type used to transfer stream of bytes.
 

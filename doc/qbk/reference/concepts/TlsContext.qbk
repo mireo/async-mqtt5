@@ -5,7 +5,7 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_mqtt5__TlsContext TlsContext concept]
+[section:TlsContext TlsContext concept]
 
 `TlsContext` represents an object that defines user's configuration
 for establishing TLS/SSL connections.
