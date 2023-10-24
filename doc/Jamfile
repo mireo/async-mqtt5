@@ -26,6 +26,57 @@ else if [ os.name ] = LINUX
 
 import boostbook ;
 
+make xml/index.xml
+	:
+		reference.dox
+	:
+		@call-doxygen
+	;
+
+# combine.xslt is generated after using doxygen but bjam is unaware of it
+make xml/combine.xslt
+	:
+		xml/index.xml
+	:
+		@null-action
+	;
+
+make xml/all.xml
+	:
+		xml/combine.xslt
+		xml/index.xml
+	:
+		@call-xsltproc
+	;
+
+make reference.qbk
+	:
+		reference.xsl
+		xml/all.xml
+	:
+		@call-xsltproc
+	;
+
+# We have to make a copy of reference.qbk and put it
+# in a place where the static .qbk files can find it
+install qbk/reference : reference.qbk ;
+
+
+actions null-action 
+{
+	# the action is used with "make" rule to make bjam aware that a file exists
+}
+
+actions call-doxygen 
+{
+	doxygen $(2)
+}
+
+actions call-xsltproc
+{
+	xsltproc $(2) > $(1)
+}
+
 install stylesheets
 	:
 		$(BOOST_ROOT)3rdParty/boost-doc/style/boostbook.css
@@ -57,7 +108,7 @@ xml async_mqtt5_doc
 	:
 		qbk/00_main.qbk
 	:
-		<dependency>qbk/reference/reference.qbk
+		<dependency>reference.qbk
 		<dependency>images
 	;
 
