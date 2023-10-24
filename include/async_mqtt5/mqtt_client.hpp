@@ -85,6 +85,8 @@ public:
 		mqtt_client(context.get_executor(), cnf, std::move(tls_context))
 	{}
 
+	mqtt_client(const mqtt_client& other) = delete;
+
 	/**
 	 * \brief Destructor.
 	 *
