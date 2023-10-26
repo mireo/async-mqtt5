@@ -420,14 +420,18 @@
       <xsl:apply-templates mode="markup"/>
     </xsl:when>
     <xsl:when test="@kind='see'">
+[heading See More]
+      <xsl:apply-templates mode="markup"/>
     </xsl:when>
     <xsl:when test="@kind='note'">
-[heading Remarks]
+[note
       <xsl:apply-templates mode="markup"/>
+]
     </xsl:when>
     <xsl:when test="@kind='attention'">
-[heading Attention]
+[important
       <xsl:apply-templates mode="markup"/>
+]
     </xsl:when>
     <xsl:when test="@kind='par'">
       <xsl:if test="not(starts-with(title, 'Concepts:'))">
@@ -632,6 +636,13 @@
       <xsl:value-of select="$ref-id"/>
       <xsl:text> `</xsl:text>
       <xsl:value-of name="text" select="$ref-name"/>
+      <xsl:text>`]</xsl:text>
+    </xsl:when>
+    <xsl:when test="contains(@refid, 'async__mqtt5_1_1client') and count($memberdefs) = 0">
+      <xsl:text>
+      [link async_mqtt5.ref.client.error</xsl:text>
+      <xsl:text> `</xsl:text>
+      <xsl:value-of select='text()'/>
       <xsl:text>`]</xsl:text>
     </xsl:when>
     <xsl:otherwise>
@@ -847,14 +858,14 @@
       <xsl:if test="starts-with($name, '~')"> [destructor]</xsl:if>
       <xsl:if test="@static='yes'"> [static]</xsl:if>
       <xsl:text>]
-    [</xsl:text><xsl:value-of select="briefdescription"/>
+    [</xsl:text><xsl:apply-templates select="briefdescription" mode="markup"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">
     <xsl:value-of select="$newline"/>
     <xsl:text>     [hr]</xsl:text>
     <xsl:value-of select="$newline"/>
     <xsl:text>     </xsl:text>
-    <xsl:value-of select="briefdescription"/>
+    <xsl:apply-templates select="briefdescription" mode="markup"/>
   </xsl:if>
   <xsl:if test="$overload-position = $overload-count">
   <xsl:text>]
@@ -901,14 +912,14 @@
       <xsl:if test="starts-with($name, '~')"> [destructor]</xsl:if>
       <xsl:if test="@static='yes'"> [static]</xsl:if>
       <xsl:text>]
-    [</xsl:text><xsl:value-of select="briefdescription"/>
+    [</xsl:text><xsl:apply-templates select="briefdescription" mode="markup"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">
     <xsl:value-of select="$newline"/>
     <xsl:text>     [hr]</xsl:text>
     <xsl:value-of select="$newline"/>
     <xsl:text>     </xsl:text>
-    <xsl:value-of select="briefdescription"/>
+    <xsl:apply-templates select="briefdescription" mode="markup"/>
   </xsl:if>
   <xsl:if test="$overload-position = $overload-count">
   <xsl:text>]
@@ -956,14 +967,14 @@
       <xsl:if test="starts-with($name, '~')"> [destructor]</xsl:if>
       <xsl:if test="@static='yes'"> [static]</xsl:if>
       <xsl:text>]
-    [</xsl:text><xsl:value-of select="briefdescription"/>
+    [</xsl:text><xsl:apply-templates select="briefdescription" mode="markup"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">
     <xsl:value-of select="$newline"/>
     <xsl:text>     [hr]</xsl:text>
     <xsl:value-of select="$newline"/>
     <xsl:text>     </xsl:text>
-    <xsl:value-of select="briefdescription"/>
+    <xsl:apply-templates select="briefdescription" mode="markup"/>
   </xsl:if>
   <xsl:if test="$overload-position = $overload-count">
   <xsl:text>]
@@ -985,7 +996,7 @@
     [[link async_mqtt5.ref.<xsl:value-of select="$class-id"/>.<xsl:value-of select="name"/>
       <xsl:text> </xsl:text>[*<xsl:value-of select="name"/><xsl:text>]]</xsl:text>
       <xsl:if test="@static='yes'"> [static]</xsl:if>]
-    [<xsl:value-of select="briefdescription"/>]
+    [<xsl:apply-templates select="briefdescription" mode="markup"/>]
   ]
 </xsl:for-each>
 ]
@@ -1197,12 +1208,18 @@
     <xsl:with-param name="name" select="type"/>
   </xsl:call-template>
  </xsl:variable>
+<xsl:variable name="impl-keyword">
+ <xsl:call-template name="implementation-keyword">
+   <xsl:with-param name="argsstring" select="argsstring"/>
+ </xsl:call-template>
+</xsl:variable>
  <xsl:if test="string-length($stripped-type) &gt; 0">
  <xsl:value-of select="$stripped-type"/><xsl:text> </xsl:text>
 </xsl:if>``[link async_mqtt5.ref.<xsl:value-of select="$class-id"/>.<xsl:value-of
  select="$id"/>.overload<xsl:value-of select="position()"/><xsl:text> </xsl:text><xsl:value-of
  select="name"/>]``(<xsl:apply-templates select="param"
- mode="class-detail"/>)<xsl:if test="@const='yes'"> const</xsl:if>;
+ mode="class-detail"/><xsl:if test="count(param) &gt; 0"><xsl:text>
+  </xsl:text></xsl:if>)<xsl:if test="@const='yes'"> const</xsl:if><xsl:value-of select="$impl-keyword"/>;
 <xsl:text>  ``  [''''&amp;raquo;'''</xsl:text>
 <xsl:text> [link async_mqtt5.ref.</xsl:text>
 <xsl:value-of select="$class-id"/>.<xsl:value-of
@@ -1261,7 +1278,9 @@
     </xsl:when>
   </xsl:choose>
 
+<xsl:if test="count(detaileddescription/*) &gt; 0">
 [heading Description]
+</xsl:if>
 <xsl:text>
 </xsl:text><xsl:apply-templates select="detaileddescription" mode="markup"/>
 
@@ -1361,12 +1380,23 @@
 [table
   [[Name] [Description]]
 <xsl:for-each select="enumvalue">
-  [[<xsl:value-of select="name"/>][<xsl:value-of select="detaileddescription"/>]]
+  [[<xsl:value-of select="name"/>][<xsl:apply-templates select="detaileddescription" mode="markup"/>]]
 </xsl:for-each>
 ]
 </xsl:if>
 </xsl:template>
 
+<xsl:template name="implementation-keyword">
+<xsl:param name="argsstring"/>
+  <xsl:choose>
+    <xsl:when test="contains($argsstring, 'delete')">
+      <xsl:text> = delete</xsl:text>
+    </xsl:when>
+    <xsl:when test="contains($argsstring, 'default')">
+      <xsl:text> = default</xsl:text>
+    </xsl:when>
+  </xsl:choose>
+</xsl:template>
 
 <xsl:template name="function">
 <xsl:text>
@@ -1387,42 +1417,148 @@
    <xsl:with-param name="name" select="type"/>
  </xsl:call-template>
 </xsl:variable>
+<xsl:variable name="impl-keyword">
+ <xsl:call-template name="implementation-keyword">
+   <xsl:with-param name="argsstring" select="argsstring"/>
+ </xsl:call-template>
+</xsl:variable>
 <xsl:text>  </xsl:text><xsl:if test="@static='yes'">static </xsl:if><xsl:if 
  test="@virt='virtual'">virtual </xsl:if><xsl:if
  test="string-length($stripped-type) &gt; 0"><xsl:value-of select="$stripped-type"/><xsl:text> </xsl:text></xsl:if>
 <xsl:value-of select="name"/>(<xsl:apply-templates select="param"
- mode="class-detail"/>)<xsl:if test="@const='yes'"> const</xsl:if>;
+ mode="class-detail"/><xsl:if test="count(param) &gt; 0"><xsl:text>
+  </xsl:text></xsl:if>)<xsl:if test="@const='yes'"> const</xsl:if><xsl:value-of select="$impl-keyword"/>;
 </xsl:template>
 
 
 <xsl:template match="templateparamlist" mode="class-detail">
-<xsl:text>  </xsl:text>template&lt;<xsl:apply-templates select="param" mode="class-detail-template"/>&gt;
+<xsl:text>  </xsl:text>template &lt;<xsl:apply-templates select="param" mode="class-detail-template"/>
+<xsl:text>
+  </xsl:text>&gt;
 </xsl:template>
 
+<xsl:template name="mqtt-property">
+<xsl:param name="qualified-name"/>
+<xsl:variable name="property-name">
+  <xsl:choose>
+    <xsl:when test="contains($qualified-name, 'will_props')">will_props</xsl:when>
+    <!-- disconnect props must be above connect props -->
+    <xsl:when test="contains($qualified-name, 'disconnect_props')">disconnect_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'connect_props')">connect_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'connack_props')">connack_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'publish_props')">publish_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'puback_props')">puback_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'pubrec_props')">pubrec_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'pubrel_props')">pubrel_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'pubcomp_props')">pubcomp_props</xsl:when>
+    <!-- unsubscribe & unsuback props must be above subscribe & suback props -->
+    <xsl:when test="contains($qualified-name, 'unsubscribe_props')">unsubscribe_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'unsuback_props')">unsuback_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'subscribe_props')">subscribe_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'suback_props')">suback_props</xsl:when>
+    <xsl:when test="contains($qualified-name, 'auth_props')">auth_props</xsl:when>
+    <xsl:otherwise></xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
+<xsl:if test="string-length($property-name) &gt; 0">
+  <xsl:value-of select="substring-before($qualified-name, $property-name)"/>
+  <xsl:text>``[link async_mqtt5.ref.</xsl:text>
+  <xsl:value-of select="$property-name"/>
+  <xsl:text> </xsl:text>
+  <xsl:value-of select="$property-name"/>
+  <xsl:text>]``</xsl:text>
+  <xsl:value-of select="substring-after($qualified-name, $property-name)"/>
+  <xsl:text> </xsl:text>
+  <xsl:value-of select="declname"/>
+</xsl:if>
+</xsl:template>
+
+<xsl:template name="mqtt-template">
+<xsl:param name="qualified-name"/>
+<xsl:variable name="template-type">
+  <xsl:choose>
+    <xsl:when test="contains($qualified-name, 'CompletionToken')">CompletionToken</xsl:when>
+    <xsl:when test="contains($qualified-name, 'ExecutionContext')">ExecutionContext</xsl:when>
+    <xsl:when test="contains($qualified-name, 'StreamType')">StreamType</xsl:when>
+    <xsl:when test="contains($qualified-name, 'TlsContext')">TlsContext</xsl:when>
+    <xsl:otherwise></xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
+<xsl:if test="string-length($template-type) &gt; 0">
+  <xsl:value-of select="substring-before($qualified-name, $template-type)"/>
+    <xsl:text>__</xsl:text><xsl:value-of select="$template-type"/><xsl:text>__</xsl:text>
+  <xsl:value-of select="substring-after($qualified-name, $template-type)"/>
+  <xsl:if test="count(declname) &gt; 0">
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="declname"/>
+  </xsl:if>
+</xsl:if>
+</xsl:template>
+
+<xsl:template name="mqtt-ref-id">
+<xsl:param name="ref"/>
+<xsl:choose>
+  <xsl:when test="$ref = 'executor_type'">mqtt_client.<xsl:value-of select="$ref"/></xsl:when>
+  <xsl:when test="$ref = 'error'">client.<xsl:value-of select="$ref"/></xsl:when>
+  <xsl:otherwise><xsl:value-of select="$ref"/></xsl:otherwise>
+</xsl:choose>
+</xsl:template>
+
+<xsl:template name="mqtt-type">
+<xsl:param name="type"/>
+<xsl:choose>
+  <xsl:when test="contains(type, '_props')">
+    <xsl:call-template name="mqtt-property">
+      <xsl:with-param name="qualified-name" select="$type"/>
+    </xsl:call-template>
+  </xsl:when>
+  <xsl:when test="count(type/ref) &gt; 0">
+    <xsl:variable name="typename" select="type/ref"/>
+    <xsl:value-of select="substring-before($type, $typename)"/>
+    <xsl:text>``[link async_mqtt5.ref.</xsl:text>
+    <xsl:call-template name="mqtt-ref-id">
+      <!-- a single type can have either 0 or 1 refs -->
+      <xsl:with-param name="ref" select="type/ref[1]"/>
+    </xsl:call-template>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="$typename"/>
+    <xsl:text>]``</xsl:text>
+    <xsl:value-of select="substring-after($type, $typename)"/>
+    <xsl:if test="count(declname) &gt; 0">
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="declname"/>
+    </xsl:if>
+  </xsl:when>
+  <!-- unfortunately, there is no better way to differentiate between template types and non-documented types -->
+  <xsl:when test="contains(type, 'CompletionToken') or contains(type, 'ExecutionContext')
+    or contains(type, 'TlsContext') or contains(type, 'StreamType')">
+    <xsl:call-template name="mqtt-template">
+      <xsl:with-param name="qualified-name" select="$type"/>
+    </xsl:call-template>
+  </xsl:when>
+  <xsl:otherwise>
+    <xsl:value-of select="type"/>
+    <xsl:if test="count(declname) &gt; 0">
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="declname"/>
+    </xsl:if>
+  </xsl:otherwise>
+</xsl:choose>
+</xsl:template>
 
 <xsl:template match="param" mode="class-detail-template">
 <xsl:text>
       </xsl:text>
       <xsl:choose>
-        <xsl:when test="type = 'typename CompletionToken'">
-          <xsl:text>typename __CompletionToken__</xsl:text>
-        </xsl:when>
-        <xsl:when test="type = 'typename ExecutionContext'">
-          <xsl:text>typename __ExectionContext__</xsl:text>
-        </xsl:when>
-        <xsl:when test="type = 'typename StreamType'">
-          <xsl:text>typename __StreamType__</xsl:text>
-        </xsl:when>
-        <xsl:when test="type = 'typename TlsContext'">
-          <xsl:text>typename __TlsContext__</xsl:text>
-        </xsl:when>
-        <xsl:when test="count(declname) = 0">
-          <xsl:value-of select="type"/>
+        <xsl:when test="contains(type, 'typename')">
+          <xsl:call-template name="mqtt-template">
+            <xsl:with-param name="qualified-name" select="type"/>
+          </xsl:call-template>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="type"/>
-          <xsl:text> </xsl:text>
-          <xsl:value-of select="declname"/>
+          <xsl:call-template name="mqtt-type">
+            <xsl:with-param name="type" select="type"/>
+          </xsl:call-template>
         </xsl:otherwise>
       </xsl:choose>
     <xsl:if test="count(defval) > 0"> = <xsl:value-of select="defval"/>
@@ -1443,11 +1579,13 @@
       <xsl:value-of select="array"/>
     </xsl:when>
     <xsl:otherwise>
-      <xsl:value-of select="type"/>
-      <xsl:text> </xsl:text>
-      <xsl:value-of select="declname"/>
+      <xsl:call-template name="mqtt-type">
+        <xsl:with-param name="type" select="type"/>
+      </xsl:call-template>
     </xsl:otherwise>
   </xsl:choose>
+  <xsl:if test="count(defval) > 0"> = <xsl:value-of select="defval"/>
+  </xsl:if>
   <xsl:if test="not(position() = last())">,</xsl:if>
 </xsl:template>
 

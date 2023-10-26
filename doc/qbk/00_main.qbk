@@ -15,7 +15,7 @@
 
 [template nochunk[] [block '''<?dbhtml stop-chunking?>''']]
 [template mdash[] '''&mdash; ''']
-[template hr[] [br]'''<phrase role="silver">'''[mdash]'''</phrase>'''[br]]
+[template hr[] '''<phrase role="silver">'''[mdash]'''</phrase>''']
 [template include_file[path][^<'''<ulink url="GITHUB_LINK">'''[path]'''</ulink>'''>]]
 [template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
 [template indexterm2[term1 term2] '''<indexterm><primary>'''[term1]'''</primary><secondary>'''[term2]'''</secondary></indexterm>''']
@@ -31,10 +31,10 @@
 
 [def __ASIO_PER_OP_CANCELLATION__ [@boost:/doc/html/boost_asio/overview/core/cancellation.html Per-Operation Cancellation]]
 
-[def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers ['CompletionToken]]]
-[def __ExecutionContext__ [reflink2 ExecutionContext ['ExecutionContext]]]
-[def __StreamType__ [reflink2 StreamType ['StreamType]]]
-[def __TlsContext__ [reflink2 TlsContext ['TlsContext]]]
+[def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers CompletionToken]]
+[def __ExecutionContext__ [reflink2 ExecutionContext ExecutionContext]]
+[def __StreamType__ [reflink2 StreamType StreamType]]
+[def __TlsContext__ [reflink2 TlsContext TlsContext]]
 
 [def __Boost__ [@https://www.boost.org/ Boost]]
 [def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]

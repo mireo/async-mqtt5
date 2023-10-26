@@ -86,13 +86,13 @@ struct subscribe_options {
 	 * \brief Representation of the Retain As Published Subscribe Option.
 	 *
 	 * \details A Subscribe Option indicating whether or not Application Messages forwarded
-	 * using this subscription keep the \ref retain_e flag they were published with.
+	 * using this subscription keep the \__RETAIN\__ flag they were published with.
 	 */
 	enum class retain_as_published_e : std::uint8_t {
-		/** Application Messages have the \ref retain_e flag set to 0. */
+		/** Application Messages have the \__RETAIN\__ flag set to 0. */
 		dont = 0b0,
 
-		/** Application Messages keep the \ref retain_e flag they were published with. */
+		/** Application Messages keep the \__RETAIN\__ flag they were published with. */
 		retain = 0b1
 	};
 
@@ -114,13 +114,13 @@ struct subscribe_options {
 	};
 
 
-	/// Maximum \ref qos_e level at which the Server can send Application Messages to the Client.
+	/// Maximum \__QOS\__ level at which the Server can send Application Messages to the Client.
 	qos_e max_qos = qos_e::exactly_once;
 
 	/// Option determining if Application Messages will be forwarded to a connection with an equal ClientID.
 	no_local_e no_local = no_local_e::yes;
 
-	/// Option determining if Application Message will keep their \ref retain_e flag.
+	/// Option determining if Application Message will keep their \__RETAIN\__ flag.
 	retain_as_published_e retain_as_published = retain_as_published_e::retain;
 
 	/// Option determining if retained messages are sent when the subscription is established.

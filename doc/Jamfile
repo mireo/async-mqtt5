@@ -29,6 +29,11 @@ import boostbook ;
 make xml/index.xml
 	:
 		reference.dox
+		
+		# additional dependencies
+		../include/async_mqtt5/error.hpp
+		../include/async_mqtt5/types.hpp
+		../include/async_mqtt5/mqtt_client.hpp
 	:
 		@call-doxygen
 	;

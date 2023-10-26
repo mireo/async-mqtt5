@@ -19,10 +19,10 @@ namespace asio = boost::asio;
 /**
  * \brief \__MQTT\__ client used to connect and communicate with a Broker.
  *
- * \tparam StreamType Type of the underlying transport protocol used to transfer
+ * \tparam \__StreamType\__ Type of the underlying transport protocol used to transfer
  * the stream of bytes between the Client and the Broker. The transport must be
  * ordered and lossless.
- * \tparam TlsContext Type of the context object used in TLS/SSL connections.
+ * \tparam \__TlsContext\__ Type of the context object used in TLS/SSL connections.
  */
 template <
 	typename StreamType,
@@ -63,9 +63,9 @@ public:
 	{}
 
 	/**
-	 * \brief Constructs a client with given parameters.
+	 * \brief Constructs a Client with given parameters.
 	 *
-	 * \tparam ExecutionContext Type of a concrete execution context.
+	 * \tparam \__ExecutionContext\__ Type of a concrete execution context.
 	 * \param context Execution context whose executor will be associated with the Client.
 	 * \param cnf 
 	 * \param tls_context A context object used in TLS/SLL connection.
@@ -85,6 +85,7 @@ public:
 		mqtt_client(context.get_executor(), cnf, std::move(tls_context))
 	{}
 
+	/// Copy constructor.
 	mqtt_client(const mqtt_client& other) = delete;
 
 	/**
@@ -139,7 +140,7 @@ public:
 	 * \details All outstanding operations will complete
 	 * with `boost::asio::error::operation_aborted`.
 	 *
-	 * \note The Client cannot be used before calling \ref mqtt_client::run again.
+	 * \attention The Client cannot be used before calling \ref mqtt_client::run again.
 	 */
 	void cancel() {
 		get_executor().execute([svc_ptr = _svc_ptr]() {
@@ -250,10 +251,10 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted` \n
-	 *		- \link client::error::pid_overrun \endlink
-	 *		- \link client::error::qos_not_supported \endlink
-	 *		- \link client::error::retain_not_available \endlink
-	 *		- \link client::error::topic_alias_maximum_reached \endlink
+	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::qos_not_supported \endlink
+	 *		- \link async_mqtt5::client::error::retain_not_available \endlink
+	 *		- \link async_mqtt5::client::error::topic_alias_maximum_reached \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -292,7 +293,7 @@ public:
 	 *
 	 * \details After the subscription has been established, the Broker will send
 	 * PUBLISH packets to the Client to forward Application Messages that were published
-	 * to Topics that the Client subscribed to. The \__PUBLISH\__ packets can be received
+	 * to Topics that the Client subscribed to. The Application Messages can be received
 	 * with \ref mqtt_client::async_receive function.
 	 *
 	 * \param topics A list of \ref subscribe_topic of interest.
@@ -316,7 +317,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted` \n
-	 *		- \link client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -349,7 +350,7 @@ public:
 	 *
 	 * \details After the subscription has been established, the Broker will send
 	 * \__PUBLISH\__ packets to the Client to forward Application Messages that were published
-	 * to Topics that the Client subscribed to. The \__PUBLISH\__ packets can be received
+	 * to Topics that the Client subscribed to. The Application Messages can be received
 	 * with \ref mqtt_client::async_receive function.
 	 *
 	 * \param topic A \ref subscribe_topic of interest.
@@ -373,7 +374,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted` \n
-	 *		- \link client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -418,7 +419,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted` \n
-	 *		- \link client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -474,7 +475,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted` \n
-	 *		- \link client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -538,7 +539,7 @@ public:
 	 * \details Send a \__DISCONNECT\__ packet to the Broker with a Reason Code
 	 * describing the reason for disconnection.
 	 *
-	 * \note This function will close the Client. See \ref mqtt_client::cancel.
+	 * \attention This function will close the Client. See \ref mqtt_client::cancel.
 	 *
 	 * \param reason_code Reason Code to notify
 	 * the Broker of the reason for disconnection.
@@ -580,7 +581,7 @@ public:
 	 * \ref reason_codes::normal_disconnection describing
 	 * the reason for disconnection.
 	 *
-	 * \note This function will close the Client. See \ref mqtt_client::cancel.
+	 * \attention This function will close the Client. See \ref mqtt_client::cancel.
 	 *
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.

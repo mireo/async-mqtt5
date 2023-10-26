@@ -36,7 +36,7 @@ may complete with, along with the reasons for their occurrence.
 		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_publish] calls.
 	]]
 	[[`async_mqtt5::client::error::retain_not_available`] [
-		The Client has attempted to publish an Application Message with the RETAIN flag set to 1.
+		The Client has attempted to publish an Application Message with the __RETAIN__ flag set to 1.
 		However, the Server does not support retained messages (see __RETAIN_AVAILABLE__).
 		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_publish] calls.
 	]]
