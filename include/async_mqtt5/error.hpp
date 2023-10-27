@@ -20,9 +20,15 @@ enum class disconnect_rc_e : std::uint8_t {
 
 	/** The Client wishes to disconnect but requires that
 	 the Server also publishes its Will Message. */
+	disconnect_with_will_message = 0x04
+};
+
+namespace detail {
+
+enum class disconnect_rc_e : std::uint8_t {
+	normal_disconnection = 0x00,
 	disconnect_with_will_message = 0x04,
 
-	// TODO: these reason codes should not be available to the user, only the client
 	unspecified_error = 0x80,
 	malformed_packet = 0x81,
 	protocol_error = 0x82,
@@ -37,6 +43,9 @@ enum class disconnect_rc_e : std::uint8_t {
 	payload_format_invalid = 0x99
 };
 
+}
+
+
 namespace client {
 /**
  * \brief MQTT client error codes.
@@ -44,22 +53,13 @@ namespace client {
  * \details Represents error that occur on the client side. 
  */
 enum class error : int {
-	/** [unused] A fatal error occurred. */
-	fatal_error = 100,
-
 	/// \cond INTERNAL
 	/** Malformed packet has been detected. */
-	malformed_packet,
+	malformed_packet = 100,
 	/// \endcond
 
 	/** There are no more available Packet Identifiers to use. */
 	pid_overrun,
-
-	/** [unused] The Client has reconnected. */
-	reconnected,
-
-	/** [unused] The Client has been disconnected. */
-	disconnected,
 
 	// publish
 	/** The Server does not support the specified \ref qos_e. */
@@ -77,16 +77,10 @@ inline std::string client_error_to_string(error err) {
 	using enum error;
 
 	switch (err) {
-		case fatal_error:
-			return "A fatal error occurred";
 		case malformed_packet:
 			return "Malformed packet has been detected";
 		case pid_overrun:
 			return "There are no more available Packet Identifiers to use.";
-		case reconnected:
-			return "The Client has reconnected";
-		case disconnected:
-			return "The Client has been disconnected";
 		case qos_not_supported:
 			return "The Server does not support the specified QoS";
 		case retain_not_available:
@@ -320,148 +314,148 @@ using enum category;
 constexpr reason_code empty {};
 
 /** The operation completed successfully. */
-constexpr reason_code success{ 0x00 };
+constexpr reason_code success { 0x00 };
 
 /** Close the connection normally. Do not send the Will Message. */
-constexpr reason_code normal_disconnection{ 0x00, disconnect };
+constexpr reason_code normal_disconnection { 0x00, disconnect };
 
 /** The subscription is accepted with maximum QoS sent at 0. */
-constexpr reason_code granted_qos_0{ 0x00, suback };
+constexpr reason_code granted_qos_0 { 0x00, suback };
 
 /** The subscription is accepted with maximum QoS sent at 1. */
-constexpr reason_code granted_qos_1{ 0x01 };
+constexpr reason_code granted_qos_1 { 0x01 };
 
 /** The subscription is accepted with maximum QoS sent at 2 */
-constexpr reason_code granted_qos_2{ 0x02 };
+constexpr reason_code granted_qos_2 { 0x02 };
 
 /** The Client wishes to disconnect but requires that
  the Server also publishes its Will Message. */
-constexpr reason_code disconnect_with_will_message{ 0x04 };
+constexpr reason_code disconnect_with_will_message { 0x04 };
 
 /** The message is accepted but there are no subscribers. */
-constexpr reason_code no_matching_subscribers{ 0x10 };
+constexpr reason_code no_matching_subscribers { 0x10 };
 
 /** No matching Topic Filter is being used by the Client. */
-constexpr reason_code no_subscription_existed{ 0x11 };
+constexpr reason_code no_subscription_existed { 0x11 };
 
 /** Continue the authentication with another step. */
-constexpr reason_code continue_authentication{ 0x18 };
+constexpr reason_code continue_authentication { 0x18 };
 
 /** Initiate a re-authentication. */
-constexpr reason_code reauthenticate{ 0x19 };
+constexpr reason_code reauthenticate { 0x19 };
 
 /** The Server does not wish to reveal the reason for the
  failure, or none of the other Reason Codes apply. */
-constexpr reason_code unspecified_error{ 0x80 };
+constexpr reason_code unspecified_error { 0x80 };
 
 /** Data within the packet could not be correctly parsed. */
-constexpr reason_code malformed_packet{ 0x81 };
+constexpr reason_code malformed_packet { 0x81 };
 
 /** Data in the packet does not conform to this specification. */
-constexpr reason_code protocol_error{ 0x82 };
+constexpr reason_code protocol_error { 0x82 };
 
 /** The packet is valid but not accepted by this Server. */
-constexpr reason_code implementation_specific_error{ 0x83 };
+constexpr reason_code implementation_specific_error { 0x83 };
 
 /** The Server does not support the requested version of the MQTT protocol. */
-constexpr reason_code unsupported_protocol_version{ 0x84 };
+constexpr reason_code unsupported_protocol_version { 0x84 };
 
 /** The Client ID is valid but not allowed by this Server. */
-constexpr reason_code client_id_not_valid{ 0x85 };
+constexpr reason_code client_id_not_valid { 0x85 };
 
 /** The Server does not accept the User Name or Password provided. */
-constexpr reason_code bad_username_or_password{ 0x86 };
+constexpr reason_code bad_username_or_password { 0x86 };
 
 /** The request is not authorized. */
-constexpr reason_code not_authorized{ 0x87 };
+constexpr reason_code not_authorized { 0x87 };
 
 /** The MQTT Server is not available. */
-constexpr reason_code server_unavailable{ 0x88 };
+constexpr reason_code server_unavailable { 0x88 };
 
 /** The MQTT Server is busy, try again later. */
-constexpr reason_code server_busy{ 0x89 };
+constexpr reason_code server_busy { 0x89 };
 
 /** The Client has been banned by administrative action. */
-constexpr reason_code banned{ 0x8a };
+constexpr reason_code banned { 0x8a };
 
 /** The Server is shutting down. */
-constexpr reason_code server_shutting_down{ 0x8b };
+constexpr reason_code server_shutting_down { 0x8b };
 
 /** The authentication method is not supported or 
  does not match the method currently in use. */
-constexpr reason_code bad_authentication_method{ 0x8c };
+constexpr reason_code bad_authentication_method { 0x8c };
 
 /** No packet has been received for 1.5 times the Keepalive time. */
-constexpr reason_code keep_alive_timeout{ 0x8d };
+constexpr reason_code keep_alive_timeout { 0x8d };
 
 /** Another Connection using the same ClientID has connected
  causing this Connection to be closed. */
-constexpr reason_code session_taken_over{ 0x8e };
+constexpr reason_code session_taken_over { 0x8e };
 
 /** The Topic Filter is not malformed, but it is not accepted. */
-constexpr reason_code topic_filter_invalid{ 0x8f };
+constexpr reason_code topic_filter_invalid { 0x8f };
 
 
 /** The Topic Name is not malformed, but it is not accepted. */
-constexpr reason_code topic_name_invalid{ 0x90 };
+constexpr reason_code topic_name_invalid { 0x90 };
 
 /** The Packet Identifier is already in use. */
-constexpr reason_code packet_id_in_use{ 0x91 };
+constexpr reason_code packet_id_in_use { 0x91 };
 
 /** The Packet Identifier is not known. */
-constexpr reason_code packet_id_not_found{ 0x92 };
+constexpr reason_code packet_id_not_found { 0x92 };
 
 /** The Client or Server has received more than Receive
  Maximum publication for which it has not sent PUBACK or PUBCOMP. */
-constexpr reason_code receive_maximum_exceeded{ 0x93 };
+constexpr reason_code receive_maximum_exceeded { 0x93 };
 
 /** The Client or Server received a PUBLISH packet containing
  a Topic Alias greater than the Maximum Topic Alias. */
-constexpr reason_code topic_alias_invalid{ 0x94 };
+constexpr reason_code topic_alias_invalid { 0x94 };
 
 /** The packet exceeded the maximum permissible size. */
-constexpr reason_code packet_too_large{ 0x95 };
+constexpr reason_code packet_too_large { 0x95 };
 
 /** The received data rate is too high. */
-constexpr reason_code message_rate_too_high{ 0x96 };
+constexpr reason_code message_rate_too_high { 0x96 };
 
 /** An implementation or administrative imposed limit has been exceeded. */
-constexpr reason_code quota_exceeded{ 0x97 };
+constexpr reason_code quota_exceeded { 0x97 };
 
 /** The Connection is closed due to an administrative action. */
-constexpr reason_code administrative_action{ 0x98 };
+constexpr reason_code administrative_action { 0x98 };
 
 /** The Payload does not match the specified Payload Format Indicator. */
-constexpr reason_code payload_format_invalid{ 0x99 };
+constexpr reason_code payload_format_invalid { 0x99 };
 
 /** The Server does not support retained messages. */
-constexpr reason_code retain_not_supported{ 0x9a };
+constexpr reason_code retain_not_supported { 0x9a };
 
 /** The Server does not support the QoS the Client specified or
  it is greater than the Maximum QoS specified. */
-constexpr reason_code qos_not_supported{ 0x9b };
+constexpr reason_code qos_not_supported { 0x9b };
 
 /** The Client should temporarily use another server. */
-constexpr reason_code use_another_server{ 0x9c };
+constexpr reason_code use_another_server { 0x9c };
 
 /** The Client should permanently use another server. */
-constexpr reason_code server_moved{ 0x9d };
+constexpr reason_code server_moved { 0x9d };
 
 /** The Server does not support Shared Subscriptions for this Client. */
-constexpr reason_code shared_subscriptions_not_supported{ 0x9e };
+constexpr reason_code shared_subscriptions_not_supported { 0x9e };
 
 /** The connection rate limit has been exceeded. */
-constexpr reason_code connection_rate_exceeded{ 0x9f };
+constexpr reason_code connection_rate_exceeded { 0x9f };
 
 /** The maximum connection time authorized for this
  connection has been exceeded. */
-constexpr reason_code maximum_connect_time{ 0xa0 };
+constexpr reason_code maximum_connect_time { 0xa0 };
 
 /** The Server does not support Subscription Identifiers. */
-constexpr reason_code subscription_ids_not_supported{ 0xa1 };
+constexpr reason_code subscription_ids_not_supported { 0xa1 };
 
 /** The Server does not support Wildcard Subscriptions. */
-constexpr reason_code wildcard_subscriptions_not_supported{ 0xa2 };
+constexpr reason_code wildcard_subscriptions_not_supported { 0xa2 };
 
 namespace detail {
 

@@ -140,7 +140,8 @@ public:
 	 * \details All outstanding operations will complete
 	 * with `boost::asio::error::operation_aborted`.
 	 *
-	 * \attention The Client cannot be used before calling \ref mqtt_client::run again.
+	 * \attention This function has terminal effects and will close the Client.
+	 * The Client cannot be used before calling \ref mqtt_client::run again.
 	 */
 	void cancel() {
 		get_executor().execute([svc_ptr = _svc_ptr]() {
@@ -394,9 +395,9 @@ public:
 	 * \brief Send an \__UNSUBSCRIBE\__ packet to Broker to unsubscribe from one
 	 * or more Topics.
 	 *
-	 * \note The Client MAY receive \__PUBLISH\__ packets with Application
-	 * Messages from Topics the Client just unsubscribed to if
-	 * they were buffered for delivery on the Broker side beforehand.
+	 * \note The Client may still receive residual Application Messages
+	 * through the \ref mqtt_client::async_receive function
+	 * from Topics the Client just unsubscribed to.
 	 *
 	 * \param topics List of Topics to unsubscribe from.
 	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
@@ -450,9 +451,9 @@ public:
 	 * \brief Send an \__UNSUBSCRIBE\__ packet to Broker to unsubscribe
 	 * from one Topic.
 	 *
-	 * \note The Client MAY receive \__PUBLISH\__ packets with Application
-	 * Messages from Topics the Client just unsubscribed to if
-	 * they were buffered for delivery on the Broker side beforehand.
+	 * \note The Client may still receive residual Application Messages
+	 * through the \ref mqtt_client::async_receive function
+	 * from Topics the Client just unsubscribed to.
 	 *
 	 * \param topic Topic to unsubscribe from.
 	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
@@ -539,7 +540,8 @@ public:
 	 * \details Send a \__DISCONNECT\__ packet to the Broker with a Reason Code
 	 * describing the reason for disconnection.
 	 *
-	 * \attention This function will close the Client. See \ref mqtt_client::cancel.
+	 * \attention This function has terminal effects and will close the Client.
+	 * See \ref mqtt_client::cancel.
 	 *
 	 * \param reason_code Reason Code to notify
 	 * the Broker of the reason for disconnection.
@@ -559,7 +561,6 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted`\n
-	 *		- `boost::asio::no_recovery`\n
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -569,7 +570,8 @@ public:
 		CompletionToken&& token
 	) {
 		return detail::async_disconnect(
-			reason_code, props, true, _svc_ptr,
+			detail::disconnect_rc_e(static_cast<uint8_t>(reason_code)),
+			props, true, _svc_ptr,
 			std::forward<CompletionToken>(token)
 		);
 	}
@@ -581,7 +583,8 @@ public:
 	 * \ref reason_codes::normal_disconnection describing
 	 * the reason for disconnection.
 	 *
-	 * \attention This function will close the Client. See \ref mqtt_client::cancel.
+	 * \attention This function has terminal effects and will close the Client.
+	 * See \ref mqtt_client::cancel.
 	 *
 	 * \param token Completion token that will be used to produce a
 	 * completion handler, which will be called when the operation completed.
@@ -598,7 +601,6 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted`\n
-	 *		- `boost::asio::no_recovery`\n
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */

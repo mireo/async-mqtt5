@@ -21,7 +21,7 @@ public:
 	using executor_type = asio::any_io_executor;
 private:
 	using queued_op_t = asio::any_completion_handler<
-		void (boost::system::error_code)
+		void (error_code)
 	>;
 	using queue_t = ring_buffer<queued_op_t>;
 
@@ -57,7 +57,7 @@ private:
 			return asio::get_associated_cancellation_slot(_handler);
 		}
 
-		void operator()(boost::system::error_code ec) {
+		void operator()(error_code ec) {
 			std::move(_handler)(ec);
 		}
 	};

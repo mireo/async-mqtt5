@@ -80,14 +80,12 @@ public:
 		// The connection must be closed even
 		// if we failed to send the DISCONNECT packet
 		// with Reason Code of 0x80 or greater.
-		// TODO: what about rc < 0x80?
 
 		if (
 			ec == asio::error::operation_aborted ||
 			ec == asio::error::no_recovery
 		)
-			// TODO: do we need two different errors here?
-			return complete(ec);
+			return complete(asio::error::operation_aborted);
 
 		if (_context.terminal) {
 			_svc_ptr->cancel();
@@ -95,7 +93,7 @@ public:
 		}
 
 		if (ec == asio::error::try_again)
-			return complete(ec);
+			return complete(error_code {});
 
 		_svc_ptr->close_stream();
 		_svc_ptr->open_stream();
