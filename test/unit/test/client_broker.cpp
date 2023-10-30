@@ -87,16 +87,16 @@ BOOST_AUTO_TEST_CASE(two_publishes_qos_1_with_fail_on_write) {
 		false, reason_codes::success.value(), {}
 	);
 	auto publish_1 = encoders::encode_publish(
-		65535, "t", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
+		1, "t", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
 	auto puback_1 = encoders::encode_puback(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 	auto publish_2 = encoders::encode_publish(
-		65534, "t", "p_2", qos_e::at_least_once, retain_e::no, dup_e::no, {}
+		2, "t", "p_2", qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
 	auto puback_2 = encoders::encode_puback(
-		65534, reason_codes::success.value(), {}
+		2, reason_codes::success.value(), {}
 	);
 
 	test::msg_exchange broker_side;

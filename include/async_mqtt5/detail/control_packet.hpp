@@ -2,8 +2,8 @@
 #define ASYNC_MQTT5_CONTROL_PACKET_HPP
 
 #include <mutex>
+#include <vector>
 
-#include <boost/container/flat_map.hpp>
 #include <boost/smart_ptr/allocate_unique.hpp>
 
 #include <async_mqtt5/types.hpp>
@@ -107,43 +107,57 @@ public:
 };
 
 class packet_id_allocator {
+	struct interval {
+		uint16_t start, end;
+		interval(uint16_t start, uint16_t end) : start(start), end(end) {}
+	};
+
 	std::mutex _mtx;
-	boost::container::flat_map<uint16_t,uint16_t> _free_ids;
+	std::vector<interval> _free_ids;
 	static constexpr uint16_t MAX_PACKET_ID = 65535;
 
 public:
 	packet_id_allocator() {
-		_free_ids.emplace(1, MAX_PACKET_ID);
+		_free_ids.emplace_back(MAX_PACKET_ID, 0);
 	}
 
 	uint16_t allocate() {
 		std::lock_guard _(_mtx);
 		if (_free_ids.empty()) return 0;
-		auto it = std::prev(_free_ids.end());
-		auto ret = it->second;
-		if (it->first > --it->second)
-			_free_ids.erase(it);
-		return ret;
+		auto& last = _free_ids.back();
+		if (last.start == ++last.end) {
+			auto ret = last.end;
+			_free_ids.pop_back();
+			return ret;
+		}
+		return last.end;
 	}
 
 	void free(uint16_t pid) {
 		std::lock_guard _(_mtx);
-		auto it = _free_ids.upper_bound(pid);
+		auto it = std::upper_bound(
+			_free_ids.begin(), _free_ids.end(), pid,
+			[](const uint16_t x, const interval& i) { return x > i.start; }
+		);
 		uint16_t* end_p = nullptr;
 		if (it != _free_ids.begin()) {
 			auto pit = std::prev(it);
-			if (pit->second + 1 == pid)
-				end_p = &pit->second;
+			if (pit->end == pid)
+				end_p = &pit->end;
 		}
-		auto end_v = pid;
-		if (it != _free_ids.end() && pid + 1 == it->first) {
-			end_v = it->second;
-			_free_ids.erase(it);
+		if (it != _free_ids.end() && pid - 1 == it->start) {
+			if (!end_p)
+				it->start = pid;
+			else {
+				*end_p = it->end;
+				_free_ids.erase(it);
+			}
+		} else {
+			if (!end_p)
+				_free_ids.insert(it, interval(pid, pid - 1));
+			else
+				*end_p = pid - 1;
 		}
-		if (!end_p)
-			_free_ids.emplace(pid, end_v);
-		else
-			*end_p = end_v;
 	}
 };
 
