@@ -133,7 +133,6 @@ public:
 		detail::sentry_op { _svc_ptr }.perform();
 	}
 
-	// TODO: channel cancel
 	/**
 	 * \brief Cancel all asynchronous operations. This function has terminal effects.
 	 *
@@ -218,7 +217,9 @@ public:
 	 * \param retain The \ref retain_e flag.
 	 * \param props An instance of \__PUBLISH_PROPS\__. 
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation depends on the \ref qos_e specified:\n
@@ -250,8 +251,9 @@ public:
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
-	 *		- `boost::system::errc::errc_t::success`\n
+	 *		- `boost::system::errc::errc_t::success` \n
 	 *		- `boost::asio::error::operation_aborted` \n
+	 *		- `boost::asio::error::no_recovery` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::qos_not_supported \endlink
 	 *		- \link async_mqtt5::client::error::retain_not_available \endlink
@@ -300,7 +302,9 @@ public:
 	 * \param topics A list of \ref subscribe_topic of interest.
 	 * \param props An instance of \__SUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -316,7 +320,8 @@ public:
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
-	 *		- `boost::system::errc::errc_t::success`\n
+	 *		- `boost::system::errc::errc_t::success` \n
+	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
@@ -357,7 +362,9 @@ public:
 	 * \param topic A \ref subscribe_topic of interest.
 	 * \param props An instance of \__SUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -373,7 +380,8 @@ public:
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
-	 *		- `boost::system::errc::errc_t::success`\n
+	 *		- `boost::system::errc::errc_t::success` \n
+	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
@@ -402,7 +410,9 @@ public:
 	 * \param topics List of Topics to unsubscribe from.
 	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -418,7 +428,8 @@ public:
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
-	 *		- `boost::system::errc::errc_t::success`\n
+	 *		- `boost::system::errc::errc_t::success` \n
+	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
@@ -458,7 +469,9 @@ public:
 	 * \param topic Topic to unsubscribe from.
 	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -474,7 +487,8 @@ public:
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
-	 *		- `boost::system::errc::errc_t::success`\n
+	 *		- `boost::system::errc::errc_t::success` \n
+	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *
@@ -506,7 +520,9 @@ public:
 	 * or there is a pending Application Message.
 	 *
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -547,7 +563,9 @@ public:
 	 * the Broker of the reason for disconnection.
 	 * \param props An instance of \__DISCONNECT_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -587,7 +605,9 @@ public:
 	 * See \ref mqtt_client::cancel.
 	 *
 	 * \param token Completion token that will be used to produce a
-	 * completion handler, which will be called when the operation completed.
+	 * completion handler. The handler will be invoked when the operation is completed.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:

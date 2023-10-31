@@ -29,8 +29,6 @@
 [template beastconceptslink[id term][@boost:/libs/beast/doc/html/beast/concepts/[id].html [term]]]
 [template mqttlink[id text][@https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc[id] [text]]]
 
-[def __ASIO_PER_OP_CANCELLATION__ [@boost:/doc/html/boost_asio/overview/core/cancellation.html Per-Operation Cancellation]]
-
 [def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers CompletionToken]]
 [def __ExecutionContext__ [reflink2 ExecutionContext ExecutionContext]]
 [def __StreamType__ [reflink2 StreamType StreamType]]
@@ -38,7 +36,12 @@
 
 [def __Boost__ [@https://www.boost.org/ Boost]]
 [def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]
-[def __Self__ [async_mqtt5]]
+[def __ASIO_PER_OP_CANCELLATION__ [@boost:/doc/html/boost_asio/overview/core/cancellation.html Per-Operation Cancellation]]
+[def __POST__ [@boost:doc/html/boost_asio/reference/post.html `boost::asio::post`]]
+[def __CO_SPAWN__ [@boost:/doc/html/boost_asio/reference/co_spawn.html `boost::asio::co_spawn`]]
+[def __USE_AWAITABLE__ [@boost:/doc/html/boost_asio/reference/use_awaitable.html `boost::asio::use_awaitable`]]
+
+[def __Self__ [reflink2 mqtt_client `mqtt_client`]]
 
 [/ MQTT ]
 [def __MQTT__ [@https://mqtt.org/ MQTT]]
@@ -89,6 +92,8 @@
 [def __REASON_CODES__ [reflink2 Reason_codes `Reason Codes`]]
 [def __ERROR_HANDLING__ [reflink2 Error_handling `Error handling`]]
 
+
 [include 01_intro.qbk]
+[include 02_examples.qbk]
 
 [include reference/reference.qbk]

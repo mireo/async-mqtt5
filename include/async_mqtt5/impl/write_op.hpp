@@ -11,7 +11,6 @@ namespace async_mqtt5::detail {
 
 template <typename Owner, typename Handler>
 class write_op {
-	struct on_write_locked {};
 	struct on_write {};
 	struct on_reconnect {};
 
