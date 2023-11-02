@@ -12,6 +12,7 @@ functions with different __CompletionToken__.
 
 # [link async_mqtt5.async_examples.callbacks Async functions with callbacks]
 # [link async_mqtt5.async_examples.cpp20_coroutines Async functions with C++20 coroutines]
+# [link async_mqtt5.async_examples.futures Async functions with futures]
 
 
 [section:callbacks Async functions with callbacks]
@@ -27,6 +28,13 @@ using __USE_AWAITABLE__ and __CO_SPAWN__.
 
 [import ../../example/cpp20_coroutines.cpp]
 [cpp20_coroutines_examples]
+[endsect]
+
+[section:futures Async functions with futures]
+This example demonstrates how to use __Self__ asynchrous functions with __USE_FUTURE__
+completion token.
+[import ../../example/futures.cpp]
+[futures_examples]
 [endsect]
 
 [endsect]

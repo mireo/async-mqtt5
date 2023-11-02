@@ -40,6 +40,7 @@
 [def __POST__ [@boost:doc/html/boost_asio/reference/post.html `boost::asio::post`]]
 [def __CO_SPAWN__ [@boost:/doc/html/boost_asio/reference/co_spawn.html `boost::asio::co_spawn`]]
 [def __USE_AWAITABLE__ [@boost:/doc/html/boost_asio/reference/use_awaitable.html `boost::asio::use_awaitable`]]
+[def __USE_FUTURE__ [@boost:/doc/html/boost_asio/reference/use_future.html `boost::asio::use_future`]]
 
 [def __Self__ [reflink2 mqtt_client `mqtt_client`]]
 
@@ -92,6 +93,9 @@
 [def __REASON_CODES__ [reflink2 Reason_codes `Reason Codes`]]
 [def __ERROR_HANDLING__ [reflink2 Error_handling `Error handling`]]
 
+[def __EXAMPLE_CALLBACK__ [link async_mqtt5.async_examples.callbacks Async functions with callbacks]]
+[def __EXAMPLE_COROUTINE__ [link async_mqtt5.async_examples.cpp20_coroutines Async functions with C++20 coroutines]]
+[def __EXAMPLE_FUTURE__ [link async_mqtt5.async_examples.futures Async functions with futures]]
 
 [include 01_intro.qbk]
 [include 02_examples.qbk]

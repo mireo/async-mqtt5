@@ -22,7 +22,7 @@ using client_type = async_mqtt5::mqtt_client<stream_type>;
  *
  * In this example, each asynchronous function is invoked with boost::asio::use_awaitable completion token.
  * When using this completion token, co_await will throw exceptions instead of returning an error code.
- * If you do not wish to throw exceptions, refer to the following nothrow_awaitable and nothrow_coroutine() example.
+ * If you do not wish to throw exceptions, refer to the following use_nothrow_awaitable and nothrow_coroutine() example.
  */
 asio::awaitable<void> coroutine(client_type& client) {
 	// Publish an Application Message with QoS 0.
@@ -75,14 +75,15 @@ asio::awaitable<void> coroutine(client_type& client) {
 	// Note: the coroutine will be suspended until an Application Message is ready to be received
 	// or an error has occurred. In theory, the coroutine could be suspended indefinitely.
 	// Avoid calling this if you have not successfully subscribed to a Topic.
-	auto [topic, payload, publish_props] = co_await client.async_receive(asio::use_awaitable);
+	if (!sub_codes[0])
+		auto [topic, payload, publish_props] = co_await client.async_receive(asio::use_awaitable);
 
 	// Unsubscribe from the Topic.
 	// The handler signature for this function is void (error_code, std::vector<reason_code>, unsuback_props).
 	// With asio::use_awaitable as a completion token, the co_await
 	// will return std::vector<reason_code> and unsuback_props.
 	auto [unsub_codes, unsub_props] = co_await client.async_unsubscribe(
-		std::vector<std::string>{ "test/mqtt-test" }, async_mqtt5::unsubscribe_props {},
+		"test/mqtt-test", async_mqtt5::unsubscribe_props {},
 		asio::use_awaitable
 	);
 
@@ -103,13 +104,12 @@ asio::awaitable<void> coroutine(client_type& client) {
  * will prevent co_await from throwing exceptions. Instead, co_await will return the error code
  * along with other values specified in the handler signature.
  */
-constexpr auto nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
+constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 /**
- * In this coroutine, each asynchronous function is called with nothrow_awaitable completion token.
- * Unlike the asio::use_awaitable completion token, nothrow_awaitable does not throw an exception
- * when an error has occurred. Instead, each co_await will return an error_code, similar to
- * the behavior of using callbacks.
+ * In this coroutine, each asynchronous function is called with use_nothrow_awaitable completion token.
+ * Each co_await will return an error_code, similar to the behavior of using callbacks
+ * (see ``__EXAMPLE_CALLBACK__``).
  */
 asio::awaitable<void> nothrow_coroutine(client_type& client) {
 	async_mqtt5::error_code ec;
@@ -118,21 +118,21 @@ asio::awaitable<void> nothrow_coroutine(client_type& client) {
 	std::tie(ec) = co_await client.async_publish<async_mqtt5::qos_e::at_most_once>(
 		"test/mqtt-test", "Hello world!",
 		async_mqtt5::retain_e::yes, async_mqtt5::publish_props {},
-		nothrow_awaitable
+		use_nothrow_awaitable
 	);
 
 	async_mqtt5::puback_props puback_props;
 	std::tie(ec, rc, puback_props) = co_await client.async_publish<async_mqtt5::qos_e::at_least_once>(
 		"test/mqtt-test", "Hello world!",
 		async_mqtt5::retain_e::yes, async_mqtt5::publish_props {},
-		nothrow_awaitable
+		use_nothrow_awaitable
 	);
 
 	async_mqtt5::pubcomp_props pubcomp_props;
 	std::tie(ec, rc, pubcomp_props) = co_await client.async_publish<async_mqtt5::qos_e::exactly_once>(
 		"test/mqtt-test", "Hello world!",
 		async_mqtt5::retain_e::yes, async_mqtt5::publish_props {},
-		nothrow_awaitable
+		use_nothrow_awaitable
 	);
 
 	auto sub_topic = async_mqtt5::subscribe_topic{
@@ -147,23 +147,25 @@ asio::awaitable<void> nothrow_coroutine(client_type& client) {
 	std::vector<async_mqtt5::reason_code> rcs;
 	async_mqtt5::suback_props suback_props;
 	std::tie(ec, rcs, suback_props) = co_await client.async_subscribe(
-		sub_topic, async_mqtt5::subscribe_props {}, nothrow_awaitable
+		sub_topic, async_mqtt5::subscribe_props {}, use_nothrow_awaitable
 	);
 
-	std::string topic, payload;
-	async_mqtt5::publish_props publish_props;
-	std::tie(ec, topic, payload, publish_props) = co_await client.async_receive(nothrow_awaitable);
+	if (!rcs[0]) {
+		std::string topic, payload;
+		async_mqtt5::publish_props publish_props;
+		std::tie(ec, topic, payload, publish_props) = co_await client.async_receive(use_nothrow_awaitable);
+	}
 
 	async_mqtt5::unsuback_props unsuback_props;
 	std::tie(ec, rcs, unsuback_props) = co_await client.async_unsubscribe(
 		std::vector<std::string>{ "test/mqtt-test" }, async_mqtt5::unsubscribe_props {},
-		nothrow_awaitable
+		use_nothrow_awaitable
 	);
 
 	std::tie(ec) = co_await client.async_disconnect(
 		async_mqtt5::disconnect_rc_e::disconnect_with_will_message,
 		async_mqtt5::disconnect_props {},
-		nothrow_awaitable
+		use_nothrow_awaitable
 	);
 
 	co_return;
