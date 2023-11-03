@@ -70,7 +70,7 @@ void run_with_future(client_type& client) {
 	std::cout << "Subscribe Reason Code: " << sub_rcs[0].message() << std::endl;
 
 	// Note: the get() call on async_receive future could block indefinitely if the mqtt_client
-	// failed to subscribe or there are no Application Messages to be received from the subcribed Topic!
+	// failed to subscribe or there are no Application Messages to be received from the subscribed Topic!
 	if (!sub_rcs[0]) {
 		using rec_fut_type = std::tuple<std::string, std::string, async_mqtt5::publish_props>;
 		std::future<rec_fut_type> rec_fut = client.async_receive(asio::use_future);

@@ -1,0 +1,43 @@
+[/
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:network_connection Establishing a network connection with different protocols ]
+The __MQTT__ protocol requires the underlying transport protocol that ensures 
+orderly, lossless transmission of byte streams between the Client and Server in both directions.
+
+The following examples demonstrate how to establish a network connection using suitable
+transport protocols such as TCP/IP, TLS/SSL, and WebSocket.
+
+[import ../../../example/network_connection.cpp]
+
+[h3 TCP/IP connection]
+To create a TCP/IP connection with a Broker, initialize __Self__ with __TCP_SOCKET__ as the __StreamType__.
+[tcp]
+
+[h3 TLS/SSL connection]
+To establish a secure and encrypted connection using the TLS/SSL protocol, supply a context object that meets the __TlsContext__ requirements. 
+Additionally, initialize __Self__ with an underlying stream that implements TLS/SSL protocol as the __StreamType__. 
+
+This example will demonstrate how to set up an SSL connection using __SSL_CONTEXT__ and __SSL_STREAM__.
+To use SSL support in __Asio__, __OPENSSL__ is required.
+[tls]
+
+[h3 WebSocket connection]
+The WebSocket connection can be established over an unencrypted TCP/IP connection or an encrypted TLS/SSL connection.
+
+The following example will showcase setting up WebSocket over TCP/IP and WebSocket over TLS/SLL connection using
+__WEBSOCKET_STREAM__.
+
+[h4 WebSocket over TCP/IP]
+[websocket_tcp]
+
+[h4 WebSocket over TLS/SSL]
+[websocket_tls]
+
+Once the __Self__ has been initialized with a suitable __StreamType__, it is prepared for configuration and utilization. 
+
+[endsect]

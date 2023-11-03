@@ -5,36 +5,23 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:async_examples Compatibility with Boost.Asio]
-The __Self__ is built upon __Asio__ and thus follows the same principles.
-This section illustrates the usage of __Self__ async
-functions with different __CompletionToken__.
+[section:examples Examples]
+The following examples demonstrate how to use __Self__ in different scenarios.
 
-# [link async_mqtt5.async_examples.callbacks Async functions with callbacks]
-# [link async_mqtt5.async_examples.cpp20_coroutines Async functions with C++20 coroutines]
-# [link async_mqtt5.async_examples.futures Async functions with futures]
+The first section will show how to use different underlying transport protocols (such as TCP, SSL and WebSocket)
+to establish a connection to a MQTT Broker.
 
+* [link async_mqtt5.examples.network_connection Establishing a network connection with different protocols]
 
-[section:callbacks Async functions with callbacks]
-This example demonstrates how to use __Self__ asynchrous functions with callbacks.
+The second section will showcase how to use asynchronous functions in __Self__ 
+with different __CompletionToken__. 
 
-[import ../../example/callbacks.cpp]
-[callbacks_examples]
-[endsect]
-
-[section:cpp20_coroutines Async functions with C++20 coroutines]
-This example demonstrates how to use __Self__ asynchrous functions with C++20 coroutines
-using __USE_AWAITABLE__ and __CO_SPAWN__.
-
-[import ../../example/cpp20_coroutines.cpp]
-[cpp20_coroutines_examples]
-[endsect]
-
-[section:futures Async functions with futures]
-This example demonstrates how to use __Self__ asynchrous functions with __USE_FUTURE__
-completion token.
-[import ../../example/futures.cpp]
-[futures_examples]
-[endsect]
+* [link async_mqtt5.examples.asio Compatibility with Boost.Asio]
+	* [link async_mqtt5.examples.asio.callbacks Async functions with callbacks]
+	* [link async_mqtt5.examples.asio.cpp20_coroutines Async functions with C++20 coroutines]
+	* [link async_mqtt5.examples.asio.futures Async functions with futures]
+	
+[include examples/Network_connection.qbk]
+[include examples/Asio_compatibility.qbk]
 
 [endsect]

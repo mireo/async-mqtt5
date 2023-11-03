@@ -20,7 +20,7 @@ using client_type = async_mqtt5::mqtt_client<stream_type>;
  * When an asynchronous function is called, the coroutine is suspended.
  * After the asynchronous operation finishes, the coroutine resumes from the point it was suspended.
  *
- * In this example, each asynchronous function is invoked with boost::asio::use_awaitable completion token.
+ * In this example, each asynchronous function is invoked with ``__USE_AWAITABLE__`` completion token.
  * When using this completion token, co_await will throw exceptions instead of returning an error code.
  * If you do not wish to throw exceptions, refer to the following use_nothrow_awaitable and nothrow_coroutine() example.
  */
@@ -100,7 +100,7 @@ asio::awaitable<void> coroutine(client_type& client) {
 }
 
 /**
- * A modified completion token. Using this completion token instead of asio::use_awaitable
+ * A modified completion token. Using this completion token instead of ``__USE_AWAITABLE__``
  * will prevent co_await from throwing exceptions. Instead, co_await will return the error code
  * along with other values specified in the handler signature.
  */

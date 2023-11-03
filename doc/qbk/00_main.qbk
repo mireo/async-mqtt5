@@ -29,6 +29,8 @@
 [template beastconceptslink[id term][@boost:/libs/beast/doc/html/beast/concepts/[id].html [term]]]
 [template mqttlink[id text][@https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc[id] [text]]]
 
+[def __OPENSSL__ [@https://www.openssl.org/ OpenSSL]]
+
 [def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers CompletionToken]]
 [def __ExecutionContext__ [reflink ExecutionContext]]
 [def __StreamType__ [reflink StreamType]]
@@ -37,11 +39,17 @@
 
 [def __Boost__ [@https://www.boost.org/ Boost]]
 [def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]
+[def __Beast__ [@boost:/libs/beast/index.html Boost.Beast]]
 [def __ASIO_PER_OP_CANCELLATION__ [@boost:/doc/html/boost_asio/overview/core/cancellation.html Per-Operation Cancellation]]
 [def __POST__ [@boost:doc/html/boost_asio/reference/post.html `boost::asio::post`]]
 [def __CO_SPAWN__ [@boost:/doc/html/boost_asio/reference/co_spawn.html `boost::asio::co_spawn`]]
 [def __USE_AWAITABLE__ [@boost:/doc/html/boost_asio/reference/use_awaitable.html `boost::asio::use_awaitable`]]
 [def __USE_FUTURE__ [@boost:/doc/html/boost_asio/reference/use_future.html `boost::asio::use_future`]]
+[def __SSL__ [@boost:/doc/html/boost_asio/overview/ssl.html `SSL`]]
+[def __TCP_SOCKET__ [asioreflink ip__tcp/socket ip::tcp::socket]]
+[def __SSL_CONTEXT__ [asioreflink ssl__context ssl::context]]
+[def __SSL_STREAM__ [asioreflink ssl__stream ssl::stream<__TCP_SOCKET__>]]
+[def __WEBSOCKET_STREAM__ [beastreflink boost__beast__websocket__stream websocket::stream<NextLayer>]]
 
 [def __Self__ [reflink2 mqtt_client `mqtt_client`]]
 
@@ -95,11 +103,24 @@
 [def __REASON_CODES__ [reflink2 Reason_codes `Reason Codes`]]
 [def __ERROR_HANDLING__ [reflink2 Error_handling `Error handling`]]
 
-[def __EXAMPLE_CALLBACK__ [link async_mqtt5.async_examples.callbacks Async functions with callbacks]]
-[def __EXAMPLE_COROUTINE__ [link async_mqtt5.async_examples.cpp20_coroutines Async functions with C++20 coroutines]]
-[def __EXAMPLE_FUTURE__ [link async_mqtt5.async_examples.futures Async functions with futures]]
+[def __EXAMPLE_CALLBACK__ [link async_mqtt5.examples.asio.callbacks Async functions with callbacks]]
+[def __EXAMPLE_COROUTINE__ [link async_mqtt5.examples.asio.cpp20_coroutines Async functions with C++20 coroutines]]
+[def __EXAMPLE_FUTURE__ [link async_mqtt5.examples.asio.futures Async functions with futures]]
 
 [include 01_intro.qbk]
 [include 02_examples.qbk]
 
 [include reference/reference.qbk]
+
+[h3 Table of Contents]
+* [link async_mqtt5.intro Introduction]
+* [link async_mqtt5.examples Examples]
+	* [link async_mqtt5.examples.network_connection Establishing a network connection with different protocols]
+		* [link async_mqtt5.examples.network_connection.tcp_ip_connection TCP/IP connection]
+		* [link async_mqtt5.examples.network_connection.tls_ssl_connection TLS/SSL connection]
+		* [link async_mqtt5.examples.network_connection.websocket_connection WebSocket connection]
+	* [link async_mqtt5.examples.asio Compatibility with Boost.Asio]
+			* [link async_mqtt5.examples.asio.callbacks Async functions with callbacks]
+			* [link async_mqtt5.examples.asio.cpp20_coroutines Async functions with C++20 coroutines]
+			* [link async_mqtt5.examples.asio.futures Async functions with futures]
+* [link async_mqtt5.ref Reference]

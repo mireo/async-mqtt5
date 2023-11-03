@@ -85,13 +85,18 @@ public:
 		mqtt_client(context.get_executor(), cnf, std::move(tls_context))
 	{}
 
-	/// Move-construct an mqtt_client from another.
-	/** Moved-from client can only be destructed. */
+	/**
+	 * \brief Move-construct an mqtt_client from another.
+	 *
+	 * \details Moved-from client can only be destructed
+	 */
 	mqtt_client(mqtt_client&& other) noexcept = default;
 
-	/// Move-assign an mqtt_client from another.
-	/** Cancels this client first.
-	 * Moved-from client can only be destructed.
+
+	/**
+	 * \brief Move assignment operator.
+	 *
+	 * \details Cancels this client first. Moved-from client can only be destructed.
 	 */
 	mqtt_client& operator=(mqtt_client&& other) noexcept {
 		cancel();

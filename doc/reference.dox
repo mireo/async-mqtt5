@@ -72,7 +72,6 @@ WARN_LOGFILE           =
 INPUT                  = ../include/async_mqtt5/error.hpp \
                          ../include/async_mqtt5/types.hpp \
                          ../include/async_mqtt5/mqtt_client.hpp \
-                         ../include/async_mqtt5/detail/any_authenticator.hpp
 FILE_PATTERNS          = 
 RECURSIVE              = NO
 EXCLUDE                =
