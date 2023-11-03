@@ -55,7 +55,7 @@ public:
 
 	void operator()(
 		on_message, error_code ec,
-		uint16_t packet_id, uint8_t control_code,
+		uint8_t control_code,
 		byte_citer first, byte_citer last
 	) {
 		if (ec == client::error::malformed_packet)
@@ -69,19 +69,17 @@ public:
 		)
 			return;
 
-		dispatch(ec, packet_id, control_code, first, last);
+		dispatch(control_code, first, last);
 	}
 
 	void operator()(on_disconnect, error_code ec) {
-		if (!ec || ec == asio::error::try_again)
+		if (!ec)
 			perform();
 	}
 
 private:
-
-	// TODO: ec & packet_id are not used here
 	void dispatch(
-		error_code ec, uint16_t packet_id, uint8_t control_byte,
+		uint8_t control_byte,
 		byte_citer first, byte_citer last
 	) {
 		using enum control_code_e;

@@ -61,6 +61,23 @@ enum class dup_e : std::uint8_t {
 	yes = 0b1, no = 0b0
 };
 
+/**
+ * \brief Represents the stage of \__ENHANCED_AUTH\__ process.
+ */
+enum class auth_step_e {
+	/** Client needs to send initial authentication data. */
+	client_initial,
+
+	/** Server responded with reason_codes.continue_authentication and possibly
+	 * authentication data, client needs to send further authentication data.
+	 */
+	server_challenge,
+
+	/** Server responded with reason_codes.success and final
+	 * authentication data, which client validates.
+	 */
+	server_final
+};
 
 /**
  * \brief Represents the \__SUBSCRIBE_OPTIONS\__ associated with each Subscription.

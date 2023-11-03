@@ -30,7 +30,7 @@ public:
 		_handler(std::move(handler)) {}
 
 	static serial_num_t next_serial_num(serial_num_t last) {
-		return ++last;
+		return last + 1;
 	}
 
 	asio::const_buffer buffer() const { return _buffer; }

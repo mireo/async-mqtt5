@@ -57,6 +57,13 @@ public:
 			std::move(username), std::move(password)
 		};
 	}
+
+	template <typename Authenticator>
+	void authenticator(Authenticator&& authenticator) {
+		_mqtt_context.authenticator = any_authenticator(
+			std::forward<Authenticator>(authenticator)
+		);
+	}
 };
 
 template <typename StreamType>
@@ -87,6 +94,13 @@ public:
 			std::move(client_id),
 			std::move(username), std::move(password)
 		};
+	}
+
+	template <typename Authenticator>
+	void authenticator(Authenticator&& authenticator) {
+		_mqtt_context.authenticator = any_authenticator(
+			std::forward<Authenticator>(authenticator)
+		);
 	}
 };
 
@@ -177,6 +191,13 @@ public:
 			_stream.brokers(std::move(hosts), default_port);
 	}
 
+	template <typename Authenticator>
+	void authenticator(Authenticator&& authenticator) {
+		_stream_context.authenticator(
+			std::forward<Authenticator>(authenticator)
+		);
+	}
+
 	template <typename Prop>
 	auto connack_prop(Prop p) {
 		return _stream_context.connack_prop(p);
@@ -243,10 +264,10 @@ public:
 			}.perform(wait_for, asio::transfer_at_least(0));
 		};
 
-		using signature = void (
-			error_code, uint16_t, uint8_t, byte_citer, byte_citer
+		using Signature = void (
+			error_code, uint8_t, byte_citer, byte_citer
 		);
-		return asio::async_initiate<CompletionToken, signature> (
+		return asio::async_initiate<CompletionToken, Signature> (
 			std::move(initiation), token, wait_for
 		);
 	}

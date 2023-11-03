@@ -4,6 +4,8 @@
 #include <optional>
 #include <string>
 
+#include <async_mqtt5/detail/any_authenticator.hpp>
+
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/types.hpp>
 
@@ -38,6 +40,7 @@ struct mqtt_context {
 	std::optional<will> will;
 	connect_props co_props;
 	connack_props ca_props;
+	any_authenticator authenticator;
 };
 
 struct disconnect_context {

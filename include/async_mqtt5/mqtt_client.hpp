@@ -55,7 +55,7 @@ public:
 	explicit mqtt_client(
 		const executor_type& ex,
 		const std::string& cnf,
-		tls_context_type tls_context = {}
+		TlsContext tls_context = {}
 	) :
 		_svc_ptr(std::make_shared<client_service_type>(
 			ex, cnf, std::move(tls_context)
@@ -216,6 +216,39 @@ public:
 		return *this;
 	}
 
+	/**
+	 * \brief Assign an authenticator that the Client will use for
+	 * \__ENHANCED_AUTH\__ on every connect to a Broker.
+	 * Re-authentication can be initiated by calling \ref async_authenticate.
+	 *
+	 * \param authenticator Object that will be stored (move-constructed or by reference)
+	 * and used for authentication. It needs to satisfy \__is_authenticator\__ concept.
+	 *
+	 */
+	template <detail::is_authenticator Authenticator>
+	mqtt_client& authenticator(Authenticator&& authenticator) {
+		_svc_ptr->authenticator(std::forward<Authenticator>(authenticator));
+		return *this;
+	}
+
+	/**
+	 * \brief Initiates re-authentication.
+	 * TODO
+	 */
+	template <typename CompletionToken>
+	decltype(auto) async_authenticate(CompletionToken&& token) {
+		using Signature = void(error_code);
+
+		auto initiate = [] (
+			auto handler
+		) {
+			// TODO re-authentication
+		};
+
+		return asio::async_initiate<CompletionToken, Signature>(
+			std::move(initiate), token
+		);
+	}
 
 	/**
 	 * \brief Send a \__PUBLISH\__ packet to Broker to transport an
@@ -228,7 +261,7 @@ public:
 	 * \param retain The \ref retain_e flag.
 	 * \param props An instance of \__PUBLISH_PROPS\__. 
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *
@@ -313,7 +346,7 @@ public:
 	 * \param topics A list of \ref subscribe_topic of interest.
 	 * \param props An instance of \__SUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *
@@ -373,7 +406,7 @@ public:
 	 * \param topic A \ref subscribe_topic of interest.
 	 * \param props An instance of \__SUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *
@@ -421,7 +454,7 @@ public:
 	 * \param topics List of Topics to unsubscribe from.
 	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *
@@ -480,7 +513,7 @@ public:
 	 * \param topic Topic to unsubscribe from.
 	 * \param props An instance of \__UNSUBSCRIBE_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *
@@ -531,7 +564,7 @@ public:
 	 * or there is a pending Application Message.
 	 *
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *
@@ -574,7 +607,7 @@ public:
 	 * the Broker of the reason for disconnection.
 	 * \param props An instance of \__DISCONNECT_PROPS\__.
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *
@@ -616,7 +649,7 @@ public:
 	 * See \ref mqtt_client::cancel.
 	 *
 	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation is completed.
+	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
 	 * equivalent to using \__POST\__.
 	 *

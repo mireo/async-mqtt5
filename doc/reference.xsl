@@ -40,6 +40,7 @@
 [include concepts/ExecutionContext.qbk]
 [include concepts/StreamType.qbk]
 [include concepts/TlsContext.qbk]
+[include concepts/is_authenticator.qbk]
 [include reason_codes/Reason_codes.qbk]
 [include properties/will_props.qbk]
 [include properties/connect_props.qbk]
@@ -1481,6 +1482,7 @@
     <xsl:when test="contains($qualified-name, 'ExecutionContext')">ExecutionContext</xsl:when>
     <xsl:when test="contains($qualified-name, 'StreamType')">StreamType</xsl:when>
     <xsl:when test="contains($qualified-name, 'TlsContext')">TlsContext</xsl:when>
+    <xsl:when test="contains($qualified-name, 'is_authenticator')">is_authenticator</xsl:when>
     <xsl:otherwise></xsl:otherwise>
   </xsl:choose>
 </xsl:variable>
@@ -1531,7 +1533,8 @@
   </xsl:when>
   <!-- unfortunately, there is no better way to differentiate between template types and non-documented types -->
   <xsl:when test="contains(type, 'CompletionToken') or contains(type, 'ExecutionContext')
-    or contains(type, 'TlsContext') or contains(type, 'StreamType')">
+    or contains(type, 'TlsContext') or contains(type, 'StreamType')
+    or contains(type, 'is_authenticator')">
     <xsl:call-template name="mqtt-template">
       <xsl:with-param name="qualified-name" select="$type"/>
     </xsl:call-template>

@@ -34,6 +34,7 @@ make xml/index.xml
 		../include/async_mqtt5/error.hpp
 		../include/async_mqtt5/types.hpp
 		../include/async_mqtt5/mqtt_client.hpp
+		../include/async_mqtt5/detail/any_authenticator.hpp
 	:
 		@call-doxygen
 	;

@@ -30,9 +30,10 @@
 [template mqttlink[id text][@https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc[id] [text]]]
 
 [def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers CompletionToken]]
-[def __ExecutionContext__ [reflink2 ExecutionContext ExecutionContext]]
-[def __StreamType__ [reflink2 StreamType StreamType]]
-[def __TlsContext__ [reflink2 TlsContext TlsContext]]
+[def __ExecutionContext__ [reflink ExecutionContext]]
+[def __StreamType__ [reflink StreamType]]
+[def __TlsContext__ [reflink TlsContext]]
+[def __is_authenticator__ [reflink is_authenticator]]
 
 [def __Boost__ [@https://www.boost.org/ Boost]]
 [def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]
@@ -55,6 +56,7 @@
 [def __QOS__ [mqttlink 3901234 `QoS`]]
 [def __RETAIN__ [mqttlink 3901104 `RETAIN`]]
 [def __SUBSCRIBE_OPTIONS__ [mqttlink 3901169 `Subscribe Options`]]
+[def __ENHANCED_AUTH__ [mqttlink 3901256 `Enhanced Authentication`]]
 
 [def __CONNECT__ [mqttlink 3901033 `CONNECT`]]
 [def __CONNACK__ [mqttlink 3901074 `CONNACK`]]

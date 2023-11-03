@@ -28,12 +28,18 @@ template <
 	typename Stream, typename Handler
 >
 class connect_op {
+	static constexpr size_t min_packet_sz = 5;
+
 	struct on_connect {};
 	struct on_tls_handshake {};
 	struct on_ws_handshake {};
 	struct on_send_connect {};
 	struct on_fixed_header {};
-	struct on_read_connack {};
+	struct on_read_packet {};
+	struct on_init_auth_data {};
+	struct on_auth_data {};
+	struct on_send_auth {};
+	struct on_complete_auth {};
 
 	Stream& _stream;
 	mqtt_context& _ctx;
@@ -152,13 +158,30 @@ public:
 			);
 		}
 		else
-			send_connect();
+			(*this)(on_ws_handshake {}, error_code {});
 	}
 
 	void operator()(on_ws_handshake, error_code ec) {
 		if (ec)
 			return complete(ec);
 
+		auto auth_method = _ctx.authenticator.method();
+		if (!auth_method.empty()) {
+			_ctx.co_props[prop::authentication_method] = auth_method;
+			return _ctx.authenticator.async_auth(
+				auth_step_e::client_initial, "",
+				asio::prepend(std::move(*this), on_init_auth_data {})
+			);
+		}
+
+		send_connect();
+	}
+
+	void operator()(on_init_auth_data, error_code ec, std::string data) {
+		if (ec)
+			return complete(asio::error::try_again);
+
+		_ctx.co_props[prop::authentication_data] = std::move(data);
 		send_connect();
 	}
 
@@ -186,10 +209,9 @@ public:
 		if (ec)
 			return complete(ec);
 
-		constexpr size_t min_connack_sz = 5;
-		_buffer_ptr = std::make_unique<std::string>(min_connack_sz, 0);
+		_buffer_ptr = std::make_unique<std::string>(min_packet_sz, 0);
 
-		auto buff = asio::buffer(_buffer_ptr->data(), min_connack_sz);
+		auto buff = asio::buffer(_buffer_ptr->data(), min_packet_sz);
 		asio::async_read(
 			_stream, buff,
 			asio::prepend(std::move(*this), on_fixed_header {})
@@ -202,8 +224,9 @@ public:
 		if (ec)
 			return complete(ec);
 
-		auto control_byte = (*_buffer_ptr)[0];
-		if (control_byte != 0b00100000)
+		auto code = control_code_e((*_buffer_ptr)[0] & 0b11110000);
+
+		if (code != control_code_e::auth && code != control_code_e::connack)
 			return complete(asio::error::try_again);
 
 		auto varlen_ptr = _buffer_ptr->cbegin() + 1;
@@ -217,7 +240,8 @@ public:
 		auto remain_len = *varlen -
 			std::distance(varlen_ptr, _buffer_ptr->cbegin() + num_read);
 
-		_buffer_ptr->resize(_buffer_ptr->size() + remain_len);
+		if (num_read + remain_len > _buffer_ptr->size())
+			_buffer_ptr->resize(num_read + remain_len);
 
 		auto buff = asio::buffer(_buffer_ptr->data() + num_read, remain_len);
 		auto first = _buffer_ptr->cbegin() + varlen_sz + 1;
@@ -227,21 +251,33 @@ public:
 			_stream, buff,
 			asio::prepend(
 				asio::append(
-					std::move(*this), uint8_t(control_byte), first, last
-				), on_read_connack {}
+					std::move(*this), code, first, last
+				), on_read_packet {}
 			)
 		);
 	}
 
 	void operator()(
-		on_read_connack, error_code ec, size_t, uint8_t control_code,
+		on_read_packet, error_code ec, size_t, control_code_e code,
 		byte_citer first, byte_citer last
 	) {
 		if (ec)
 			return complete(ec);
 
+		if (code == control_code_e::connack)
+			return on_connack(first, last);
+
+		if (!_ctx.co_props[prop::authentication_method].has_value())
+			return complete(client::error::malformed_packet);
+
+		on_auth(first, last);
+	}
+
+	void on_connack(byte_citer first, byte_citer last) {
 		auto packet_length = std::distance(first, last);
 		auto rv = decoders::decode_connack(packet_length, first);
+		if (!rv.has_value())
+			return complete(client::error::malformed_packet);
 		const auto& [session_present, reason_code, ca_props] = *rv;
 
 		_ctx.ca_props = ca_props;
@@ -257,7 +293,84 @@ public:
 		if (!rc.has_value()) // reason code not allowed in CONNACK
 			return complete(client::error::malformed_packet);
 
-		complete(to_asio_error(*rc));
+		auto ec = to_asio_error(*rc);
+		if (ec)
+			return complete(ec);
+
+		if (_ctx.co_props[prop::authentication_method].has_value())
+			return _ctx.authenticator.async_auth(
+				auth_step_e::server_final,
+				ca_props[prop::authentication_data].value_or(""),
+				asio::prepend(std::move(*this), on_complete_auth {})
+			);
+
+		complete(error_code {});
+	}
+
+	void on_auth(byte_citer first, byte_citer last) {
+		auto packet_length = std::distance(first, last);
+		auto rv = decoders::decode_auth(packet_length, first);
+		if (!rv.has_value())
+			return complete(client::error::malformed_packet);
+		const auto& [reason_code, auth_props] = *rv;
+
+		auto rc = to_reason_code<reason_codes::category::auth>(reason_code);
+		if (
+			!rc.has_value() ||
+			auth_props[prop::authentication_method]
+				!= _ctx.co_props[prop::authentication_method]
+		)
+			return complete(client::error::malformed_packet);
+
+		_ctx.authenticator.async_auth(
+			auth_step_e::server_challenge,
+			auth_props[prop::authentication_data].value_or(""),
+			asio::prepend(std::move(*this), on_auth_data {})
+		);
+	}
+
+	void operator()(on_auth_data, error_code ec, std::string data) {
+		if (ec)
+			return complete(asio::error::try_again);
+
+		auth_props props;
+		props[prop::authentication_method] =
+			_ctx.co_props[prop::authentication_method];
+		props[prop::authentication_data] = std::move(data);
+
+		auto packet = control_packet<allocator_type>::of(
+			no_pid, get_allocator(),
+			encoders::encode_auth,
+			reason_codes::continue_authentication.value(), props
+		);
+
+		const auto& wire_data = packet.wire_data();
+
+		async_mqtt5::detail::async_write(
+			_stream, asio::buffer(wire_data),
+			asio::consign(
+				asio::prepend(std::move(*this), on_send_auth{}),
+				std::move(packet)
+			)
+		);
+	}
+
+	void operator()(on_send_auth, error_code ec, size_t) {
+		if (ec)
+			return complete(ec);
+
+		auto buff = asio::buffer(_buffer_ptr->data(), min_packet_sz);
+		asio::async_read(
+			_stream, buff,
+			asio::prepend(std::move(*this), on_fixed_header {})
+		);
+	}
+
+	void operator()(on_complete_auth, error_code ec, std::string) {
+		if (ec)
+			return complete(asio::error::try_again);
+
+		complete(error_code {});
 	}
 
 private:

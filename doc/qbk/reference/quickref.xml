@@ -27,6 +27,7 @@
           <member><link linkend="async_mqtt5.ref.ExecutionContext">ExecutionContext</link></member>
           <member><link linkend="async_mqtt5.ref.StreamType">StreamType</link></member>
           <member><link linkend="async_mqtt5.ref.TlsContext">TlsContext</link></member>
+          <member><link linkend="async_mqtt5.ref.is_authenticator">is_authenticator</link></member>
         </simplelist>
       </entry>
       <entry valign="top">
@@ -36,6 +37,7 @@
         </simplelist>
         <bridgehead renderas="sect3">Enumerations</bridgehead>
         <simplelist type="vert" columns="1">
+          <member><link linkend="async_mqtt5.ref.auth_step_e">auth_step_e</link></member>
           <member><link linkend="async_mqtt5.ref.client.error">client_error</link></member>
           <member><link linkend="async_mqtt5.ref.disconnect_rc_e">disconnect_rc_e</link></member>
           <member><link linkend="async_mqtt5.ref.qos_e">qos_e</link></member>

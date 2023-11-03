@@ -1,0 +1,25 @@
+[/
+    Copyright (c) 2023 Mireo
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:is_authenticator is_authenticator concept]
+
+`is_authenticator` represents authenticator object that needs to have following functions:
+
+ void async_auth(
+	 ``[reflink2 auth_step_e async_mqtt5::auth_step_e]`` auth_step, // authentication stage
+	 std::string server_data, // server authentication data
+	 ``[asioreflink any_completion_handler any_completion_handler]``<
+		 void(
+			 __ERROR_CODE__ ec, // non-trivial error code aborts authentication
+			 std::string auth_data // client authentication data
+		 )
+	 >
+ );
+ std::string_view method(); // returns authentication method
+
+
+[endsect]

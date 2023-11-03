@@ -83,7 +83,7 @@ public:
 	void operator()(on_disconnect, error_code ec) {
 		get_cancellation_slot().clear();
 
-		if (!ec || ec == asio::error::try_again)
+		if (!ec)
 			perform();
 	}
 };

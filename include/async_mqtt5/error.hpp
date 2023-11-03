@@ -488,6 +488,16 @@ requires (cat == connack) {
 
 template <category cat>
 inline std::pair<reason_code*, size_t> valid_codes()
+requires (cat == auth) {
+	static reason_code valid_codes[] = {
+		success, continue_authentication
+	};
+	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
+	return std::make_pair(valid_codes, len);
+}
+
+template <category cat>
+inline std::pair<reason_code*, size_t> valid_codes()
 requires (cat == puback || cat == pubrec) {
 	static reason_code valid_codes[] = {
 		success, no_matching_subscribers, unspecified_error,

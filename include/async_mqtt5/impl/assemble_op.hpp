@@ -95,6 +95,9 @@ public:
 		};
 
 		if (cc(error_code {}, 0) == 0 && _data_span.size()) {
+			/* TODO clear read buffer on reconnect
+			* OR use dispatch instead of post here
+			*/
 			return asio::post(
 				asio::prepend(
 					std::move(*this), on_read {}, error_code {},
@@ -128,16 +131,16 @@ public:
 		}
 
 		if (ec)
-			return complete(ec, 0, 0, {}, {});
+			return complete(ec, 0, {}, {});
 
 		_data_span.expand_suffix(bytes_read);
 		assert(_data_span.size());
 
-		auto control_code = uint8_t(*_data_span.first());
+		auto control_byte = uint8_t(*_data_span.first());
 
-		if ((control_code & 0b11110000) == 0)
+		if ((control_byte & 0b11110000) == 0)
 			// close the connection, cancel
-			return complete(client::error::malformed_packet, 0, 0, {}, {});
+			return complete(client::error::malformed_packet, 0, {}, {});
 
 		auto first = _data_span.first() + 1;
 		auto varlen = decoders::type_parse(
@@ -147,12 +150,12 @@ public:
 		if (!varlen) {
 			if (_data_span.size() < 5)
 				return perform(wait_for, asio::transfer_at_least(1));
-			return complete(client::error::malformed_packet, 0, 0, {}, {});
+			return complete(client::error::malformed_packet, 0, {}, {});
 		}
 
 		// TODO: respect max packet size which could be dinamically set by the broker
 		if (*varlen > max_packet_size - std::distance(_data_span.first(), first))
-			return complete(client::error::malformed_packet, 0, 0, {}, {});
+			return complete(client::error::malformed_packet, 0, {}, {});
 
 		if (std::distance(first, _data_span.last()) < *varlen)
 			return perform(wait_for, asio::transfer_at_least(1));
@@ -161,7 +164,7 @@ public:
 			std::distance(_data_span.first(), first) + *varlen
 		);
 
-		dispatch(wait_for, control_code, first, first + *varlen);
+		dispatch(wait_for, control_byte, first, first + *varlen);
 	}
 
 private:
@@ -179,51 +182,39 @@ private:
 		return res == 0b00000000;
 	}
 
-	static bool contains_packet_id(control_code_e code) {
-		using enum control_code_e;
-
-		return code == puback || code == pubrec
-			|| code == pubrel || code == pubcomp
-			|| code == subscribe || code == suback
-			|| code == unsubscribe || code == unsuback;
-	}
-
 	void dispatch(
 		duration wait_for,
-		uint8_t control_code, byte_citer first, byte_citer last
+		uint8_t control_byte, byte_citer first, byte_citer last
 	) {
 		using namespace decoders;
 		using enum control_code_e;
 
-		if (!valid_header(control_code))
-			return complete(client::error::malformed_packet, 0, 0, {}, {});
+		if (!valid_header(control_byte))
+			return complete(client::error::malformed_packet, 0, {}, {});
 
-		auto code = control_code_e(control_code & 0b11110000);
+		auto code = control_code_e(control_byte & 0b11110000);
 
 		if (code == pingresp)
 			return perform(wait_for, asio::transfer_at_least(0));
 
-		uint16_t packet_id = 0;
-		if (contains_packet_id(code))
-			packet_id = decoders::decode_packet_id(first).value();
-
 		bool is_reply = code != publish && code != auth && code != disconnect;
 		if (is_reply) {
+			auto packet_id = decoders::decode_packet_id(first).value();
 			_svc._replies.dispatch(error_code {}, code, packet_id, first, last);
 			return perform(wait_for, asio::transfer_at_least(0));
 		}
 
-		complete(error_code {}, packet_id, control_code, first, last);
+		complete(error_code {}, control_byte, first, last);
 	}
 
 	void complete(
-		error_code ec, uint16_t packet_id, uint8_t control_code,
+		error_code ec, uint8_t control_code,
 		byte_citer first, byte_citer last
 	) {
 		asio::dispatch(
 			get_executor(),
 			asio::prepend(
-				std::move(_handler), ec, packet_id, control_code,
+				std::move(_handler), ec, control_code,
 				first, last
 			)
 		);
