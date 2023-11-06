@@ -196,9 +196,10 @@ public:
 
 	template <typename Authenticator>
 	void authenticator(Authenticator&& authenticator) {
-		_stream_context.authenticator(
-			std::forward<Authenticator>(authenticator)
-		);
+		if (!is_open())
+			_stream_context.authenticator(
+				std::forward<Authenticator>(authenticator)
+			);
 	}
 
 	template <typename Prop>

@@ -171,6 +171,11 @@ public:
 	 * \details The \ref will Message that the Broker should publish
 	 * after the Network Connection is closed and it is not
 	 * closed normally.
+	 *
+	 * \attention This function takes action when the client is in a non-operational state,
+	 * meaning the \ref run function has not been invoked.
+	 * Furthermore, you can use this function after the \ref cancel function has been called,
+	 * before the \ref run function is invoked again.
 	 */
 	mqtt_client& will(will will) {
 		_svc_ptr->will(std::move(will));
@@ -182,6 +187,11 @@ public:
 	 *
 	 * \details Credentials consist of a unique Client Identifier and, optionally,
 	 * a User Name and Password.
+	 *
+	 * \attention This function takes action when the client is in a non-operational state,
+	 * meaning the \ref run function has not been invoked.
+	 * Furthermore, you can use this function after the \ref cancel function has been called,
+	 * before the \ref run function is invoked again.
 	 */
 	mqtt_client& credentials(
 		std::string client_id,
@@ -207,6 +217,10 @@ public:
 	 * \param default_port The default port to connect to in case the port is not
 	 * explicitly specified in the `hosts` list.
 	 *
+	 * \attention This function takes action when the client is in a non-operational state,
+	 * meaning the \ref run function has not been invoked.
+	 * Furthermore, you can use this function after the \ref cancel function has been called,
+	 * before the \ref run function is invoked again.
 	 *
 	 * \par Example
 	 * Some valid `hosts` string:
@@ -229,6 +243,11 @@ public:
 	 *
 	 * \param authenticator Object that will be stored (move-constructed or by reference)
 	 * and used for authentication. It needs to satisfy \__is_authenticator\__ concept.
+	 *
+	 * \attention This function takes action when the client is in a non-operational state,
+	 * meaning the \ref run function has not been invoked.
+	 * Furthermore, you can use this function after the \ref cancel function has been called,
+	 * before the \ref run function is invoked again.
 	 *
 	 */
 	template <detail::is_authenticator Authenticator>
@@ -265,14 +284,14 @@ public:
 	 * \par Handler signature
 	 * The handler signature for this operation depends on the \ref qos_e specified:\n
 	 *
-	 *	\ref qos_e == `qos_e::at_most_once`:
+	 *	`qos` == `qos_e::at_most_once`:
 	 *		\code
 	 *			void (
 	 *				__ERROR_CODE__	// Result of operation
 	 *			)
 	 *		\endcode
 	 *
-	 *	\ref qos_e == `qos_e::at_least_once`:
+	 *	`qos` == `qos_e::at_least_once`:
 	 *		\code
 	 *			void (
 	 *				__ERROR_CODE__,	// Result of operation.
@@ -281,7 +300,7 @@ public:
 	 *			)
 	 *		\endcode
 	 *
-	 *	\ref qos_e == `qos_e::exactly_once`:
+	 *	`qos` == `qos_e::exactly_once`:
 	 *		\code
 	 *			void (
 	 *				__ERROR_CODE__,	// Result of operation.
@@ -289,6 +308,17 @@ public:
 	 *				__PUBCOMP_PROPS__	// Properties received in the PUBCOMP packet.
 	 *			)
 	 *		\endcode
+	 *
+	 *	\par Completion condition
+	 *	Depending on the \ref qos_e specified, the asynchronous operation will complete
+	 *	when one of the following conditions is true:\n
+	 *		- If `qos` == `qos_e::at_most_once` and the Client
+	 *		has successfully written the packet to the transport. \n
+	 *		- If `qos` == `qos_e::at_least_once` and the packet has
+	 *		been sent and acknowledged through the reception of a \__PUBACK\__ packet.
+	 *		- If `qos` == `qos_e::exactly_once` and the packet has
+	 *		been sent and fully acknowledged through the reception of a \__PUBCOMP\__ packet.
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
@@ -330,7 +360,6 @@ public:
 		);
 	}
 
-	// TODO: perhaps there is a way to not copy documentation (\copybrief, \copydetails)
 	/**
 	 * \brief Send a \__SUBSCRIBE\__ packet to Broker to create a subscription
 	 * to one or more Topics of interest.
@@ -358,6 +387,12 @@ public:
 	 *			__SUBACK_PROPS__,	// Properties received in the SUBACK packet.
 	 *		)
 	 *	\endcode
+	 *
+	 *	\par Completion condition
+	 *	The asynchronous operation will complete when one of the following conditions is true:\n
+	 *		- The Client has successfully sent a \__SUBSCRIBE\__ packet
+	 *		and has received a \__SUBACK\__ response from the Broker.\n
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
@@ -419,6 +454,12 @@ public:
 	 *		)
 	 *	\endcode
 	 *
+	 *	\par Completion condition
+	 *	The asynchronous operation will complete when one of the following conditions is true:\n
+	 *		- The Client has successfully sent a \__SUBSCRIBE\__ packet
+	 *		and has received a \__SUBACK\__ response from the Broker.\n
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success` \n
@@ -466,6 +507,12 @@ public:
 	 *			__UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
 	 *		)
 	 *	\endcode
+	 *
+	 *	\par Completion condition
+	 *	The asynchronous operation will complete when one of the following conditions is true:\n
+	 *		- The Client has successfully sent an \__UNSUBSCRIBE\__ packet
+	 *		and has received an \__UNSUBACK\__ response from the Broker.\n
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
@@ -526,6 +573,12 @@ public:
 	 *		)
 	 *	\endcode
 	 *
+	 *	\par Completion condition
+	 *	The asynchronous operation will complete when one of the following conditions is true:\n
+	 *		- The Client has successfully sent an \__UNSUBSCRIBE\__ packet
+	 *		and has received an \__UNSUBACK\__ response from the Broker.\n
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success` \n
@@ -547,7 +600,6 @@ public:
 	}
 
 
-	// TODO: cancel the channel!
 	/**
 	 * \brief Asynchronously receive an Application Message.
 	 *
@@ -557,8 +609,8 @@ public:
 	 * Calling this function will attempt to receive an Application Message
 	 * from internal storage.
 	 *
-	 * \note The completion handler will only be invoked if an error occurred
-	 * or there is a pending Application Message.
+	 * \note It is only recommended to call this function if you have established
+	 * a successful subscription to a Topic using the \ref async_subscribe function.
 	 *
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
@@ -576,6 +628,12 @@ public:
 	 *		)
 	 *	\endcode
 	 *
+	 * \par Completion condition
+	 *	The asynchronous operation will complete when one of the following conditions is true:\n
+	 *		- The Client has a pending Application Message in its internal storage
+	 *		ready to be received.
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
@@ -592,13 +650,18 @@ public:
 	}
 
 	/**
-	 * \brief Disconnect the Client. This function has terminal effects.
+	 * \brief Disconnect the Client by sending a \__DISCONNECT\__ packet
+	 * with a specified Reason Code. This function has terminal effects.
 	 *
 	 * \details Send a \__DISCONNECT\__ packet to the Broker with a Reason Code
 	 * describing the reason for disconnection.
 	 *
 	 * \attention This function has terminal effects and will close the Client.
 	 * See \ref mqtt_client::cancel.
+	 *
+	 * \note If you wish to close the Client regardless of its state,
+	 * prefer calling the \ref cancel function instead. This function will only
+	 * take effect when the connection has been successfully established.
 	 *
 	 * \param reason_code Reason Code to notify
 	 * the Broker of the reason for disconnection.
@@ -615,6 +678,12 @@ public:
 	 *			__ERROR_CODE__ // Result of operation.
 	 *		)
 	 *	\endcode
+	 *
+	 *	\par Completion condition
+	 *	The asynchronous operation will complete when one of the following conditions is true:\n
+	 *		- The Client has attempted to send a \__DISCONNECT\__ packet, regardless of whether
+	 *		the sending was successful or not.\n
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
@@ -636,34 +705,10 @@ public:
 	}
 
 	/**
-	 * \brief Disconnect the Client. This function has terminal effects.
-	 *
-	 * \details Send a \__DISCONNECT\__ packet to the Broker with a Reason Code
-	 * \ref reason_codes::normal_disconnection describing
-	 * the reason for disconnection.
-	 *
-	 * \attention This function has terminal effects and will close the Client.
-	 * See \ref mqtt_client::cancel.
-	 *
-	 * \param token Completion token that will be used to produce a
-	 * completion handler. The handler will be invoked when the operation completes.
-	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
-	 *
-	 * \par Handler signature
-	 * The handler signature for this operation:
-	 *	\code
-	 *		void (
-	 *			__ERROR_CODE__ // Result of operation.
-	 *		)
-	 *	\endcode
-	 *
-	 *	\par Error codes
-	 *	The list of all possible error codes that this operation can finish with:\n
-	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::error::operation_aborted`\n
-	 *
-	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * \brief Disconnect the Client by sending a \__DISCONNECT\__ packet
+	 * with a Reason Code of reason_codes.normal_disconnection.
+	 * This function has terminal effects.
+	 * \copydetails async_disconnect
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_disconnect(CompletionToken&& token) {

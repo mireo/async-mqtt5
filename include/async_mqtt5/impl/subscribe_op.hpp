@@ -95,7 +95,7 @@ public:
 
 		_svc_ptr->async_wait_reply(
 			control_code_e::suback, packet_id,
-			asio::prepend(std::move(*this), on_suback{}, std::move(packet))
+			asio::prepend(std::move(*this), on_suback {}, std::move(packet))
 		);
 	}
 
