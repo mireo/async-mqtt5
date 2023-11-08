@@ -1,4 +1,4 @@
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include <test_common/protocol_logging.hpp>
 

@@ -133,6 +133,9 @@ private:
 	template <typename ClientService>
 	friend class sentry_op;
 
+	template <typename ClientService>
+	friend class re_auth_op;
+
 	stream_context_type _stream_context;
 	stream_type _stream;
 

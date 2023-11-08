@@ -12,6 +12,7 @@
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 #include <async_mqtt5/impl/publish_rec_op.hpp>
+#include <async_mqtt5/impl/re_auth_op.hpp>
 
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 
@@ -104,7 +105,15 @@ private:
 			}
 			break;
 			case auth: {
-				// TODO: dispatch auth
+				auto rv = decoders::decode_auth(
+					std::distance(first, last), first
+				);
+				if (!rv.has_value())
+					return on_malformed_packet(
+						"Malformed AUTH received: cannot decode"
+					);
+
+				re_auth_op { _svc_ptr }.perform(std::move(*rv));
 			}
 			break;
 		}

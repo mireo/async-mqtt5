@@ -147,7 +147,9 @@ using puback_message = std::tuple<
 inline std::optional<puback_message> decode_puback(
 	uint32_t remain_length, byte_citer& it
 ) {
-	auto puback_ =  basic::scope_limit_(remain_length)[
+	if (remain_length == 0)
+		return puback_message {};
+	auto puback_ = basic::scope_limit_(remain_length)[
 		x3::byte_ >> prop::props_<puback_props>
 	];
 	return type_parse(it, it + remain_length, puback_);
@@ -161,7 +163,9 @@ using pubrec_message = std::tuple<
 inline std::optional<pubrec_message> decode_pubrec(
 	uint32_t remain_length, byte_citer& it
 ) {
-	auto pubrec_ =  basic::scope_limit_(remain_length)[
+	if (remain_length == 0)
+		return pubrec_message {};
+	auto pubrec_ = basic::scope_limit_(remain_length)[
 		x3::byte_ >> prop::props_<pubrec_props>
 	];
 	return type_parse(it, it + remain_length, pubrec_);
@@ -175,7 +179,9 @@ using pubrel_message = std::tuple<
 inline std::optional<pubrel_message> decode_pubrel(
 	uint32_t remain_length, byte_citer& it
 ) {
-	auto pubrel_ =  basic::scope_limit_(remain_length)[
+	if (remain_length == 0)
+		return pubrel_message {};
+	auto pubrel_ = basic::scope_limit_(remain_length)[
 		x3::byte_ >> prop::props_<pubrel_props>
 	];
 	return type_parse(it, it + remain_length, pubrel_);
@@ -189,7 +195,9 @@ using pubcomp_message = std::tuple<
 inline std::optional<pubcomp_message> decode_pubcomp(
 	uint32_t remain_length, byte_citer& it
 ) {
-	auto pubcomp_ =  basic::scope_limit_(remain_length)[
+	if (remain_length == 0)
+		return pubcomp_message {};
+	auto pubcomp_ = basic::scope_limit_(remain_length)[
 		x3::byte_ >> prop::props_<pubcomp_props>
 	];
 	return type_parse(it, it + remain_length, pubcomp_);
@@ -259,6 +267,8 @@ using disconnect_message = std::tuple<
 inline std::optional<disconnect_message> decode_disconnect(
 	uint32_t remain_length, byte_citer& it
 ) {
+	if (remain_length == 0)
+		return disconnect_message {};
 	auto disconnect_ = basic::scope_limit_(remain_length)[
 		x3::byte_ >> prop::props_<disconnect_props>
 	];
@@ -273,6 +283,8 @@ using auth_message = std::tuple<
 inline std::optional<auth_message> decode_auth(
 	uint32_t remain_length, byte_citer& it
 ) {
+	if (remain_length == 0)
+		return auth_message {};
 	auto auth_ = basic::scope_limit_(remain_length)[
 		x3::byte_ >> prop::props_<auth_props>
 	];

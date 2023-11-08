@@ -11,6 +11,7 @@
 #include <async_mqtt5/impl/read_message_op.hpp>
 #include <async_mqtt5/impl/subscribe_op.hpp>
 #include <async_mqtt5/impl/unsubscribe_op.hpp>
+#include <async_mqtt5/impl/re_auth_op.hpp>
 
 namespace async_mqtt5 {
 
@@ -224,7 +225,7 @@ public:
 	/**
 	 * \brief Assign an authenticator that the Client will use for
 	 * \__ENHANCED_AUTH\__ on every connect to a Broker.
-	 * Re-authentication can be initiated by calling \ref async_authenticate.
+	 * Re-authentication can be initiated by calling \ref re_authenticate.
 	 *
 	 * \param authenticator Object that will be stored (move-constructed or by reference)
 	 * and used for authentication. It needs to satisfy \__is_authenticator\__ concept.
@@ -237,22 +238,13 @@ public:
 	}
 
 	/**
-	 * \brief Initiates re-authentication.
-	 * TODO
+	 * \brief Initiates [mqttlink 3901257 Re-authentication]
+	 * using the authenticator given in the \ref authenticator method.
+	 *
+	 * \note If \ref authenticator was not called, this method does nothing.
 	 */
-	template <typename CompletionToken>
-	decltype(auto) async_authenticate(CompletionToken&& token) {
-		using Signature = void(error_code);
-
-		auto initiate = [] (
-			auto handler
-		) {
-			// TODO re-authentication
-		};
-
-		return asio::async_initiate<CompletionToken, Signature>(
-			std::move(initiate), token
-		);
+	void re_authenticate() {
+		detail::re_auth_op { _svc_ptr }.perform();
 	}
 
 	/**
@@ -565,7 +557,7 @@ public:
 	 * Calling this function will attempt to receive an Application Message
 	 * from internal storage.
 	 *
-	 * \note The completion handler will be only invoked if an error occurred
+	 * \note The completion handler will only be invoked if an error occurred
 	 * or there is a pending Application Message.
 	 *
 	 * \param token Completion token that will be used to produce a
