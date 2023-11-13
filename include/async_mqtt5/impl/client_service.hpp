@@ -161,6 +161,7 @@ public:
 		_stream_context(std::move(tls_context)),
 		_stream(ex, _stream_context),
 		_async_sender(*this),
+		_active_span(_read_buff.cend(), _read_buff.cend()),
 		_rec_channel(ex, 128)
 	{}
 
