@@ -1,45 +1,111 @@
 [section:intro Introduction]
 [nochunk]
 
-__Self__ is a C++ client for the __MQTT__ protocol, based on __Asio__.
+__Self__ is a C++20 client built on Boost.Asio. 
+This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. 
+__Self__ represents a comprehensive implementation of the MQTT 5.0 protocol standard, 
+offering full support for publishing or receiving messages with QoS 0, 1, and 2.
 
 [heading Motivation]
+The __MQTT__ protocol is widely utilised for communication in various real-world scenarios,
+primarily serving as a reliable communication protocol for data transfer to and from IoT devices. 
+While the MQTT protocol itself is relatively straightforward, integrating it into an application can be complex,
+especially due to the challenging implementation of message retransmission after a disconnect/reconnect sequence.
 
-[...motivation here...]
+The aim of __Self__ is to provide a very simple asynchronous C++ interface for application developers. 
+The internal client's implementation manages network and MQTT protocol details. 
+Notably, the client does not expose connect functions (nor asynchronous connect functions);
+instead, network connectivity, MQTT handshake, and message retransmission are automatically handled within the client.
 
-The design goals of this library are:
+The __Self__ interface aligns seamlessly with the __Asio__ asynchronous model. 
+The client's asynchronous functions are compatible with all completion tokens supported by __Asio__.
 
-* reason 1
-* reason 2
-* ...
+[heading Features]
+__Self__ is a C++ MQTT Client library designed with the core belief that users should focus solely on their application logic, not the network complexities. [br]
+The library attempts to embody this belief with a range of key features designed to elevate the development experience:
 
-Non-goals:
+* [*Complete TCP, TLS/SLL, and WebSocket support]
+* [*User-focused simplicity]: Providing an interface that is as simple as possible without compromising functionality.
+* [*Prioritized efficiency]: Utilising network and memory resources as efficiently as possible.
+* [*Minimal memory footprint]: Ensuring optimal performance in resource-constrained environments typical of IoT devices.
+* [*Automatic reconnect]: Automatically attempt to re-establish a connection in the event of a disconnection.
+* [*Fully Boost.Asio compliant]: The interfaces and implementation strategies are built upon the foundations of __Asio__. [br]
+__Asio__ and __Beast__ users will have no issues understanding and integrating __Self__. [br]
+Furthermore, __Self__ integrates well with any other library within the Boost.Asio ecosystem.
+* [*Custom allocators]: Support for custom allocators allows extra flexibility and control over the memory resources. [br]
+__Self__ will use allocators associated with handlers from asynchronous functions to create instances of objects needed in the library implementation.
+* [*Per-Operation Cancellation]: All asynchronous operations support individual, targeted cancellation as per Asio’s __ASIO_PER_OP_CANCELLATION__.
+* [*Completion Token]: All asynchronous functions support __CompletionToken__, allowing for versatile usage with callbacks, coroutines, futures, and more.
+* [*Full implementation of MQTT 5.0 specification]
+* [*Support for QoS 0, QoS 1, and QoS 2]
+* [*Custom authentication]: __Self__ defines an interface for your own custom authenticators to perform Enhanced Authentication. 
+* [*High availability]: __Self__ supports listing multiple Brokers within the same cluster to which the Client can connect. [br] 
+In the event of a connection failure with one Broker, the Client switches to the next in the list.
+* [*Offline buffering]: While offline, it automatically buffers all the packets to send when the connection is re-established.
 
-* reason 1
-* reason 2
-* ...
+[heading Example]
+The following example illustrates a simple scenario of configuring a Client and publishing an Application Message.
+
+[!c++]
+	#include <iostream>
+	
+	#include <boost/asio/io_context.hpp>
+	#include <boost/asio/ip/tcp.hpp>
+	
+	#include <async_mqtt5.hpp>
+	
+	int main() {
+		boost::asio::io_context ioc;
+		using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
+		client_type c(ioc, "");
+
+		c.credentials("clientid", "", "")
+			.brokers("mqtt.broker", 1883)
+			.run();
+
+		c.async_publish<async_mqtt5::qos_e::at_most_once>(
+			"test/mqtt-test", "hello world with qos0!",
+			async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
+			[](async_mqtt5::error_code ec) {
+				std::cout << ec.message() << std::endl;
+			}
+		);
+		
+		ioc.run();
+	}
+
+To see more examples, visit [link async_mqtt5.examples Examples].
 
 [heading When to use]
 
-If any of the following statements is true, you may consider using __Self__:
+__Self__ might be suitable for you if any of the following statements is true:
 
-* reason 1
-* reason 2
-* ...
+* Your application uses __Asio__ and requires integrating a MQTT Client.
+* You require asynchronous access to an MQTT Broker.
+* You are developing a higher-level component that requires a connection to an MQTT Broker.
+* You require a dependable and resilient MQTT Client that can automatically manage all network-related issues.
 
-It may not be a good fit for you if:
+It may not be suitable for you if:
 
-* reason 1
-* reason 2
-* ...
+* You solely require synchronous access to an MQTT Broker.
+* The MQTT Broker you are connecting to does not support the MQTT 5 version.
 
+[heading Requirements]
 
-[heading Tested compilers and systems]
+__Self__ is a header-only library. 
+To use __Self__ it requires the following:
 
-[...some text here...]
+* [*C++20] capable compiler.
+* [*Boost 1.82 or later]. In addition to Asio, we use other header-only libraries such as Beast, Spirit, and more.
+* [*OpenSSL]. Only if you require an SSL connection by using [asioreflink ssl__stream ssl::stream].
+
+__Self__ has been tested with the following compilers:
+
+* clang 14.0 (Linux)
+* MSVC 14.3 - Visual Studio 2022 (Windows)
 
 [heading Acknowledgements]
-
-[...some acknowledgements here...]
+We thank [@https://github.com/chriskohlhoff Christopher Kohlhoff] for his outstanding __Asio__ library,
+which inspired the design of all interfaces and implementation strategies. 
 
 [endsect] [/intro]

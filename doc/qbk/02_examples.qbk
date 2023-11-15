@@ -6,29 +6,21 @@
 ]
 
 [section:examples Examples]
-The main class in __Self__ is __Client__, and the upcoming sections will briefly explain how to use it.
+The following examples demonstrate how to use __Client__ in different scenarios.
 
-The first two examples will demonstrate using __Client__ as a publisher and receiver.
-
-* [link async_mqtt5.examples.publisher The publisher]
-* [link async_mqtt5.examples.receiver The receiver]
-
-The following two sections serve as reference.
 The first section will show how to use different underlying transport protocols (such as TCP, SSL and WebSocket)
-to establish a connection to an MQTT Broker.
+to establish a connection to a MQTT Broker.
 
 * [link async_mqtt5.examples.network_connection Establishing a network connection with different protocols]
 
-The second section will showcase how to use asynchronous functions in __Client__
-with different completion tokens. 
+The second section will showcase how to use asynchronous functions in __Client__ 
+with different __CompletionToken__. 
 
 * [link async_mqtt5.examples.asio Compatibility with Boost.Asio]
 	* [link async_mqtt5.examples.asio.callbacks Async functions with callbacks]
 	* [link async_mqtt5.examples.asio.cpp20_coroutines Async functions with C++20 coroutines]
 	* [link async_mqtt5.examples.asio.futures Async functions with futures]
-
-
-[include examples/Basic_examples.qbk]
+	
 [include examples/Network_connection.qbk]
 [include examples/Asio_compatibility.qbk]
 

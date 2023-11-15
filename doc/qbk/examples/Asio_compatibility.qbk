@@ -6,8 +6,8 @@
 ]
 
 [section:asio Compatibility with Boost.Asio]
-The __Self__ is built upon __Asio__ and thus follows the same principles.
-This section illustrates the usage of __Self__ async
+The __Client__ is built upon __Asio__ and thus follows the same principles.
+This section illustrates the usage of __Client__ async
 functions with different __CompletionToken__.
 
 # [link async_mqtt5.examples.asio.callbacks Async functions with callbacks]
@@ -16,14 +16,14 @@ functions with different __CompletionToken__.
 
 
 [section:callbacks Async functions with callbacks]
-This example demonstrates how to use __Self__ asynchrous functions with callbacks.
+This example demonstrates how to use __Client__ asynchrous functions with callbacks.
 
 [import ../../../example/callbacks.cpp]
 [callbacks_examples]
 [endsect]
 
 [section:cpp20_coroutines Async functions with C++20 coroutines]
-This example demonstrates how to use __Self__ asynchrous functions with C++20 coroutines
+This example demonstrates how to use __Client__ asynchrous functions with C++20 coroutines
 using __USE_AWAITABLE__ and __CO_SPAWN__.
 
 [import ../../../example/cpp20_coroutines.cpp]
@@ -31,7 +31,7 @@ using __USE_AWAITABLE__ and __CO_SPAWN__.
 [endsect]
 
 [section:futures Async functions with futures]
-This example demonstrates how to use __Self__ asynchrous functions with __USE_FUTURE__
+This example demonstrates how to use __Client__ asynchrous functions with __USE_FUTURE__
 completion token.
 [import ../../../example/futures.cpp]
 [futures_examples]
