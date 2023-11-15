@@ -143,7 +143,7 @@ public:
 	 * \brief Start the Client.
 	 */
 	void run() {
-		_svc_ptr->open_stream();
+		_svc_ptr->run();
 		detail::ping_op { _svc_ptr }
 			.perform(read_timeout - std::chrono::seconds(1));
 		detail::read_message_op { _svc_ptr }.perform();
@@ -637,7 +637,7 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::experimental::error::channel_cancelled`
+	 *		- `boost::asio::error::operation_aborted`\n
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */

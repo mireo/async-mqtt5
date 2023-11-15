@@ -195,8 +195,6 @@ private:
 	}
 
 	void complete() {
-		// TODO: if rv == false then the channel buffer is full and
-		// there is no listener; we may need to log this
 		/* auto rv = */_svc_ptr->channel_store(std::move(_message));
 	}
 };

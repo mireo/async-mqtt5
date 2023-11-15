@@ -38,7 +38,7 @@ void cancel_async_receive() {
 		c.async_receive([&handlers_called](
 			error_code ec, std::string, std::string, publish_props
 		) {
-			BOOST_CHECK_EQUAL(ec, asio::experimental::error::channel_cancelled);
+			BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
 			handlers_called++;
 		});
 

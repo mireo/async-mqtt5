@@ -1,9 +1,10 @@
 #ifndef ASYNC_MQTT5_CLIENT_SERVICE_HPP
 #define ASYNC_MQTT5_CLIENT_SERVICE_HPP
 
-#include <boost/asio/experimental/concurrent_channel.hpp>
+#include <boost/asio/experimental/basic_concurrent_channel.hpp>
 
 #include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/detail/channel_traits.hpp>
 
 #include <async_mqtt5/impl/assemble_op.hpp>
 #include <async_mqtt5/impl/async_sender.hpp>
@@ -117,7 +118,9 @@ public:
 	using executor_type = typename stream_type::executor_type;
 private:
 	using tls_context_type = TlsContext;
-	using receive_channel = asio::experimental::concurrent_channel<
+	using receive_channel = asio::experimental::basic_concurrent_channel<
+		asio::any_io_executor,
+		channel_traits<>,
 		void (error_code, std::string, std::string, publish_props)
 	>;
 
@@ -162,7 +165,7 @@ public:
 		_stream(ex, _stream_context),
 		_async_sender(*this),
 		_active_span(_read_buff.cend(), _read_buff.cend()),
-		_rec_channel(ex, 128)
+		_rec_channel(ex, std::numeric_limits<size_t>::max())
 	{}
 
 	executor_type get_executor() const noexcept {
@@ -208,6 +211,11 @@ public:
 		return _stream_context.connack_prop(p);
 	}
 
+	void run() {
+		_stream.open();
+		_rec_channel.reset();
+	}
+
 	void open_stream() {
 		_stream.open();
 	}
@@ -224,12 +232,7 @@ public:
 		_cancel_ping.emit(asio::cancellation_type::terminal);
 		_cancel_sentry.emit(asio::cancellation_type::terminal);
 
-		// cancelling the receive channel invokes all pending handlers with
-		// ec = asio::experimental::error::channel_cancelled
-		// adding another ec to the list of the possible client ecs
-
-		// TODO: close() the channel instead, and open() it on the next run()
-		_rec_channel.cancel();
+		_rec_channel.close();
 		_replies.cancel_unanswered();
 		_async_sender.cancel();
 		_stream.close();

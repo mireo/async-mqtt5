@@ -25,10 +25,6 @@ may complete with, along with the reasons for their occurrence.
 		to establish a connection with the Broker. The cause of this error may be attributed to the connection 
 		related parameters used during the initialization of the [reflink2 mqtt_client `mqtt_client`].
 	]]
-	[[`boost::asio::experimental::error::channel_cancelled`] [
-		This error occurs in scenarios identical to those causing `boost::asio::error::operation_aborted` 
-		error code but it is exclusive to completion handlers associated with [refmem mqtt_client async_receive] calls.
-	]]
 	[[`async_mqtt5::client::error::pid_overrun`] [
 		This error code signifies that the Client was unable to allocate a Packet Identifier for
 		the current operation due to the exhaustion of the available identifiers.
