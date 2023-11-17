@@ -1,7 +1,7 @@
 [section:intro Introduction]
 [nochunk]
 
-__Self__ is a C++20 client built on Boost.Asio. 
+__Self__ is a C++20 client built on __Asio__. 
 This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. 
 __Self__ represents a comprehensive implementation of the MQTT 5.0 protocol standard, 
 offering full support for publishing or receiving messages with QoS 0, 1, and 2.

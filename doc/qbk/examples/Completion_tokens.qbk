@@ -1,0 +1,118 @@
+[/
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:completion_tokens Completion tokens]
+The __Client__ is built upon __Asio__ and thus follows the same principles.
+This section illustrates the usage of __Client__ async
+functions with different __CompletionToken__.
+
+# [link async_mqtt5.examples.callbacks Async functions with callbacks]
+# [link async_mqtt5.examples.cpp20_coroutines Async functions with C++20 coroutines]
+# [link async_mqtt5.examples.futures Async functions with futures]
+
+[endsect]
+
+
+
+[section:callbacks Async functions with callbacks]
+The following list is a reference on how to use asynchrous functions in __Client__ with callbacks.
+
+[import ../../../example/callbacks.cpp]
+
+[h4 Publish]
+[publish_callback]
+
+[h4 Subscribe]
+[subscribe_callback]
+
+[h4 Receive]
+[receive_callback]
+
+[h4 Unsubscribe]
+[unsubscribe_callback]
+
+[h4 Disconnect]
+[disconnect_callback]
+
+[endsect]
+
+[section:cpp20_coroutines Async functions with C++20 coroutines]
+This example demonstrates how to use __Client__ asynchrous functions with C++20 coroutines
+using __USE_AWAITABLE__.
+
+[import ../../../example/cpp20_coroutines.cpp]
+
+[h2 use_awaitable]
+In this section, each asynchronous function is invoked with __USE_AWAITABLE__ completion token.
+When using this completion token, co_await will throw exceptions instead of returning an error code.
+If you do not wish to throw exceptions, refer to the following use_nothrow_awaitable section.
+
+[h4 Publish]
+[publish_coro]
+
+[h4 Subscribe]
+[subscribe_coro]
+
+[h4 Receive]
+[receive_coro]
+
+[h4 Unsubscribe]
+[unsubscribe_coro]
+
+[h4 Disconnect]
+[disconnect_coro]
+
+[h2 use_nothrow_awaitable]
+The following examples will use a modified completion token.
+Using this completion token instead of __USE_AWAITABLE__ will prevent co_await from throwing exceptions. 
+Instead, co_await will return the error code along with other values specified in the handler signature.
+
+[no_throw_awaitable]
+
+[h4 Publish]
+[publish_coro_nothrow]
+
+[h4 Subscribe]
+[subscribe_coro_nothrow]
+
+[h4 Receive]
+[receive_coro_nothrow]
+
+[h4 Unsubscribe]
+[unsubscribe_coro_nothrow]
+
+[h4 Disconnect]
+[disconnect_coro_nothrow]
+
+[endsect]
+
+
+
+[section:futures Async functions with futures]
+The following list is a reference on how to use the mqtt_client with __USE_FUTURE__ as the completion token. 
+
+Each get() call on std::future will block the current thread and wait until the future has a valid result. 
+That is why it is essential to ensure that the execution context is running in more than one thread.
+
+[import ../../../example/futures.cpp]
+
+[h4 Publish]
+[publish_future]
+
+[h4 Subscribe]
+[subscribe_future]
+
+[h4 Receive]
+[receive_future]
+
+[h4 Unsubscribe]
+[unsubscribe_future]
+
+[h4 Disconnect]
+[disconnect_future]
+
+[endsect]

@@ -1,0 +1,30 @@
+[/
+    Copyright (c) 2023 Mireo
+   
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section:publisher The publisher]
+This example will show how to use __Client__ as a publisher. 
+The __Client__ will use TCP to connect to the Broker, and __USE_AWAITABLE__ as the completion token.
+
+To modify the connection type, refer to [link async_mqtt5.examples.network_connection Establishing a network connection with different protocols].
+
+To use different completion token, refer to [link async_mqtt5.examples.completion_tokens Completion tokens].
+
+[import ../../../example/publisher.cpp]
+[publisher]
+[endsect]
+
+[section:receiver The receiver]
+This example will show how to use __Client__ as a receiver. 
+The __Client__ will use TCP to connect to the Broker, and __USE_AWAITABLE__ as the completion token.
+
+To modify the connection type, refer to [link async_mqtt5.examples.network_connection Establishing a network connection with different protocols].
+
+To use different completion token, refer to [link async_mqtt5.examples.completion_tokens Completion tokens].
+
+[import ../../../example/receiver.cpp]
+[receiver]
+[endsect]

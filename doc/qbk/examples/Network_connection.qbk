@@ -15,12 +15,12 @@ transport protocols such as TCP/IP, TLS/SSL, and WebSocket.
 [import ../../../example/network_connection.cpp]
 
 [h3 TCP/IP connection]
-To create a TCP/IP connection with a Broker, initialize __Client__ with __TCP_SOCKET__ as the __StreamType__.
+To create a TCP/IP connection with a Broker, initialise __Client__ with __TCP_SOCKET__ as the __StreamType__.
 [tcp]
 
 [h3 TLS/SSL connection]
 To establish a secure and encrypted connection using the TLS/SSL protocol, supply a context object that meets the __TlsContext__ requirements. 
-Additionally, initialize __Client__ with an underlying stream that implements TLS/SSL protocol as the __StreamType__. 
+Additionally, initialise __Client__ with an underlying stream that implements TLS/SSL protocol as the __StreamType__. 
 
 This example will demonstrate how to set up an SSL connection using __SSL_CONTEXT__ and __SSL_STREAM__.
 To use SSL support in __Asio__, __OPENSSL__ is required.
@@ -38,6 +38,6 @@ __WEBSOCKET_STREAM__.
 [h4 WebSocket over TLS/SSL]
 [websocket_tls]
 
-Once the __Client__ has been initialized with a suitable __StreamType__, it is prepared for configuration and utilization. 
+Once the __Client__ has been initialised with a suitable __StreamType__, it is prepared for configuration and utilisation. 
 
 [endsect]

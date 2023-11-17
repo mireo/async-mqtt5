@@ -1,5 +1,3 @@
-//[callbacks_examples
-
 #include <boost/asio/io_context.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
@@ -12,13 +10,10 @@ namespace asio = boost::asio;
 
 using stream_type = asio::ip::tcp::socket;
 using client_type = async_mqtt5::mqtt_client<stream_type>;
-/**
- * This function showcases how to call each asynchronous function
- * in mqtt_client using callbacks. Note that this example is not
- * intended for direct execution, as the async_disconnect call
- * will promptly close the client.
- */
+
 void run_with_callbacks(client_type& client) {
+//[publish_callback
+
 	// Publish an Application Message with QoS 0.
 	client.async_publish<async_mqtt5::qos_e::at_most_once>(
 		"test/mqtt-test", "Hello world!",
@@ -50,7 +45,9 @@ void run_with_callbacks(client_type& client) {
 			std::cout << "reason_code: " << rc.message() << std::endl;
 		}
 	);
+//]
 
+//[subscribe_callback
 	// Subscribe to a single Topic.
 	client.async_subscribe(
 		{ "test/mqtt-test", { async_mqtt5::qos_e::exactly_once } }, async_mqtt5::subscribe_props {},
@@ -62,7 +59,9 @@ void run_with_callbacks(client_type& client) {
 			std::cout << "subscribe reason_code: " << codes[0].message() << std::endl;
 		}
 	);
+//]
 
+//[receive_callback
 	// Receive an Application Message.
 	client.async_receive(
 		// Callback with signature void (error_code, std::string, std::string, publish_props)
@@ -74,7 +73,9 @@ void run_with_callbacks(client_type& client) {
 			std::cout << "payload: " << payload << std::endl;
 		}
 	);
+//]
 
+//[unsubscribe_callback
 	// Unsubscribe from the Topic.
 	client.async_unsubscribe("test/mqtt-test", async_mqtt5::unsubscribe_props {},
 		//Callback with signature void (error_code, std::vector<reason_code>, unsuback_props)
@@ -85,7 +86,9 @@ void run_with_callbacks(client_type& client) {
 			std::cout << "unsubscribe reason_code: " << codes[0].message() << std::endl;
 		}
 	);
+//]
 
+//[disconnect_callback
 	// Disconnect the Client.
 	client.async_disconnect(
 		async_mqtt5::disconnect_rc_e::disconnect_with_will_message,
@@ -93,7 +96,7 @@ void run_with_callbacks(client_type& client) {
 		// Callback with signature void (error_code)
 		[](async_mqtt5::error_code) {}
 	);
-
+//]
 }
 
 int main(int argc, char** argv) {
@@ -110,5 +113,3 @@ int main(int argc, char** argv) {
 
 	ioc.run();
 }
-
-//]

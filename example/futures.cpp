@@ -1,5 +1,3 @@
-//[futures_examples
-
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/use_future.hpp>
 
@@ -15,13 +13,9 @@ namespace asio = boost::asio;
 using stream_type = asio::ip::tcp::socket;
 using client_type = async_mqtt5::mqtt_client<stream_type>;
 
-/**
- * This function is a reference on how to use the mqtt_client with ``__USE_FUTURE__``
- * as the completion token. Each get() call on std::future will block the current
- * thread and wait until the future has a valid result. That is why it is essential
- * to ensure that the execution context is running in more than one thread.
- */
+
 void run_with_future(client_type& client) {
+//[publish_future
 	// Just like the asio::use_awaitable completion token
 	// (see ``__EXAMPLE_COROUTINE__``), the ``__USE_FUTURE__`` completion token
 	// will not return the error_code. Instead, it will throw an exception if an error has occurred.
@@ -52,42 +46,40 @@ void run_with_future(client_type& client) {
 	);
 	auto [qos2_rc, pubcomp_props] = pub_qos2_fut.get();
 	std::cout << "Publish QoS 2 Reason Code: " << qos2_rc.message() << std::endl;
+//]
 
-	auto sub_topic = async_mqtt5::subscribe_topic{
-		"test/mqtt-test", {
-			async_mqtt5::qos_e::exactly_once,
-			async_mqtt5::subscribe_options::no_local_e::no,
-			async_mqtt5::subscribe_options::retain_as_published_e::retain,
-			async_mqtt5::subscribe_options::retain_handling_e::send
-		}
-	};
-
+//[subscribe_future
 	using sub_fut_type = std::tuple<std::vector<async_mqtt5::reason_code>, async_mqtt5::suback_props>;
 	std::future<sub_fut_type> sub_fut = client.async_subscribe(
-		sub_topic, async_mqtt5::subscribe_props {}, asio::use_future
+		{ "test/mqtt-test", { async_mqtt5::qos_e::exactly_once } },
+		async_mqtt5::subscribe_props {}, asio::use_future
 	);
 	auto [sub_rcs, suback_props] = sub_fut.get();
 	std::cout << "Subscribe Reason Code: " << sub_rcs[0].message() << std::endl;
+//]
 
-	// Note: the get() call on async_receive future could block indefinitely if the mqtt_client
+//[receive_future
+	// Note: the get() call on async_receive future could block indefinitely if the ``__Client__``
 	// failed to subscribe or there are no Application Messages to be received from the subscribed Topic!
-	if (!sub_rcs[0]) {
-		using rec_fut_type = std::tuple<std::string, std::string, async_mqtt5::publish_props>;
-		std::future<rec_fut_type> rec_fut = client.async_receive(asio::use_future);
-		auto [topic, payload, publish_props] = rec_fut.get();
-		std::cout << "Received message from Topic: " << topic << ", " << payload << std::endl;
-	}
+	using rec_fut_type = std::tuple<std::string, std::string, async_mqtt5::publish_props>;
+	std::future<rec_fut_type> rec_fut = client.async_receive(asio::use_future);
+	auto [topic, payload, publish_props] = rec_fut.get();
+	std::cout << "Received message from Topic: " << topic << ", " << payload << std::endl;
+//]
 
+//[unsubscribe_future
 	using unsub_fut_type = std::tuple<std::vector<async_mqtt5::reason_code>, async_mqtt5::unsuback_props>;
 	std::future<unsub_fut_type> unsub_fut = client.async_unsubscribe(
 		"test/mqtt-test", async_mqtt5::unsubscribe_props {}, asio::use_future
 	);
 	auto [unsub_rcs, unsuback_props] = unsub_fut.get();
 	std::cout << "Unubscribe Reason Code: " << unsub_rcs[0].message() << std::endl;
+//]
 
+//[disconnect_future
 	std::future<void> dc_fut = client.async_disconnect(asio::use_future);
 	dc_fut.get();
-
+//]
 	return;
 }
 
@@ -117,5 +109,3 @@ int main(int argc, char** argv) {
 		if (t.joinable()) t.join();
 }
 
-
-//]
