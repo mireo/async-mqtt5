@@ -1,4 +1,4 @@
-#include <fmt/format.h>
+#include <iostream>
 
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/io_context.hpp>
@@ -55,6 +55,7 @@ constexpr char spacetime_ca[] =
 ;
 
 void publish_qos0_openssl_tls() {
+	std::cout << "[Test-publish-qos0-openssl-tls]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -77,7 +78,7 @@ void publish_qos0_openssl_tls() {
 		"test/mqtt-test", "hello world with qos0!",
 		retain_e::no, publish_props{},
 		[&c](error_code ec) {
-			fmt::print("[Test-publish-qos0-openssl-tls] error_code: {}\n", ec.message());
+			std::cout << "error_code: " << ec.message() << std::endl;
 			c.cancel();
 		}
 	);
@@ -87,6 +88,7 @@ void publish_qos0_openssl_tls() {
 }
 
 void publish_qos1_openssl_tls() {
+	std::cout << "[Test-publish-qos1-openssl-tls]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -109,10 +111,8 @@ void publish_qos1_openssl_tls() {
 		"test/mqtt-test", "hello world with qos1!",
 		retain_e::no, publish_props{},
 		[&c](error_code ec, reason_code rc, puback_props) {
-			fmt::print(
-				"[Test-publish-qos1-openssl-tls] "
-				"error_code: {}, reason_code: {}\n", ec.message(), rc.message()
-			);
+			std::cout << "error_code: " << ec.message() << std::endl;
+			std::cout << "reason_code: " << rc.message() << std::endl;
 			c.cancel();
 		}
 	);
@@ -123,6 +123,7 @@ void publish_qos1_openssl_tls() {
 
 
 void publish_qos2_openssl_tls() {
+	std::cout << "[Test-publish-qos2-openssl-tls]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -145,10 +146,8 @@ void publish_qos2_openssl_tls() {
 		"test/mqtt-test", "hello world with qos2!",
 		retain_e::no, publish_props{},
 		[&c](error_code ec, reason_code rc, pubcomp_props) {
-			fmt::print(
-				"[Test-publish-qos2-openssl-tls] "
-				"error_code: {}, reason_code: {}\n", ec.message(), rc.message()
-			);
+			std::cout << "error_code: " << ec.message() << std::endl;
+			std::cout << "reason_code: " << rc.message() << std::endl;
 			c.cancel();
 		}
 	);
@@ -159,6 +158,7 @@ void publish_qos2_openssl_tls() {
 
 
 void subscribe_and_receive_openssl_tls(int num_receive) {
+	std::cout << "[Test-subscribe-and-receive-openssl-tls]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -193,10 +193,8 @@ void subscribe_and_receive_openssl_tls(int num_receive) {
 		[](error_code ec, std::vector<reason_code> codes, suback_props) {
 			if (ec == asio::error::operation_aborted)
 				return;
-			fmt::print(
-				"[Test-subscribe-and-receive-openssl-tls] subscribe error_code: {},"
-				" reason_code: {}\n", ec.message(), codes[0].message()
-			);
+			std::cout << "subscribe error_code: " << ec.message() << std::endl;
+			std::cout << "subscribe reason_code: " << codes[0].message() << std::endl;
 		}
 	);
 
@@ -209,11 +207,10 @@ void subscribe_and_receive_openssl_tls(int num_receive) {
 			) {
 				if (ec == asio::error::operation_aborted)
 					return;
-				fmt::print(
-					"[Test-subscribe-and-receive-openssl-tls] message {}/{}:"
-					"ec: {}, topic: {}, payload: {}\n",
-					i + 1, num_receive, ec.message(), topic, payload
-				);
+				std::cout << "message " << i + 1 << "/" << num_receive << std::endl;
+				std::cout << "error_code: " << ec.message() << std::endl;
+				std::cout << "topic: " << topic << std::endl;
+				std::cout << "payload: " << payload << std::endl;
 
 				if (i == num_receive - 1)
 					c.cancel();
@@ -226,6 +223,7 @@ void subscribe_and_receive_openssl_tls(int num_receive) {
 }
 
 void test_coro() {
+	std::cout << "[Test-coro-openssl-tls]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -258,10 +256,11 @@ void test_coro() {
 		auto [codes, props] = co_await c.async_subscribe(
 			topics, subscribe_props {}, asio::use_awaitable
 		);
-		fmt::print("Subscribe result: ({}),", codes[0].message());
+		std::cout << "subscribe reason_code: " << codes[0].message() << std::endl;
 
 		auto [topic, payload, rec_props] = co_await c.async_receive(asio::use_awaitable);
-		fmt::print("Receive from topic {}: {}\n", topic, payload);
+		std::cout << "topic: " << topic << std::endl;
+		std::cout << "payload: " << payload << std::endl;
 
 		asio::steady_timer timer(ioc);
 		timer.expires_from_now(std::chrono::seconds(1));

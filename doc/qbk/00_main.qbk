@@ -1,14 +1,14 @@
-[library async_mqtt5
+[library Async.MQTT5: a C++20 MQTT client
     [quickbook 1.7]
     [copyright 2023 Mireo]
     [id async_mqtt5]
-    [purpose MQTT C++ client library]
+    [purpose C++20 MQTT client]
     [license
         Distributed under the Boost Software License, Version 1.0.
         (See accompanying file LICENSE_1_0.txt or copy at
         [@http://www.boost.org/LICENSE_1_0.txt])
     ]
-    [authors [A,B,C]]
+    [authors [Siladić, Ivica], [Iljazović, Bruno], [Šimičević, Korina]]
     [category template]
     [category generic]
 ]
@@ -53,7 +53,7 @@
 
 [/ MQTT ]
 [def __MQTT__ [@https://mqtt.org/ MQTT]]
-[def __Self__ Async.MQTT5]
+[def __Self__ [@https://github.com/mireo/async-mqtt5/ Async.MQTT5]]
 [def __Client__ [reflink2 mqtt_client `mqtt_client`]]
 
 [def __UTF8_STRING_PAIR__ [mqttlink 3901013 `UTF-8 String Pair`]]

@@ -1,4 +1,4 @@
-#include <fmt/format.h>
+#include <iostream>
 
 #include <boost/asio/io_context.hpp>
 
@@ -9,7 +9,7 @@
 namespace asio = boost::asio;
 
 void publish_qos0_tcp() {
-	fmt::print("[Test-publish-qos0-tcp]\n");
+	std::cout << "[Test-publish-qos0-tcp]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -26,7 +26,7 @@ void publish_qos0_tcp() {
 		"test/mqtt-test", "hello world with qos0!",
 		retain_e::no, publish_props{},
 		[&c](error_code ec) {
-			fmt::print("\terror_code: {}\n", ec.message());
+			std::cout << "error_code: " << ec.message() << std::endl;
 			c.cancel();
 		}
 	);
@@ -36,7 +36,7 @@ void publish_qos0_tcp() {
 
 
 void publish_qos1_tcp() {
-	fmt::print("[Test-publish-qos1-tcp]\n");
+	std::cout << "[Test-publish-qos1-tcp]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -53,10 +53,8 @@ void publish_qos1_tcp() {
 		"test/mqtt-test", "hello world with qos1!",
 		retain_e::no, publish_props {},
 		[&c](error_code ec, reason_code rc, puback_props) {
-			fmt::print(
-				"\terror_code: {}, reason_code: {}\n",
-				ec.message(), rc.message()
-			);
+			std::cout << "error_code: " << ec.message() << std::endl;
+			std::cout << "reason_code: " << rc.message() << std::endl;
 			c.cancel();
 		}
 	);
@@ -65,7 +63,7 @@ void publish_qos1_tcp() {
 }
 
 void publish_qos2_tcp() {
-	fmt::print("[Test-publish-qos2-tcp]\n");
+	std::cout << "[Test-publish-qos2-tcp]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -80,12 +78,10 @@ void publish_qos2_tcp() {
 
 	c.async_publish<qos_e::exactly_once>(
 		"test/mqtt-test", "hello world with qos2!",
-		retain_e::no, publish_props{},
+		retain_e::no, publish_props {},
 		[&c](error_code ec, reason_code rc, pubcomp_props) {
-			fmt::print(
-				"\terror_code: {}, reason_code: {}\n",
-				ec.message(), rc.message()
-			);
+			std::cout << "error_code: " << ec.message() << std::endl;
+			std::cout << "reason_code: " << rc.message() << std::endl;
 			c.cancel();
 		}
 	);
@@ -95,7 +91,7 @@ void publish_qos2_tcp() {
 
 
 void subscribe_and_receive_tcp(int num_receive) {
-	fmt::print("[Test-subscribe-and-receive-tcp]\n");
+	std::cout << "[Test-subscribe-and-receive-tcp]" << std::endl;
 	using namespace async_mqtt5;
 	asio::io_context ioc;
 
@@ -113,10 +109,8 @@ void subscribe_and_receive_tcp(int num_receive) {
 		[](error_code ec, std::vector<reason_code> codes, suback_props) {
 			if (ec == asio::error::operation_aborted)
 				return;
-			fmt::print(
-				"\tsubscribe error_code: {}, reason_code: {}\n",
-				ec.message(), codes[0].message()
-			);
+			std::cout << "subscribe error_code: " << ec.message() << std::endl;
+			std::cout << "subscribe reason_code: " << codes[0].message() << std::endl;
 		}
 	);
 
@@ -129,10 +123,10 @@ void subscribe_and_receive_tcp(int num_receive) {
 			) {
 				if (ec == asio::error::operation_aborted)
 					return;
-				fmt::print(
-					"\tmessage {}/{}: ec: {}, topic: {}, payload: {}\n",
-					i + 1, num_receive, ec.message(), topic, payload
-				);
+				std::cout << "message " << i + 1 << "/" << num_receive << std::endl;
+				std::cout << "error_code: " << ec.message() << std::endl;
+				std::cout << "topic: " << topic << std::endl;
+				std::cout << "payload: " << payload << std::endl;
 
 				if (i == num_receive - 1)
 					c.cancel();

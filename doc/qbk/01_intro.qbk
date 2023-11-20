@@ -21,7 +21,7 @@ The __Self__ interface aligns seamlessly with the __Asio__ asynchronous model.
 The client's asynchronous functions are compatible with all completion tokens supported by __Asio__.
 
 [heading Features]
-__Self__ is a C++ MQTT Client library designed with the core belief that users should focus solely on their application logic, not the network complexities. [br]
+__Self__ is a library designed with the core belief that users should focus solely on their application logic, not the network complexities. [br]
 The library attempts to embody this belief with a range of key features designed to elevate the development experience:
 
 * [*Complete TCP, TLS/SLL, and WebSocket support]
@@ -56,6 +56,7 @@ The following example illustrates a simple scenario of configuring a Client and 
 	
 	int main() {
 		boost::asio::io_context ioc;
+		
 		using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
 		client_type c(ioc, "");
 
@@ -64,7 +65,7 @@ The following example illustrates a simple scenario of configuring a Client and 
 			.run();
 
 		c.async_publish<async_mqtt5::qos_e::at_most_once>(
-			"test/mqtt-test", "hello world with qos0!",
+			"test/mqtt-test", "hello world!",
 			async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
 			[](async_mqtt5::error_code ec) {
 				std::cout << ec.message() << std::endl;
@@ -95,14 +96,14 @@ It may not be suitable for you if:
 __Self__ is a header-only library. 
 To use __Self__ it requires the following:
 
-* [*C++20] capable compiler.
+* [*C++20 capable compiler]
 * [*Boost 1.82 or later]. In addition to Asio, we use other header-only libraries such as Beast, Spirit, and more.
 * [*OpenSSL]. Only if you require an SSL connection by using [asioreflink ssl__stream ssl::stream].
 
 __Self__ has been tested with the following compilers:
 
 * clang 14.0 (Linux)
-* MSVC 14.3 - Visual Studio 2022 (Windows)
+* MSVC 14.37 - Visual Studio 2022 (Windows) 
 
 [heading Acknowledgements]
 We thank [@https://github.com/chriskohlhoff Christopher Kohlhoff] for his outstanding __Asio__ library,
