@@ -166,6 +166,28 @@ public:
 	}
 
 	/**
+	 * \brief Retrieves the value of a specific property from the last \__CONNACK\__ packet received.
+	 *
+	 * \details The return type varies according to the property requested.
+	 * For all properties, the return type will be `std::optional` of their respective value type.
+	 * For `async_mqtt5::prop::user_property`, the return type is `std::vector<std::string>`.
+	 *
+	 * \param prop The \__CONNACK\__ property value to retrieve.
+	 *
+	 * \par Example
+	 * \code
+	 *	std::optional<std::string> auth_method = client.connection_property(async_mqtt5::prop::authentication_method); // ok
+	 *	std::optional<std::string> c_type = client.connection_property(async_mqtt5::prop::content_type); // does not compile!
+	 * \endcode
+	 *
+	 * \see See \__CONNACK_PROPS\__ for all eligible properties.
+	 */
+	template <uint8_t p>
+	decltype(auto) connection_property(std::integral_constant<uint8_t, p> prop) {
+		return _svc_ptr->connack_prop(prop);
+	}
+
+	/**
 	 * \brief Assign a \ref will Message.
 	 *
 	 * \details The \ref will Message that the Broker should publish

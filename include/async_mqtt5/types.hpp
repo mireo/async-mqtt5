@@ -285,7 +285,7 @@ class suback_props : public prop::properties<
 > {};
 
 class unsubscribe_props : public prop::properties<
-	prop::subscription_identifier
+	prop::user_property
 > {};
 
 class unsuback_props : public prop::properties<

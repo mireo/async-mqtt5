@@ -18,6 +18,7 @@ This section lists all possible __DISCONNECT__ Properties and describes their us
 	[[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
 	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
 		This property may be used to provide additional diagnostic or other information. ]]
+	[[server_reference] [`std::string`] [A UTF-8 Encoded String which can be used by the Client to identfy another Server to use.]]
 ]
 
 [h4 Usage]
@@ -27,8 +28,22 @@ The Identifiers listed in the table above are available within the `async_mqtt5:
 
 [h4 Example]
 
+The following example shows how to set a Property value:
+
 [!c++]
 	async_mqtt5::disconnect_props props;
 	props[async_mqtt5::prop::reason_string] = "Lost connection!";
+
+The following example shows how to retrieve a Property value:
+
+[note When retrieving a property value, the subscript operator will consistently return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
+
+[!c++]
+	std::optional<std::string> reason_string = props[async_mqtt5::prop::reason_string];
+	if (reason_string.has_value())
+		// reason string property was previously set
+	else
+		// reason string property was not set
 
 [endsect]

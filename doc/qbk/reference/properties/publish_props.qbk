@@ -32,10 +32,24 @@ The Identifiers listed in the table above are available within the `async_mqtt5:
 
 [h4 Example]
 
+The following example shows how to set a Property value:
+
 [!c++]
 	async_mqtt5::publish_props props;
 	props[async_mqtt5::prop::payload_format_indicator] = uint8_t(1);
 	props[async_mqtt5::prop::topic_alias] = uint16_t(12);
 	props[async_mqtt5::prop::response_topic] = "response_topic";
+
+The following example shows how to retrieve a Property value:
+
+[note When retrieving a property value, the subscript operator will consistently return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
+
+[!c++]
+	std::optional<int16_t> topic_alias = props[async_mqtt5::prop::topic_alias];
+	if (topic_alias.has_value())
+		// topic alias property was previously set
+	else
+		// topic alias property was not set
 
 [endsect]

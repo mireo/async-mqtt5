@@ -27,8 +27,22 @@ The Identifiers listed in the table above are available within the `async_mqtt5:
 
 [h4 Example]
 
+The following example shows how to set a Property value:
+
 [!c++]
 	async_mqtt5::subscribe_props props;
 	props[async_mqtt5::prop::subscription_identifier] = 1234u;
+
+The following example shows how to retrieve a Property value:
+
+[note When retrieving a property value, the subscript operator will consistently return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
+
+[!c++]
+	std::optional<uint32_t> sub_id = props[async_mqtt5::prop::subscription_identifier];
+	if (sub_id.has_value())
+		// subscription identifier property was previously set
+	else
+		// subscription identifier property was not set
 
 [endsect]

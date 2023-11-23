@@ -45,7 +45,7 @@ public:
 	}
 
 	template <typename Prop>
-	auto connack_prop(Prop p) {
+	decltype(auto) connack_prop(Prop p) {
 		return _mqtt_context.ca_props[p];
 	}
 
@@ -83,7 +83,7 @@ public:
 	}
 
 	template <typename Prop>
-	auto connack_prop(Prop p) {
+	decltype(auto) connack_prop(Prop p) {
 		return _mqtt_context.ca_props[p];
 	}
 
@@ -207,7 +207,7 @@ public:
 	}
 
 	template <typename Prop>
-	auto connack_prop(Prop p) {
+	decltype(auto) connack_prop(Prop p) {
 		return _stream_context.connack_prop(p);
 	}
 
