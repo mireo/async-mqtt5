@@ -35,11 +35,32 @@ struct credentials {
 	}
 };
 
+class session_state {
+	uint8_t _flags = 0b00;
+
+	static constexpr uint8_t session_present_flag = 0b01;
+public:
+	void session_present(bool present) {
+		return update_flag(present, session_present_flag);
+	}
+
+	bool session_present() const { return _flags & session_present_flag; };
+
+private:
+	void update_flag(bool set, uint8_t flag) {
+		if (set)
+			_flags |= flag;
+		else
+			_flags &= ~flag;
+	}
+};
+
 struct mqtt_context {
 	credentials credentials;
 	std::optional<will> will;
 	connect_props co_props;
 	connack_props ca_props;
+	session_state session_state;
 	any_authenticator authenticator;
 };
 

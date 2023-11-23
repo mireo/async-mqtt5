@@ -28,7 +28,7 @@ class stream_context<StreamType, TlsContext> {
 	mqtt_context _mqtt_context;
 	tls_context_type _tls_context;
 public:
-	stream_context(TlsContext tls_context) :
+	explicit stream_context(TlsContext tls_context) :
 		_tls_context(std::move(tls_context))
 	{}
 
@@ -72,7 +72,7 @@ requires (!has_tls_layer<StreamType>)
 class stream_context<StreamType, std::monostate> {
 	mqtt_context _mqtt_context;
 public:
-	stream_context(std::monostate) {}
+	explicit stream_context(std::monostate) {}
 
 	mqtt_context& mqtt_context() {
 		return _mqtt_context;
@@ -289,12 +289,25 @@ public:
 		);
 	}
 
+	void update_session_state() {
+		auto& session_state = _stream_context.mqtt_context().session_state;
+		if (!session_state.session_present()) {
+			channel_store_error(client::error::session_expired);
+			_replies.clear_pending_pubrels();
+			session_state.session_present(true);
+		}
+	}
+
 	bool channel_store(decoders::publish_message message) {
 		auto& [topic, packet_id, flags, props, payload] = message;
 		return _rec_channel.try_send(
 			error_code {}, std::move(topic),
 			std::move(payload), std::move(props)
 		);
+	}
+
+	bool channel_store_error(error_code ec) {
+		return _rec_channel.try_send(ec, std::string {}, std::string {}, publish_props {});
 	}
 
 	template <typename CompletionToken>

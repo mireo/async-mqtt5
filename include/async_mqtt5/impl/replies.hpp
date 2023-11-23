@@ -155,6 +155,19 @@ public:
 		_fast_replies.clear();
 	}
 
+	void clear_pending_pubrels() {
+		for (auto it = _handlers.begin(); it != _handlers.end();) {
+			if (it->code() == control_code_e::pubrel) {
+				std::move(*it)(
+					asio::error::operation_aborted, byte_citer {}, byte_citer {}
+				);
+				it = _handlers.erase(it);
+			}
+			else
+				++it;
+		}
+	}
+
 private:
 	handlers::iterator find_handler(control_code_e code, uint16_t packet_id) {
 		return std::find_if(

@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(client_cancel_async_receive) {
 }
 
 // passes on debian, hangs on windows in io_context destructor
-BOOST_AUTO_TEST_CASE(ioc_stop_async_publish) {
+BOOST_AUTO_TEST_CASE(ioc_stop_async_publish, *boost::unit_test::disabled() ) {
 	cancel_async_publish<test::ioc_stop>();
 }
 
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(client_cancel_async_publish) {
 }
 
 // passes on debian, hangs on windows 
-BOOST_AUTO_TEST_CASE(ioc_stop_cancel_during_connecting) {
+BOOST_AUTO_TEST_CASE(ioc_stop_cancel_during_connecting, *boost::unit_test::disabled() ) {
 	cancel_during_connecting<test::ioc_stop>();
 }
 

@@ -125,6 +125,7 @@ public:
 		duration wait_for, CompletionCondition cc
 	) {
 		if (ec == asio::error::try_again) {
+			_svc.update_session_state();
 			_svc._async_sender.resend();
 			_data_span = { _read_buff.cend(), _read_buff.cend() };
 			return perform(wait_for, std::move(cc));

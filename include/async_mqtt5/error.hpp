@@ -61,6 +61,9 @@ enum class error : int {
 	/** There are no more available Packet Identifiers to use. */
 	pid_overrun,
 
+	/** The Client's session does not exist or it has expired. */
+	session_expired,
+
 	// publish
 	/** The Server does not support the specified \ref qos_e. */
 	qos_not_supported,
@@ -79,6 +82,8 @@ inline std::string client_error_to_string(error err) {
 	switch (err) {
 		case malformed_packet:
 			return "Malformed packet has been detected";
+		case session_expired:
+			return "The Client's session does not exist or it has expired. ";
 		case pid_overrun:
 			return "There are no more available Packet Identifiers to use.";
 		case qos_not_supported:
@@ -401,7 +406,6 @@ constexpr reason_code session_taken_over { 0x8e };
 /** The Topic Filter is not malformed, but it is not accepted. */
 constexpr reason_code topic_filter_invalid { 0x8f };
 
-
 /** The Topic Name is not malformed, but it is not accepted. */
 constexpr reason_code topic_name_invalid { 0x90 };
 
@@ -468,7 +472,7 @@ namespace detail {
 using enum category;
 
 template <category cat>
-inline std::pair<reason_code*, size_t> valid_codes()
+std::pair<reason_code*, size_t> valid_codes()
 requires (cat == connack) {
 	static reason_code valid_codes[] = {
 		success, unspecified_error, malformed_packet,
@@ -487,7 +491,7 @@ requires (cat == connack) {
 }
 
 template <category cat>
-inline std::pair<reason_code*, size_t> valid_codes()
+std::pair<reason_code*, size_t> valid_codes()
 requires (cat == auth) {
 	static reason_code valid_codes[] = {
 		success, continue_authentication
@@ -497,7 +501,7 @@ requires (cat == auth) {
 }
 
 template <category cat>
-inline std::pair<reason_code*, size_t> valid_codes()
+std::pair<reason_code*, size_t> valid_codes()
 requires (cat == puback || cat == pubrec) {
 	static reason_code valid_codes[] = {
 		success, no_matching_subscribers, unspecified_error,
@@ -510,7 +514,7 @@ requires (cat == puback || cat == pubrec) {
 }
 
 template <category cat>
-inline std::pair<reason_code*, size_t> valid_codes()
+std::pair<reason_code*, size_t> valid_codes()
 requires (cat == pubrel || cat == pubcomp) {
 	static reason_code valid_codes[] = {
 		success, packet_id_not_found
@@ -520,7 +524,7 @@ requires (cat == pubrel || cat == pubcomp) {
 }
 
 template <category cat>
-inline std::pair<reason_code*, size_t> valid_codes()
+std::pair<reason_code*, size_t> valid_codes()
 requires (cat == suback) {
 	static reason_code valid_codes[] = {
 		granted_qos_0, granted_qos_1, granted_qos_2,
@@ -536,7 +540,7 @@ requires (cat == suback) {
 }
 
 template <category cat>
-inline std::pair<reason_code*, size_t> valid_codes()
+std::pair<reason_code*, size_t> valid_codes()
 requires (cat == unsuback) {
 	static reason_code valid_codes[] = {
 		success, no_subscription_existed,
@@ -549,7 +553,7 @@ requires (cat == unsuback) {
 }
 
 template <category cat>
-inline std::pair<reason_code*, size_t> valid_codes()
+std::pair<reason_code*, size_t> valid_codes()
 requires (cat == disconnect) {
 	static reason_code valid_codes[] = {
 		normal_disconnection, unspecified_error,
@@ -578,7 +582,7 @@ requires (cat == disconnect) {
 
 
 template <reason_codes::category cat>
-inline std::optional<reason_code> to_reason_code(uint8_t code) {
+std::optional<reason_code> to_reason_code(uint8_t code) {
 	auto [ptr, len] = reason_codes::detail::valid_codes<cat>();
 	auto it = std::lower_bound(ptr, ptr + len, reason_code(code));
 

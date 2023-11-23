@@ -281,6 +281,7 @@ public:
 		const auto& [session_present, reason_code, ca_props] = *rv;
 
 		_ctx.ca_props = ca_props;
+		_ctx.session_state.session_present(session_present);
 
 		// TODO: session_present logic
 		//  Unexpected result handling:

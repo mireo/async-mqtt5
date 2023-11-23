@@ -73,7 +73,7 @@ class async_sender {
 	serial_num_t _last_serial_num { 0 };
 
 public:
-	async_sender(ClientService& svc) : _svc(svc) {}
+	explicit async_sender(ClientService& svc) : _svc(svc) {}
 
 	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
@@ -145,6 +145,7 @@ public:
 		_write_in_progress = false;
 
 		if (ec == asio::error::try_again) {
+			_svc.update_session_state();
 			_write_queue.insert(
 				_write_queue.begin(),
 				std::make_move_iterator(write_queue.begin()),

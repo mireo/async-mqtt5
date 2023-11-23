@@ -30,6 +30,12 @@ may complete with, along with the reasons for their occurrence.
 		the current operation due to the exhaustion of the available identifiers.
 		This occurs when there are 65535 outgoing Packets awaiting their responses.
 	]]
+	[[`async_mqtt5::client::error::session_expired`][
+		The Client has established a successful connection with a Broker, but either the session does not exist or has expired.
+		In cases where the Client had previously set up subscriptions to Topics, these subscriptions are also expired.
+		Therefore, the Client should re-subscribe.
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_receive] calls.
+	]]
 	[[`async_mqtt5::client::error::qos_not_supported`] [
 		The Client has attempted to publish an Application Message with __QOS__ higher
 		than the Maximum __QOS__ specified by the Server.

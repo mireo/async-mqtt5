@@ -660,6 +660,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted`\n
+	 *		- \link async_mqtt5::client::error::session_expired \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */

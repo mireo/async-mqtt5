@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
+#include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
@@ -15,25 +16,30 @@ BOOST_AUTO_TEST_SUITE(coroutine/*, *boost::unit_test::disabled()*/)
 using namespace async_mqtt5;
 namespace asio = boost::asio;
 
+constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
+
 template<typename StreamType, typename TlsContext>
 asio::awaitable<void> sanity_check(mqtt_client<StreamType, TlsContext>& c) {
-	co_await c.template async_publish<qos_e::at_most_once>(
-		"test/mqtt-test", "hello world with qos0!", retain_e::no, publish_props{},
-		asio::use_awaitable
+	auto [ec_0] = co_await c.template async_publish<qos_e::at_most_once>(
+		"test/mqtt-test", "hello world with qos0!", retain_e::yes, publish_props {},
+		use_nothrow_awaitable
 	);
+	BOOST_CHECK(!ec_0);
 
-	auto [puback_rc, puback_props] = co_await c.template async_publish<qos_e::at_least_once>(
+	auto [ec_1, puback_rc, puback_props] = co_await c.template async_publish<qos_e::at_least_once>(
 		"test/mqtt-test", "hello world with qos1!",
-		retain_e::no, publish_props{},
-		asio::use_awaitable
+		retain_e::yes, publish_props {},
+		use_nothrow_awaitable
 	);
+	BOOST_CHECK(!ec_1);
 	BOOST_CHECK(!puback_rc);
 
-	auto [pubcomp_rc, pubcomp_props] = co_await c.template async_publish<qos_e::exactly_once>(
+	auto [ec_2, pubcomp_rc, pubcomp_props] = co_await c.template async_publish<qos_e::exactly_once>(
 		"test/mqtt-test", "hello world with qos2!",
-		retain_e::no, publish_props{},
-		asio::use_awaitable
+		retain_e::yes, publish_props {},
+		use_nothrow_awaitable
 	);
+	BOOST_CHECK(!ec_2);
 	BOOST_CHECK(!pubcomp_rc);
 
 	std::vector<subscribe_topic> topics;
@@ -46,19 +52,21 @@ asio::awaitable<void> sanity_check(mqtt_client<StreamType, TlsContext>& c) {
 		}
 	});
 	
-	auto [sub_codes, sub_props] = co_await c.async_subscribe(
-		topics, subscribe_props{}, asio::use_awaitable
+	auto [sub_ec, sub_codes, sub_props] = co_await c.async_subscribe(
+		topics, subscribe_props {}, use_nothrow_awaitable
 	);
+	BOOST_CHECK(!sub_ec);
 	BOOST_CHECK(!sub_codes[0]);
-	auto [topic, payload, publish_props] = co_await c.async_receive(asio::use_awaitable);
+	auto [rec, topic, payload, publish_props] = co_await c.async_receive(use_nothrow_awaitable);
 
-	auto [unsub_codes, unsub_props] = co_await c.async_unsubscribe(
+	auto [unsub_ec, unsub_codes, unsub_props] = co_await c.async_unsubscribe(
 		std::vector<std::string>{"test/mqtt-test"}, unsubscribe_props{},
-		asio::use_awaitable
+		use_nothrow_awaitable
 	);
+	BOOST_CHECK(!unsub_ec);
 	BOOST_CHECK(!unsub_codes[0]);
 
-	co_await c.async_disconnect(asio::use_awaitable);
+	co_await c.async_disconnect(use_nothrow_awaitable);
 	co_return;
 }
 
