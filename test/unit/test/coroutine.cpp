@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
 		}
 	);
 
-	co_spawn(ioc, 
+	co_spawn(ioc,
 		[&]() -> asio::awaitable<void> {
 			co_await sanity_check(c);
 			timer.cancel();

@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(test_puback) {
 	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
 
 	const auto& [control_byte, remain_length] = *header;
-	auto rv = decoders::decode_puback(remain_length, it);
+	auto rv = decoders::decode_puback(remain_length - sizeof(uint16_t), it);
 	BOOST_CHECK_MESSAGE(rv, "Parsing PUBACK failed.");
 
 	const auto& [reason_code_, pprops] = *rv;

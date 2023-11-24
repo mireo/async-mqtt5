@@ -1,5 +1,8 @@
 #include <boost/test/unit_test.hpp>
 
+#include <boost/asio/as_tuple.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/post.hpp>
@@ -7,6 +10,8 @@
 #include <async_mqtt5.hpp>
 
 using namespace async_mqtt5;
+
+constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 namespace async_mqtt5::test {
 
@@ -153,7 +158,7 @@ void cancel_during_connecting() {
 }
 
 
-BOOST_AUTO_TEST_SUITE(cancellation)
+BOOST_AUTO_TEST_SUITE(cancellation/*, *boost::unit_test::disabled()*/)
 
 
 BOOST_AUTO_TEST_CASE(ioc_stop_async_receive) {
@@ -183,64 +188,45 @@ BOOST_AUTO_TEST_CASE(client_cancel_during_connecting) {
 	cancel_during_connecting<test::client_cancel>();
 }
 
-
-// last two ec checks fail, they finish with no_recovery when
-// you don't call c.cancel()
 BOOST_AUTO_TEST_CASE(rerunning_the_client) {
-	constexpr int expected_handlers_called = 3;
-	int handlers_called = 0;
-
 	asio::io_context ioc;
 
-	using stream_type = asio::ip::tcp::socket;
-	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	co_spawn(ioc,
+		[&ioc]() -> asio::awaitable<void> {
+			using stream_type = asio::ip::tcp::socket;
+			using client_type = mqtt_client<stream_type>;
+			client_type c(ioc, "");
 
-	c.brokers("mqtt.mireo.local", 1883)
-		.run();
+			c.brokers("mqtt.mireo.local", 1883)
+				.credentials("test-cli", "", "")
+				.run();
 
-	c.async_publish<qos_e::exactly_once>(
-		"cancelled_topic", "cancelled_payload", retain_e::yes, {},
-		[&handlers_called](error_code ec, reason_code rc, pubcomp_props) {
-			BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-			BOOST_CHECK_EQUAL(rc, reason_codes::empty);
-			handlers_called++;
-		}
-	);
+			auto [ec] = co_await c.async_publish<qos_e::at_most_once>(
+				"t", "p", retain_e::yes, publish_props {}, use_nothrow_awaitable
+			);
+			BOOST_CHECK(!ec);
 
-	asio::post(ioc, [&c] { c.cancel(); });
+			c.cancel();
 
-	asio::steady_timer cancel_timer(c.get_executor());
-	cancel_timer.expires_after(std::chrono::seconds(1));
-	cancel_timer.async_wait(
-		[&](auto) {
+			auto [cec] = co_await c.async_publish<qos_e::at_most_once>(
+				"ct", "cp", retain_e::yes, publish_props {}, use_nothrow_awaitable
+			);
+			BOOST_CHECK(cec == asio::error::operation_aborted);
+
 			c.run();
 
-			c.async_publish<qos_e::at_most_once>(
-				"test/mqtt-test", "payload", retain_e::yes, {},
-				[&handlers_called](error_code ec) {
-					BOOST_CHECK(!ec);
-					handlers_called++;
-				}
+			auto [rec] = co_await c.async_publish<qos_e::at_most_once>(
+				"ct", "cp", retain_e::yes, publish_props {}, use_nothrow_awaitable
 			);
+			BOOST_CHECK(!rec);
 
-			c.async_receive([&handlers_called](
-				error_code ec, std::string, std::string, publish_props
-			) {
-				BOOST_CHECK(!ec);
-				handlers_called++;
-			});
-		}
+			co_await c.async_disconnect(use_nothrow_awaitable);
+			co_return;
+		},
+		asio::detached
 	);
-
-	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::seconds(2));
-	timer.async_wait([&](auto) { c.cancel(); });
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

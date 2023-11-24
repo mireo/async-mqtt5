@@ -165,9 +165,9 @@ int main(int argc, char** argv) {
 		.brokers("mqtt.broker", 1883)
 		.run();
 
-	asio::co_spawn(ioc.get_executor(), coroutine(c), asio::detached);
+	co_spawn(ioc.get_executor(), coroutine(c), asio::detached);
 	// or...
-	asio::co_spawn(ioc.get_executor(), nothrow_coroutine(c), asio::detached);
+	co_spawn(ioc.get_executor(), nothrow_coroutine(c), asio::detached);
 
 	ioc.run();
 }

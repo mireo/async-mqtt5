@@ -46,7 +46,7 @@ int main() {
 	asio::io_context ioc;
 
 	// Spawn the coroutine.
-	asio::co_spawn(ioc.get_executor(), client_publisher(ioc), asio::detached);
+	co_spawn(ioc.get_executor(), client_publisher(ioc), asio::detached);
 
 	// Start the execution.
 	ioc.run();

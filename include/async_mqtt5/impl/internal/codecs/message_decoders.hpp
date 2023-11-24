@@ -54,7 +54,8 @@ inline std::optional<connect_message> decode_connect(
 		x3::big_word >> // keep_alive
 		prop::props_<connect_props>;
 
-	auto vh = type_parse(it, it + remain_length, var_header_);
+	const byte_citer end = it + remain_length;
+	auto vh = type_parse(it, end, var_header_);
 	if (!vh)
 		return std::optional<connect_message>{};
 
@@ -75,7 +76,7 @@ inline std::optional<connect_message> decode_connect(
 		basic::if_(has_uname)[basic::utf8_] >> // username
 		basic::if_(has_pwd)[basic::utf8_]; // password
 
-	auto pload = type_parse(it, it + remain_length, payload_);
+	auto pload = type_parse(it, end, payload_);
 	if (!pload)
 		return std::optional<connect_message>{};
 
