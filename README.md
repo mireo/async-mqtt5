@@ -40,7 +40,7 @@ Using the library
 2. If you use SSL, download [OpenSSL](https://www.openssl.org/), link the library and add it to your include path.
 3. Additionally, you can add Async.MQTT5's `include` folder to your include path.
 
-You can compile the example below with the following command line:
+You can compile the example below with the following command line on Linux:
 
     $ clang++ -std=c++20 <source-cpp-file> -o example -I<path-to-boost> -Iinclude -pthread
 
@@ -64,15 +64,16 @@ int main() {
 	using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
 	client_type c(ioc, "");
 
-	c.credentials("clientid", "", "")
+	c.credentials("clientid", "username", "password")
 		.brokers("mqtt.broker", 1883)
 		.run();
 
 	c.async_publish<async_mqtt5::qos_e::at_most_once>(
 		"test/mqtt-test", "hello world!",
 		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		[](async_mqtt5::error_code ec) {
+		[&c](async_mqtt5::error_code ec) {
 			std::cout << ec.message() << std::endl;
+			c.cancel(); // close the client
 		}
 	);
 	
