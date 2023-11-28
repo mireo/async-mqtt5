@@ -1,0 +1,23 @@
+{
+  "name": "async-mqtt5",
+  "version-semver": "0.0.1",
+  "dependencies": [
+    "boost-asio",
+    "boost-beast",
+    "boost-spirit"
+  ],
+  "default-features": [],
+  "features": {
+    "test": {
+      "description": "Dependencies for testing and examples",
+      "dependencies": [
+        "boost-test",
+        {
+          "name": "boost-asio",
+          "default-features": false,
+          "features": ["ssl"]
+        }
+      ]
+    }
+  }
+}
