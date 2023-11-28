@@ -27,18 +27,19 @@ void assign_tls_sni(const authority_path& ap, TlsContext& ctx, TlsStream& s);
 
 namespace detail {
 
-template <typename Handler>
-auto tracking_executor(const Handler& handler) {
+template <typename Handler, typename DfltExecutor>
+auto tracking_executor(const Handler& handler, const DfltExecutor& ex) {
 	return asio::prefer(
-		asio::get_associated_executor(handler),
+		asio::get_associated_executor(handler, ex),
 		asio::execution::outstanding_work.tracked
 	);
 }
 
-template <typename Handler>
-using tracking_type = std::decay_t<
-	decltype(tracking_executor(std::declval<Handler>()))
->;
+template <typename Handler, typename DfltExecutor>
+using tracking_type = typename asio::prefer_result<
+	asio::associated_executor_t<Handler, DfltExecutor>,
+	asio::execution::outstanding_work_t::tracked_t
+>::type;
 
 template <typename T, typename B>
 concept has_async_write = requires(T a) {

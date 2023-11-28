@@ -9,6 +9,7 @@
 
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/detail/cancellable_handler.hpp>
 
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
@@ -28,7 +29,10 @@ class disconnect_op {
 
 	std::shared_ptr<client_service> _svc_ptr;
 	DisconnectContext _context;
-	std::decay_t<Handler> _handler;
+	cancellable_handler<
+		Handler,
+		typename ClientService::executor_type
+	> _handler;
 
 public:
 	disconnect_op(
@@ -37,7 +41,7 @@ public:
 	) :
 		_svc_ptr(svc_ptr),
 		_context(std::move(context)),
-		_handler(std::move(handler))
+		_handler(std::move(handler), get_executor())
 	{}
 
 	disconnect_op(disconnect_op&&) noexcept = default;
@@ -103,10 +107,7 @@ public:
 
 private:
 	void complete(error_code ec) {
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec)
-		);
+		_handler.complete(ec);
 	}
 };
 

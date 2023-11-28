@@ -15,7 +15,7 @@ class write_op {
 	struct on_reconnect {};
 
 	Owner& _owner;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 
 public:
 	write_op(

@@ -142,6 +142,12 @@ public:
 	}
 
 	void send_publish(control_packet<allocator_type> publish) {
+		if (_handler.empty()) { // already cancelled
+			if constexpr (qos_type != qos_e::at_most_once)
+				_svc_ptr->free_pid(publish.packet_id());
+			return;
+		}
+
 		const auto& wire_data = publish.wire_data();
 		_svc_ptr->async_send(
 			wire_data,

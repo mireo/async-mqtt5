@@ -94,7 +94,7 @@ template <typename Handler>
 class read_op {
 	struct on_read {};
 	std::shared_ptr<test_stream_impl> _stream_impl;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 
 public:
 	read_op(
@@ -155,7 +155,7 @@ class write_op {
 	struct on_write {};
 
 	std::shared_ptr<test_stream_impl> _stream_impl;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 
 public:
 	write_op(

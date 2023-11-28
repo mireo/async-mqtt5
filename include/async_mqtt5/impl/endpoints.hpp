@@ -26,7 +26,7 @@ class resolve_op {
 	struct on_resolve {};
 
 	Owner& _owner;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 
 public:
 	resolve_op(

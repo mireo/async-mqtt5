@@ -28,20 +28,20 @@ private:
 	// Handler with assigned tracking executor.
 	// Objects of this type are type-erased by any_completion_handler
 	// and stored in the waiting queue.
-	template <typename Handler>
+	template <typename Handler, typename Executor>
 	class tracked_op {
-		tracking_type<Handler> _executor;
-		std::decay_t<Handler> _handler;
+		tracking_type<Handler, Executor> _executor;
+		Handler _handler;
 	public:
-		tracked_op(Handler&& h) :
-			_executor(tracking_executor(h)),
+		tracked_op(Handler&& h, const Executor& ex) :
+			_executor(tracking_executor(h, ex)),
 			_handler(std::move(h))
 		{}
 
 		tracked_op(tracked_op&&) noexcept = default;
 		tracked_op(const tracked_op&) = delete;
 
-		using executor_type = tracking_type<Handler>;
+		using executor_type = tracking_type<Handler, Executor>;
 		executor_type get_executor() const noexcept {
 			return _executor;
 		}
@@ -186,7 +186,7 @@ private:
 	// to asio::post to avoid recursion.
 	void execute_or_queue(auto handler) noexcept {
 		std::unique_lock l { _thread_mutex };
-		tracked_op h { std::move(handler) };
+		tracked_op h { std::move(handler), _ex };
 		if (_locked.load(std::memory_order_relaxed)) {
 			_waiting.emplace_back(std::move(h));
 			auto slot = _waiting.back().get_cancellation_slot();

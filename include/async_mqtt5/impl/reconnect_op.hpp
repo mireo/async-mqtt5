@@ -27,7 +27,7 @@ class reconnect_op {
 	struct on_backoff {};
 
 	Owner& _owner;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 	std::unique_ptr<std::string> _buffer_ptr;
 
 	using endpoint = asio::ip::tcp::endpoint;

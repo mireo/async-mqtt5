@@ -43,7 +43,7 @@ class connect_op {
 
 	Stream& _stream;
 	mqtt_context& _ctx;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 	std::unique_ptr<std::string> _buffer_ptr;
 
 	using endpoint = asio::ip::tcp::endpoint;

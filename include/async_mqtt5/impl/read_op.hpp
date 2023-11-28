@@ -19,7 +19,7 @@ class read_op {
 	struct on_reconnect {};
 
 	Owner& _owner;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 
 public:
 	read_op(Owner& owner, Handler&& handler) :

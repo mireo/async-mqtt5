@@ -54,7 +54,7 @@ class assemble_op {
 	static constexpr size_t max_packet_size = 65536;
 
 	client_service& _svc;
-	std::decay_t<Handler> _handler;
+	Handler _handler;
 
 	std::string& _read_buff;
 	data_span& _data_span;
