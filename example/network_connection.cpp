@@ -30,6 +30,12 @@ void tcp_setup() {
 // External customization point.
 namespace async_mqtt5 {
 
+template <typename StreamBase>
+struct tls_handshake_type<asio::ssl::stream<StreamBase>> {
+	static constexpr auto client = asio::ssl::stream_base::client;
+	static constexpr auto server = asio::ssl::stream_base::server;
+};
+
 // This client uses this funcction to indicate which hostname it is
 // attempting to connect to at the start of the handshaking process.
 template <typename StreamBase>
@@ -131,6 +137,12 @@ void async_teardown(
 } // end namespace boost::beast::websocket
 
 namespace async_mqtt5 {
+
+template <typename StreamBase>
+struct tls_handshake_type<asio::ssl::stream<StreamBase>> {
+	static constexpr auto client = asio::ssl::stream_base::client;
+	static constexpr auto server = asio::ssl::stream_base::server;
+};
 
 template <typename streambase>
 void assign_tls_sni(
