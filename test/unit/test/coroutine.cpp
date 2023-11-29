@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(tcp_client_check) {
 
 	c.credentials("tcp-tester", "", "")
 		.brokers("mqtt.mireo.local", 1883)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	asio::steady_timer timer(ioc);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
 
 	c.credentials("websocket-tcp-tester", "", "")
 		.brokers("fcluster-5/mqtt", 8083)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	asio::steady_timer timer(ioc);

@@ -4,10 +4,12 @@
 #include <boost/asio/detached.hpp>
 
 #include <async_mqtt5/error.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
@@ -57,9 +59,13 @@ public:
 		const std::vector<subscribe_topic>& topics,
 		const subscribe_props& props
 	) {
+		auto ec = validate_topics(topics);
+		if (ec)
+			return complete_post(ec, topics.size());
+
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
-			return complete_post(client::error::pid_overrun);
+			return complete_post(client::error::pid_overrun, topics.size());
 
 		auto subscribe = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
@@ -121,7 +127,6 @@ public:
 		}
 
 		auto& [props, reason_codes] = *suback;
-		// TODO: perhaps do something with the topics we subscribed to (one day)
 
 		complete(
 			ec, packet_id,
@@ -131,19 +136,25 @@ public:
 
 private:
 
+	static error_code validate_topics(const std::vector<subscribe_topic>& topics) {
+		for (const auto& topic: topics)
+			if (!is_valid_utf8_topic(topic.topic_filter))
+				return client::error::invalid_topic;
+		return error_code {};
+	}
+
 	static std::vector<reason_code> to_reason_codes(std::vector<uint8_t> codes) {
 		std::vector<reason_code> ret;
 		for (uint8_t code : codes) {
 			auto rc = to_reason_code<reason_codes::category::suback>(code);
 			if (rc)
 				ret.push_back(*rc);
-			// TODO: on off chance that one of the rcs is invalid, should we push something to mark that?
 		}
 		return ret;
 	}
 
 	void on_malformed_packet(const std::string& reason) {
-		auto props = disconnect_props{};
+		auto props = disconnect_props {};
 		props[prop::reason_string] = reason;
 		async_disconnect(
 			disconnect_rc_e::malformed_packet, props, false, _svc_ptr,
@@ -152,9 +163,9 @@ private:
 	}
 
 
-	void complete_post(error_code ec) {
+	void complete_post(error_code ec, size_t num_topics) {
 		_handler.complete_post(
-			ec, std::vector<reason_code> {}, suback_props {}
+			ec, std::vector<reason_code> { num_topics, reason_codes::empty }, suback_props {}
 		);
 	}
 

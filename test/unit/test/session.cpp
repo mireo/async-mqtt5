@@ -82,9 +82,7 @@ BOOST_AUTO_TEST_CASE(clear_waiting_on_pubrel) {
 	});
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 

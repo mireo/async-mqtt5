@@ -66,9 +66,7 @@ BOOST_AUTO_TEST_CASE(publish_qos_0) {
 
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 
@@ -148,9 +146,7 @@ BOOST_AUTO_TEST_CASE(two_publishes_qos_1_with_fail_on_write) {
 	timer.async_wait([&](auto) { c.cancel(); });
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_CASE(receive_publish_qos_2) {
@@ -221,9 +217,7 @@ BOOST_AUTO_TEST_CASE(receive_publish_qos_2) {
 	timer.async_wait([&](auto) { c.cancel(); });
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_CASE(send_publish_qos_2_with_fail_on_read) {
@@ -298,9 +292,7 @@ BOOST_AUTO_TEST_CASE(send_publish_qos_2_with_fail_on_read) {
 	timer.async_wait([&](auto) { c.cancel(); });
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_CASE(test_ordering_after_reconnect) {
@@ -392,9 +384,7 @@ BOOST_AUTO_TEST_CASE(test_ordering_after_reconnect) {
 	timer.async_wait([&](auto) { c.cancel(); });
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_CASE(throttling) {
@@ -496,9 +486,7 @@ BOOST_AUTO_TEST_CASE(throttling) {
 	timer.async_wait([&](auto) { c.cancel(); });
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 
@@ -569,9 +557,7 @@ BOOST_AUTO_TEST_CASE(cancel_multiple_ops) {
 		"The client did not cancel properly!"
 	);
 
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

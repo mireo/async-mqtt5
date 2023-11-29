@@ -25,16 +25,24 @@ may complete with, along with the reasons for their occurrence.
 		to establish a connection with the Broker. The cause of this error may be attributed to the connection 
 		related parameters used during the initialization of the [reflink2 mqtt_client `mqtt_client`].
 	]]
-	[[`async_mqtt5::client::error::pid_overrun`] [
-		This error code signifies that the Client was unable to allocate a Packet Identifier for
-		the current operation due to the exhaustion of the available identifiers.
-		This occurs when there are 65535 outgoing Packets awaiting their responses.
-	]]
 	[[`async_mqtt5::client::error::session_expired`][
 		The Client has established a successful connection with a Broker, but either the session does not exist or has expired.
 		In cases where the Client had previously set up subscriptions to Topics, these subscriptions are also expired.
 		Therefore, the Client should re-subscribe.
 		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_receive] calls.
+	]]
+	[[`async_mqtt5::client::error::pid_overrun`] [
+		This error code signifies that the Client was unable to allocate a Packet Identifier for
+		the current operation due to the exhaustion of the available identifiers.
+		This occurs when there are 65535 outgoing Packets awaiting their responses.
+	]]
+	[[`async_mqtt5::client::error::invalid_topic`] [
+		The Client has attempted to perform an action (publish, subscribe or unsubscribe) on an invalid Topic.
+		See __TOPIC_SEMANTIC_AND_USAGE__ for information on properly formed Topics.
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_publish], 
+		[refmem mqtt_client async_subscribe], and [refmem mqtt_client async_unsubscribe] calls.
+		In the case of [refmem mqtt_client async_subscribe] and [refmem mqtt_client async_unsubscribe], this error code 
+		occurs if at least one Topic provided is malformed.
 	]]
 	[[`async_mqtt5::client::error::qos_not_supported`] [
 		The Client has attempted to publish an Application Message with __QOS__ higher

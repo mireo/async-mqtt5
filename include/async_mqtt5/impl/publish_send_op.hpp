@@ -10,6 +10,7 @@
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
@@ -96,8 +97,8 @@ public:
 	void perform(
 		std::string topic, std::string payload,
 		retain_e retain, const publish_props& props
-	) {	
-		auto ec = validate_publish(retain, props);
+	) {
+		auto ec = validate_publish(topic, retain, props);
 		if (ec)
 			return complete_post(ec);
 
@@ -118,27 +119,6 @@ public:
 		);
 
 		send_publish(std::move(publish));
-	}
-
-	error_code validate_publish(
-		retain_e retain, const publish_props& props
-	) {
-		auto max_qos = _svc_ptr->connack_prop(prop::maximum_qos);
-		if (max_qos && uint8_t(qos_type) > *max_qos)
-			return client::error::qos_not_supported;
-
-		auto retain_available = _svc_ptr->connack_prop(prop::retain_available);
-		if (retain_available && *retain_available == 0 && retain == retain_e::yes)
-			return client::error::retain_not_available;
-
-		// TODO: topic alias mapping
-		auto topic_alias_max = _svc_ptr->connack_prop(prop::topic_alias_maximum);
-		auto topic_alias = props[prop::topic_alias];
-		if ((!topic_alias_max || topic_alias_max && *topic_alias_max == 0) && topic_alias)
-			return client::error::topic_alias_maximum_reached;
-		if (topic_alias_max && topic_alias && *topic_alias > *topic_alias_max)
-			return client::error::topic_alias_maximum_reached;
-		return {};
 	}
 
 	void send_publish(control_packet<allocator_type> publish) {
@@ -339,6 +319,29 @@ public:
 
 
 private:
+	error_code validate_publish(
+		const std::string& topic, retain_e retain, const publish_props& props
+	) {
+		if (!is_valid_utf8_topic(topic))
+			return client::error::invalid_topic;
+
+		auto max_qos = _svc_ptr->connack_prop(prop::maximum_qos);
+		if (max_qos && uint8_t(qos_type) > *max_qos)
+			return client::error::qos_not_supported;
+
+		auto retain_available = _svc_ptr->connack_prop(prop::retain_available);
+		if (retain_available && *retain_available == 0 && retain == retain_e::yes)
+			return client::error::retain_not_available;
+
+		auto topic_alias_max = _svc_ptr->connack_prop(prop::topic_alias_maximum);
+		auto topic_alias = props[prop::topic_alias];
+		if ((!topic_alias_max || topic_alias_max && *topic_alias_max == 0) && topic_alias)
+			return client::error::topic_alias_maximum_reached;
+		if (topic_alias_max && topic_alias && *topic_alias > *topic_alias_max)
+			return client::error::topic_alias_maximum_reached;
+		return {};
+	}
+
 	void on_malformed_packet(const std::string& reason) {
 		auto props = disconnect_props {};
 		props[prop::reason_string] = reason;

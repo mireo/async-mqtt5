@@ -58,11 +58,14 @@ enum class error : int {
 	malformed_packet = 100,
 	/// \endcond
 
+	/** The Client's session does not exist or it has expired. */
+	session_expired,
+
 	/** There are no more available Packet Identifiers to use. */
 	pid_overrun,
 
-	/** The Client's session does not exist or it has expired. */
-	session_expired,
+	/** The Topic is invalid and does not conform to the specification. */
+	invalid_topic,
 
 	// publish
 	/** The Server does not support the specified \ref qos_e. */
@@ -86,6 +89,9 @@ inline std::string client_error_to_string(error err) {
 			return "The Client's session does not exist or it has expired. ";
 		case pid_overrun:
 			return "There are no more available Packet Identifiers to use.";
+		case invalid_topic:
+			return "The Topic is invalid and "
+				"does not conform to the specification.";
 		case qos_not_supported:
 			return "The Server does not support the specified QoS";
 		case retain_not_available:
@@ -157,7 +163,7 @@ public:
 		: _code(code), _category(cat)
 	{}
 
-	constexpr reason_code(uint8_t code) : _code(code) {}
+	constexpr explicit reason_code(uint8_t code) : _code(code) {}
 /// \endcond 
 
 	/// Copy constructor.

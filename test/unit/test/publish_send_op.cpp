@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_pid_overrun) {
 	using client_service_type = overrun_client<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor(), "");
 
-	auto handler = [&](error_code ec, reason_code rc, puback_props) {
+	auto handler = [&handlers_called](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
 		BOOST_CHECK_EQUAL(ec, client::error::pid_overrun);
 		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
@@ -63,9 +63,29 @@ BOOST_AUTO_TEST_CASE(test_pid_overrun) {
 		);
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+}
+
+BOOST_AUTO_TEST_CASE(test_invalid_topic) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	asio::io_context ioc;
+	using client_service_type = test::test_service<asio::ip::tcp::socket>;
+	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
+
+	auto handler = [&handlers_called](error_code ec) {
+		++handlers_called;
+		BOOST_CHECK_EQUAL(ec, client::error::invalid_topic);
+	};
+
+	detail::publish_send_op<
+		client_service_type, decltype(handler), qos_e::at_most_once
+	> { svc_ptr, std::move(handler) }
+	.perform("", "payload", retain_e::no, {});
+
+	ioc.run();
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_CASE(test_publish_immediate_cancellation) {
@@ -77,7 +97,7 @@ BOOST_AUTO_TEST_CASE(test_publish_immediate_cancellation) {
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
 	asio::cancellation_signal cancel_signal;
 
-	auto h = [&](error_code ec, reason_code rc, puback_props) {
+	auto h = [&handlers_called](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
 		BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
 		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
@@ -94,9 +114,7 @@ BOOST_AUTO_TEST_CASE(test_publish_immediate_cancellation) {
 
 	cancel_signal.emit(asio::cancellation_type::terminal);
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_CASE(test_publish_cancellation) {
@@ -108,7 +126,7 @@ BOOST_AUTO_TEST_CASE(test_publish_cancellation) {
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
 	asio::cancellation_signal cancel_signal;
 
-	auto h = [&](error_code ec, reason_code rc, puback_props) {
+	auto h = [&handlers_called](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
 		BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
 		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
@@ -132,9 +150,7 @@ BOOST_AUTO_TEST_CASE(test_publish_cancellation) {
 	);
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -71,7 +71,7 @@ void publish_qos0_openssl_tls() {
 
 	c.credentials("test-qos0-openssl-tls", "", "")
 		.brokers("iot.fcluster.mireo.hr/mqtt", 8883)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	c.async_publish<qos_e::at_most_once>(
@@ -104,7 +104,7 @@ void publish_qos1_openssl_tls() {
 
 	c.credentials("test-qos1-openssl-tls", "", "")
 		.brokers("iot.fcluster.mireo.hr/mqtt", 8883)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	c.async_publish<qos_e::at_least_once>(
@@ -139,7 +139,7 @@ void publish_qos2_openssl_tls() {
 
 	c.credentials("test-qos2-openssl-tls", "", "")
 		.brokers("iot.fcluster.mireo.hr/mqtt", 8883)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	c.async_publish<qos_e::exactly_once>(
@@ -174,7 +174,7 @@ void subscribe_and_receive_openssl_tls(int num_receive) {
 
 	c.credentials("test-subscriber-openssl-tls", "", "")
 		.brokers("iot.fcluster.mireo.hr/mqtt", 8883)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 
@@ -240,7 +240,7 @@ void test_coro() {
 
 		c.credentials("coro-client", "", "")
 			.brokers("iot.fcluster.mireo.hr/mqtt", 8883)
-			.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+			.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 			.run();
 
 		std::vector<subscribe_topic> topics;

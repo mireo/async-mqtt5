@@ -24,7 +24,7 @@ void publish_qos0_websocket_tcp() {
 
 	c.credentials("test-qos0-websocket-tcp", "", "")
 		.brokers("fcluster-5/mqtt", 8083)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	c.async_publish<qos_e::at_most_once>(
@@ -54,7 +54,7 @@ void publish_qos1_websocket_tcp() {
 
 	c.credentials("test-qos1-websocket-tcp", "", "")
 		.brokers("fcluster-5/mqtt", 8083)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	c.async_publish<qos_e::at_least_once>(
@@ -85,7 +85,7 @@ void publish_qos2_websocket_tcp() {
 
 	c.credentials("test-qos2-websocket-tcp", "", "")
 		.brokers("fcluster-5/mqtt", 8083)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	c.async_publish<qos_e::exactly_once>(
@@ -117,7 +117,7 @@ void subscribe_and_receive_websocket_tcp(int num_receive) {
 
 	c.credentials("test-subscriber-websocket-tcp", "", "")
 		.brokers("fcluster-5/mqtt", 8083)
-		.will({ "test/mqtt-test", "i died", qos_e::at_least_once })
+		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	std::vector<subscribe_topic> topics;

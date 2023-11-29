@@ -5,7 +5,6 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/asio/post.hpp>
 
 #include <async_mqtt5.hpp>
 
@@ -57,9 +56,7 @@ void cancel_async_receive() {
 	});
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 template <test::cancellation_type type>
@@ -113,9 +110,7 @@ void cancel_async_publish() {
 	});
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 template <test::cancellation_type type>
@@ -152,9 +147,7 @@ void cancel_during_connecting() {
 	});
 
 	ioc.run();
-	BOOST_CHECK_EQUAL(
-		handlers_called, expected_handlers_called
-	);
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
 

@@ -65,6 +65,7 @@
 [def __RETAIN__ [mqttlink 3901104 `RETAIN`]]
 [def __SUBSCRIBE_OPTIONS__ [mqttlink 3901169 `Subscribe Options`]]
 [def __ENHANCED_AUTH__ [mqttlink 3901256 `Enhanced Authentication`]]
+[def __TOPIC_SEMANTIC_AND_USAGE__ [mqttlink 3901247 `Topic semantic and usage`]]
 
 [def __CONNECT__ [mqttlink 3901033 `CONNECT`]]
 [def __CONNACK__ [mqttlink 3901074 `CONNACK`]]

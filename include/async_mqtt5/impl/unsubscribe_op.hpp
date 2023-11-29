@@ -9,6 +9,7 @@
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
@@ -57,9 +58,13 @@ public:
 		const std::vector<std::string>& topics,
 		const unsubscribe_props& props
 	) {
+		auto ec = validate_topics(topics);
+		if (ec)
+			return complete_post(ec, topics.size());
+
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
-			return complete_post(client::error::pid_overrun);
+			return complete_post(client::error::pid_overrun, topics.size());
 
 		auto unsubscribe = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
@@ -133,6 +138,13 @@ public:
 
 private:
 
+	static error_code validate_topics(const std::vector<std::string>& topics) {
+		for (const auto& topic : topics)
+			if (!is_valid_utf8_topic(topic))
+				return client::error::invalid_topic;
+		return error_code {};
+	}
+
 	static std::vector<reason_code> to_reason_codes(std::vector<uint8_t> codes) {
 		std::vector<reason_code> ret;
 		for (uint8_t code : codes) {
@@ -155,9 +167,9 @@ private:
 		);
 	}
 
-	void complete_post(error_code ec) {
+	void complete_post(error_code ec, size_t num_topics) {
 		_handler.complete_post(
-			ec, std::vector<reason_code> {}, unsuback_props {}
+			ec, std::vector<reason_code> { num_topics, reason_codes::empty }, suback_props {}
 		);
 	}
 

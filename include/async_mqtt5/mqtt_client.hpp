@@ -351,6 +351,7 @@ public:
 	 *		- \link async_mqtt5::client::error::qos_not_supported \endlink
 	 *		- \link async_mqtt5::client::error::retain_not_available \endlink
 	 *		- \link async_mqtt5::client::error::topic_alias_maximum_reached \endlink
+	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -422,6 +423,7 @@ public:
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -488,6 +490,7 @@ public:
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -542,6 +545,7 @@ public:
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -607,6 +611,7 @@ public:
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
+	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
