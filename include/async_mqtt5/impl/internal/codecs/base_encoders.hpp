@@ -75,7 +75,7 @@ public:
 		return flag_def<bits, repr> { val };
 	}
 
-	uint16_t byte_size() const { return sizeof(repr); }
+	size_t byte_size() const { return sizeof(repr); }
 
 	template <size_t rhs_bits, typename rhs_repr>
 	auto operator|(const flag_def<rhs_bits, rhs_repr>& rhs) const {
@@ -103,13 +103,13 @@ class int_val : public encoder {
 public:
 	int_val(T val) : _val(val) {}
 
-	uint16_t byte_size() const { 
+	size_t byte_size() const {
 		if constexpr (is_optional<T>) {
-			if (_val) return uint16_t(val_length(*_val));
-			return uint16_t(0);
+			if (_val) return val_length(*_val);
+			return 0;
 		}
 		else
-			return uint16_t(val_length(_val));
+			return val_length(_val);
 	}
 
 	std::string& encode(std::string& s) const {
@@ -185,11 +185,11 @@ public:
 		static_assert(std::is_reference_v<T> || std::is_same_v<T, std::string_view>);
 	}
 
-	uint16_t byte_size() const { 
+	size_t byte_size() const {
 		if constexpr (is_optional<T>)
-			return uint16_t(_val ? _with_length * 2 + val_length(*_val) : 0); 
+			return _val ? _with_length * 2 + val_length(*_val) : 0;
 		else
-		 	return uint16_t(_with_length * 2 + val_length(_val));
+			return _with_length * 2 + val_length(_val);
 	}
 
 	std::string& encode(std::string& s) const {
@@ -215,12 +215,12 @@ private:
 	template <typename U>
 	std::string& encode_val(std::string& s, U&& u) const {
 		using namespace boost::endian;
-		int16_t byte_len = int16_t(val_length(std::forward<U>(u)));
+		auto byte_len = val_length(std::forward<U>(u));
 		if (byte_len == 0 && !_with_length) return s;
 		if (_with_length) {
 			size_t sz = s.size(); s.resize(sz + 2);
 			auto p = reinterpret_cast<uint8_t*>(s.data() + sz);
-			endian_store<int16_t, sizeof(int16_t), order::big>(p, byte_len);
+			endian_store<int16_t, sizeof(int16_t), order::big>(p, int16_t(byte_len));
 		}
 		s.append(std::begin(u), std::begin(u) + byte_len);
 		return s;
@@ -266,8 +266,8 @@ public:
 	composed_val(T lhs, U rhs) : 
 		_lhs(std::forward<T>(lhs)), _rhs(std::forward<U>(rhs)) {}
 
-	uint16_t byte_size() const { 
-		return uint16_t(_lhs.byte_size() + _rhs.byte_size()); 
+	size_t byte_size() const {
+		return _lhs.byte_size() + _rhs.byte_size();
 	}
 
 	std::string& encode(std::string& s) const {

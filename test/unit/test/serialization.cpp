@@ -114,11 +114,38 @@ BOOST_AUTO_TEST_CASE(test_publish) {
 	BOOST_CHECK(packet_id);
 	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
 	BOOST_CHECK_EQUAL(topic_, topic);
-	BOOST_CHECK_EQUAL(payload_, payload_);
+	BOOST_CHECK_EQUAL(payload_, payload);
 	BOOST_CHECK_EQUAL(*pprops[prop::message_expiry_interval], message_expiry);
 	BOOST_CHECK_EQUAL(*pprops[prop::content_type], content_type);
 	BOOST_CHECK_EQUAL(pprops[prop::user_property][0], publish_prop_1);
 	BOOST_CHECK_EQUAL(pprops[prop::user_property][1], publish_prop_2);
+}
+
+BOOST_AUTO_TEST_CASE(test_large_publish) {
+	// testing variables
+	uint16_t packet_id = 40001;
+	std::string_view topic = "publish_topic";
+	std::string large_payload(1'000'000, 'a');
+
+	auto msg = encoders::encode_publish(
+		packet_id, topic, large_payload,
+		qos_e::at_least_once, retain_e::yes, dup_e::no,
+		publish_props{}
+	);
+
+	byte_citer it = msg.cbegin(), last = msg.cend();
+	auto header = decoders::decode_fixed_header(it, last);
+	BOOST_CHECK_MESSAGE(header, "Parsing PUBLISH fixed header failed.");
+
+	const auto& [control_byte, remain_length] = *header;
+	auto rv = decoders::decode_publish(control_byte, remain_length, it);
+	BOOST_CHECK_MESSAGE(rv, "Parsing PUBLISH failed.");
+
+	const auto& [topic_, packet_id_, flags, pprops, payload_] = *rv;
+	BOOST_CHECK(packet_id);
+	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_CHECK_EQUAL(topic_, topic);
+	BOOST_CHECK_EQUAL(payload_, large_payload);
 }
 
 BOOST_AUTO_TEST_CASE(test_puback) {
