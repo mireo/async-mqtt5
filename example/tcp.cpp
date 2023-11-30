@@ -27,7 +27,7 @@ void publish_qos0_tcp() {
 		retain_e::no, publish_props{},
 		[&c](error_code ec) {
 			std::cout << "error_code: " << ec.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -55,7 +55,7 @@ void publish_qos1_tcp() {
 		[&c](error_code ec, reason_code rc, puback_props) {
 			std::cout << "error_code: " << ec.message() << std::endl;
 			std::cout << "reason_code: " << rc.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -82,7 +82,7 @@ void publish_qos2_tcp() {
 		[&c](error_code ec, reason_code rc, pubcomp_props) {
 			std::cout << "error_code: " << ec.message() << std::endl;
 			std::cout << "reason_code: " << rc.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -129,7 +129,7 @@ void subscribe_and_receive_tcp(int num_receive) {
 				std::cout << "payload: " << payload << std::endl;
 
 				if (i == num_receive - 1)
-					c.cancel();
+					c.async_disconnect(asio::detached);
 			}
 		);
 	}
@@ -142,5 +142,5 @@ void run_tcp_examples() {
 	publish_qos0_tcp();
 	publish_qos1_tcp();
 	publish_qos2_tcp();
-	subscribe_and_receive_tcp(1);
+	subscribe_and_receive_tcp(2);
 }

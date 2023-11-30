@@ -4,6 +4,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/as_tuple.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 
@@ -12,6 +13,8 @@
 namespace asio = boost::asio;
 
 namespace async_mqtt5 {
+
+constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 template <typename StreamBase>
 struct tls_handshake_type<asio::ssl::stream<StreamBase>> {
@@ -79,7 +82,7 @@ void publish_qos0_openssl_tls() {
 		retain_e::no, publish_props{},
 		[&c](error_code ec) {
 			std::cout << "error_code: " << ec.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -113,7 +116,7 @@ void publish_qos1_openssl_tls() {
 		[&c](error_code ec, reason_code rc, puback_props) {
 			std::cout << "error_code: " << ec.message() << std::endl;
 			std::cout << "reason_code: " << rc.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -148,7 +151,7 @@ void publish_qos2_openssl_tls() {
 		[&c](error_code ec, reason_code rc, pubcomp_props) {
 			std::cout << "error_code: " << ec.message() << std::endl;
 			std::cout << "reason_code: " << rc.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -213,7 +216,7 @@ void subscribe_and_receive_openssl_tls(int num_receive) {
 				std::cout << "payload: " << payload << std::endl;
 
 				if (i == num_receive - 1)
-					c.cancel();
+					c.async_disconnect(asio::detached);
 			}
 		);
 	}
@@ -253,19 +256,19 @@ void test_coro() {
 			}
 		});
 
-		auto [codes, props] = co_await c.async_subscribe(
-			topics, subscribe_props {}, asio::use_awaitable
+		auto [ec1, codes, props] = co_await c.async_subscribe(
+			topics, subscribe_props {}, use_nothrow_awaitable
 		);
 		std::cout << "subscribe reason_code: " << codes[0].message() << std::endl;
 
-		auto [topic, payload, rec_props] = co_await c.async_receive(asio::use_awaitable);
+		auto [ec2, topic, payload, rec_props] = co_await c.async_receive(use_nothrow_awaitable);
 		std::cout << "topic: " << topic << std::endl;
 		std::cout << "payload: " << payload << std::endl;
 
 		asio::steady_timer timer(ioc);
 		timer.expires_from_now(std::chrono::seconds(1));
-		co_await timer.async_wait(asio::use_awaitable);
-		c.cancel();
+		co_await timer.async_wait(use_nothrow_awaitable);
+		co_await c.async_disconnect(use_nothrow_awaitable);
 
 		co_return;
 	}, asio::detached);
@@ -277,6 +280,6 @@ void run_openssl_tls_examples() {
 	publish_qos0_openssl_tls();
 	publish_qos1_openssl_tls();
 	publish_qos2_openssl_tls();
-	subscribe_and_receive_openssl_tls(1);
+	subscribe_and_receive_openssl_tls(2);
 	test_coro();
 }

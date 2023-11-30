@@ -169,7 +169,7 @@ private:
 
 	void complete_post(error_code ec, size_t num_topics) {
 		_handler.complete_post(
-			ec, std::vector<reason_code> { num_topics, reason_codes::empty }, suback_props {}
+			ec, std::vector<reason_code> { num_topics, reason_codes::empty }, unsuback_props {}
 		);
 	}
 

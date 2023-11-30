@@ -54,6 +54,7 @@ The following example illustrates a simple scenario of configuring a Client and 
 #include <iostream>
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
 #include <async_mqtt5.hpp>
@@ -73,7 +74,7 @@ int main() {
 		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
 		[&c](async_mqtt5::error_code ec) {
 			std::cout << ec.message() << std::endl;
-			c.cancel(); // close the client
+			c.async_disconnect(asio::detached); // disconnect and close the client
 		}
 	);
 	

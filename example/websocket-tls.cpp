@@ -94,7 +94,7 @@ void publish_qos0_websocket_tls() {
 		retain_e::no, publish_props{},
 		[&c](error_code ec) {
 			std::cout << "error_code: " << ec.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -130,7 +130,7 @@ void publish_qos1_websocket_tls() {
 		[&c](error_code ec, reason_code rc, puback_props) {
 			std::cout << "error_code: " << ec.message() << std::endl;
 			std::cout << "reason_code: " << rc.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -166,7 +166,7 @@ void publish_qos2_websocket_tls() {
 		[&c](error_code ec, reason_code rc, pubcomp_props) {
 			std::cout << "error_code: " << ec.message() << std::endl;
 			std::cout << "reason_code: " << rc.message() << std::endl;
-			c.cancel();
+			c.async_disconnect(asio::detached);
 		}
 	);
 
@@ -231,7 +231,7 @@ void subscribe_and_receive_websocket_tls(int num_receive) {
 				std::cout << "payload: " << payload << std::endl;
 
 				if (i == num_receive - 1)
-					c.cancel();
+					c.async_disconnect(asio::detached);
 			}
 		);
 	}
@@ -245,5 +245,5 @@ void run_websocket_tls_examples() {
 	publish_qos0_websocket_tls();
 	publish_qos1_websocket_tls();
 	publish_qos2_websocket_tls();
-	subscribe_and_receive_websocket_tls(1);
+	subscribe_and_receive_websocket_tls(2);
 }
