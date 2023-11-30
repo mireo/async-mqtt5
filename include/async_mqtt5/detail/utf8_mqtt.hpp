@@ -6,44 +6,32 @@
 
 namespace async_mqtt5::detail {
 
-struct code_point {
-	int32_t val;
-	uint32_t size;
+inline int pop_front_unichar(std::string_view& s) {
+	// assuming that s.length() is > 0
 
-	auto operator<=>(const code_point&) const = default;
+	int n = s[0] & 0xF0;
+	int ch = -1;
 
-	static code_point from(std::string_view s) {
-		auto hnibble = s[0] & 0xF0;
-		return
-			(hnibble & 0x80) == 0 ?
-				code_point { s[0], 1 }
-		:
-		(hnibble == 0xC0 || hnibble == 0xD0) && s.size() > 1 ?
-			code_point {
-				(int32_t(s[0] & 0x1F) << 6) | int32_t(s[1] & 0x3F),
-				2
-			}
-		:
-		(hnibble == 0xE0) && s.size() > 2 ?
-			code_point {
-				(int32_t(s[0] & 0x1F) << 12) |
-				(int32_t(s[1] & 0x3F) << 6) |
-				int32_t(s[2] & 0x3F),
-				3
-			}
-		:
-		(hnibble == 0xF0) && s.size() > 3 ?
-			code_point {
-				(int32_t(s[0] & 0x1F) << 18) |
-				(int32_t(s[1] & 0x3F) << 12) |
-				(int32_t(s[2] & 0x3F) << 6) |
-				int32_t(s[3] & 0x3F),
-				4
-			}
-		:
-		code_point { -1, 0 };
+	if ((n & 0x80) == 0) {
+		ch = s[0];
+		s.remove_prefix(1);
 	}
-};
+	else if ((n == 0xC0 || n == 0xD0) && s.size() > 1) {
+		ch = ((s[0] & 0x1F) << 6) | (s[1] & 0x3F);
+		s.remove_prefix(2);
+	}
+	else if ((n == 0xE0) && s.size() > 2) {
+		ch = ((s[0] & 0x1F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+		s.remove_prefix(3);
+	}
+	else if ((n == 0xF0) && s.size() > 3) {
+		ch = ((s[0] & 0x1F) << 18) | ((s[1] & 0x3F) << 12) |
+			((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
+		s.remove_prefix(4);
+	}
+
+	return ch;
+}
 
 inline bool is_valid_mqtt_utf8(std::string_view str) {
 	constexpr size_t max_sz = 65535;
@@ -51,23 +39,21 @@ inline bool is_valid_mqtt_utf8(std::string_view str) {
 	if (str.size() > max_sz)
 		return false;
 
-	auto is_valid_cp = [](int32_t c) -> bool {
-		constexpr int32_t fe_flag = 0xFE;
-		constexpr int32_t ff_flag = 0xFF;
-
-		return c >= 32 && // U+0000...U+001F control characters
-			(c < 127 || c > 159) && // U+007F...0+009F control characters
-			(c < 55296 || c > 57343) && // U+D800...U+DFFF surrogates
-			(c < 64976 || c > 65007) &&// U+FDD0...U+FDEF non-characters
-			(c & fe_flag) != fe_flag && // non-characters
-			(c & ff_flag) != ff_flag;
-	};
+	constexpr int fe_flag = 0xFE;
+	constexpr int ff_flag = 0xFF;
 
 	while (!str.empty()) {
-		auto cp = code_point::from(str.data());
-		if (!is_valid_cp(cp.val))
+		int c = pop_front_unichar(str);
+
+		auto is_valid = c > 0x001F && // U+0000...U+001F control characters
+			(c < 0x007F || c > 0x009F) && // U+007F...0+009F control characters
+			(c < 0xD800 || c > 0xDFFF) && // U+D800...U+DFFF surrogates
+			(c < 0xFDD0 || c > 0xFDEF) && // U+FDD0...U+FDEF non-characters
+			(c & fe_flag) != fe_flag && // non-characters
+			(c & ff_flag) != ff_flag;
+
+		if (!is_valid)
 			return false;
-		str.remove_prefix(cp.size);
 	}
 
 	return true;
