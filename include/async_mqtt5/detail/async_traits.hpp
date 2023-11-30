@@ -28,7 +28,7 @@ void assign_tls_sni(const authority_path& ap, TlsContext& ctx, TlsStream& s);
 namespace detail {
 
 template <typename Handler, typename DfltExecutor>
-auto tracking_executor(const Handler& handler, const DfltExecutor& ex) {
+decltype(auto) tracking_executor(const Handler& handler, const DfltExecutor& ex) {
 	return asio::prefer(
 		asio::get_associated_executor(handler, ex),
 		asio::execution::outstanding_work.tracked
