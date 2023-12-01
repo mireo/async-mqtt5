@@ -3,8 +3,8 @@
 
 #include <boost/asio/experimental/basic_concurrent_channel.hpp>
 
-#include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/channel_traits.hpp>
+#include <async_mqtt5/detail/internal_types.hpp>
 
 #include <async_mqtt5/impl/assemble_op.hpp>
 #include <async_mqtt5/impl/async_sender.hpp>
@@ -38,6 +38,14 @@ public:
 
 	TlsContext& tls_context() {
 		return _tls_context;
+	}
+
+	auto& session_state() {
+		return _mqtt_context.session_state;
+	}
+
+	const auto& session_state() const {
+		return _mqtt_context.session_state;
 	}
 
 	void will(will will) {
@@ -76,6 +84,14 @@ public:
 
 	mqtt_context& mqtt_context() {
 		return _mqtt_context;
+	}
+
+	auto& session_state() {
+		return _mqtt_context.session_state;
+	}
+
+	const auto& session_state() const {
+		return _mqtt_context.session_state;
 	}
 
 	void will(will will) {
@@ -289,12 +305,25 @@ public:
 		);
 	}
 
+	bool subscriptions_present() const {
+		return _stream_context.session_state().subscriptions_present();
+	}
+
+	void subscriptions_present(bool present) {
+		_stream_context.session_state().subscriptions_present(present);
+	}
+
 	void update_session_state() {
-		auto& session_state = _stream_context.mqtt_context().session_state;
+		auto& session_state = _stream_context.session_state();
+
 		if (!session_state.session_present()) {
-			channel_store_error(client::error::session_expired);
 			_replies.clear_pending_pubrels();
 			session_state.session_present(true);
+
+			if (session_state.subscriptions_present()) {
+				channel_store_error(client::error::session_expired);
+				session_state.subscriptions_present(false);
+			}
 		}
 	}
 

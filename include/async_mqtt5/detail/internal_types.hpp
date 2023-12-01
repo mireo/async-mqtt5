@@ -39,12 +39,23 @@ class session_state {
 	uint8_t _flags = 0b00;
 
 	static constexpr uint8_t session_present_flag = 0b01;
+	static constexpr uint8_t subscriptions_present_flag = 0b10;
 public:
 	void session_present(bool present) {
 		return update_flag(present, session_present_flag);
 	}
 
-	bool session_present() const { return _flags & session_present_flag; };
+	bool session_present() const {
+		return _flags & session_present_flag;
+	}
+
+	void subscriptions_present(bool present) {
+		return update_flag(present, subscriptions_present_flag);
+	}
+
+	bool subscriptions_present() const {
+		return _flags & subscriptions_present_flag;
+	}
 
 private:
 	void update_flag(bool set, uint8_t flag) {

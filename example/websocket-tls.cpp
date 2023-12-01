@@ -245,5 +245,5 @@ void run_websocket_tls_examples() {
 	publish_qos0_websocket_tls();
 	publish_qos1_websocket_tls();
 	publish_qos2_websocket_tls();
-	subscribe_and_receive_websocket_tls(2);
+	subscribe_and_receive_websocket_tls(1);
 }

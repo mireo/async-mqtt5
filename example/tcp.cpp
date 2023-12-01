@@ -142,5 +142,5 @@ void run_tcp_examples() {
 	publish_qos0_tcp();
 	publish_qos1_tcp();
 	publish_qos2_tcp();
-	subscribe_and_receive_tcp(2);
+	subscribe_and_receive_tcp(1);
 }

@@ -280,6 +280,6 @@ void run_openssl_tls_examples() {
 	publish_qos0_openssl_tls();
 	publish_qos1_openssl_tls();
 	publish_qos2_openssl_tls();
-	subscribe_and_receive_openssl_tls(2);
+	subscribe_and_receive_openssl_tls(1);
 	test_coro();
 }

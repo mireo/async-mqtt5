@@ -168,5 +168,5 @@ void run_websocket_tcp_examples() {
 	publish_qos0_websocket_tcp();
 	publish_qos1_websocket_tcp();
 	publish_qos2_websocket_tcp();
-	subscribe_and_receive_websocket_tcp(2);
+	subscribe_and_receive_websocket_tcp(1);
 }

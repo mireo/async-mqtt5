@@ -1,6 +1,8 @@
 #ifndef ASYNC_MQTT5_SUBSCRIBE_OP_HPP
 #define ASYNC_MQTT5_SUBSCRIBE_OP_HPP
 
+#include <algorithm>
+
 #include <boost/asio/detached.hpp>
 
 #include <async_mqtt5/error.hpp>
@@ -173,6 +175,15 @@ private:
 		error_code ec, uint16_t packet_id,
 		std::vector<reason_code> reason_codes, suback_props props
 	) {
+		if (!_svc_ptr->subscriptions_present()) {
+			bool has_success_rc = std::any_of(
+				reason_codes.cbegin(), reason_codes.cend(),
+				[](const reason_code& rc) { return !rc; }
+			);
+			if (has_success_rc)
+				_svc_ptr->subscriptions_present(true);
+		}
+
 		_svc_ptr->free_pid(packet_id);
 		_handler.complete(ec, std::move(reason_codes), std::move(props));
 	}
