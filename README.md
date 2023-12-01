@@ -48,7 +48,8 @@ Usage and API
 ---------
 Detailed documentation is available [here](https://spacetime.mireo.com/async-mqtt5/).
 
-The following example illustrates a simple scenario of configuring a Client and publishing an Application Message. 
+The following example illustrates a simple scenario of configuring a Client and publishing a
+"Hello World!" Application Message with `QoS` 0. 
 
 ```cpp
 #include <iostream>
@@ -65,16 +66,16 @@ int main() {
 	using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
 	client_type c(ioc, "");
 
-	c.credentials("clientid", "username", "password")
-		.brokers("mqtt.broker", 1883)
+	c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
+		.brokers("<your-mqtt-broker>", 1883)
 		.run();
 
 	c.async_publish<async_mqtt5::qos_e::at_most_once>(
-		"test/mqtt-test", "hello world!",
+		"<topic>", "Hello world!",
 		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
 		[&c](async_mqtt5::error_code ec) {
 			std::cout << ec.message() << std::endl;
-			c.async_disconnect(asio::detached); // disconnect and close the client
+			c.async_disconnect(boost::asio::detached); // disconnect and close the client
 		}
 	);
 	
