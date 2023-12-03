@@ -4,6 +4,7 @@
 #include <boost/asio/deferred.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
+#include <boost/asio/any_completion_handler.hpp>
 
 #include <boost/asio/experimental/parallel_group.hpp>
 
@@ -19,7 +20,7 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename Owner, typename Handler>
+template <typename Owner>
 class reconnect_op {
 	struct on_locked {};
 	struct on_next_endpoint {};
@@ -27,16 +28,20 @@ class reconnect_op {
 	struct on_backoff {};
 
 	Owner& _owner;
-	Handler _handler;
+
+	using handler_type = asio::any_completion_handler<void (error_code)>;
+	handler_type _handler;
+
 	std::unique_ptr<std::string> _buffer_ptr;
 
 	using endpoint = asio::ip::tcp::endpoint;
 	using epoints = asio::ip::tcp::resolver::results_type;
 
 public:
+	template <typename Handler>
 	reconnect_op(Owner& owner, Handler&& handler) :
 		_owner(owner),
-		_handler(std::move(handler))
+		_handler(std::forward<Handler>(handler))
 	{}
 
 	reconnect_op(reconnect_op&&) noexcept = default;
@@ -47,13 +52,13 @@ public:
 		return _owner.get_executor();
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
 
 	using cancellation_slot_type =
-		asio::associated_cancellation_slot_t<Handler>;
+		asio::associated_cancellation_slot_t<handler_type>;
 	cancellation_slot_type get_cancellation_slot() const noexcept {
 		return asio::get_associated_cancellation_slot(_handler);
 	}
@@ -122,19 +127,19 @@ public:
 		// wait max 5 seconds for the connect (handshake) op to finish
 		_owner._connect_timer.expires_from_now(std::chrono::seconds(5));
 
-		auto init_connect = [this, sptr](
-			auto handler, const auto& eps, auto ap
+		auto init_connect = [](
+			auto handler, typename Owner::stream_type& stream,
+			mqtt_context& context, const epoints& eps, authority_path ap
 		) {
-			connect_op {
-				*sptr, std::move(handler),
-				_owner._stream_context.mqtt_context()
-			}.perform(eps, std::move(ap));
+			connect_op { stream, std::move(handler), context }
+				.perform(eps, std::move(ap));
 		};
 
 		auto timed_connect = asioex::make_parallel_group(
 			asio::async_initiate<const asio::deferred_t, void (error_code)>(
-				std::move(init_connect), asio::deferred,
-				std::move(eps), std::move(ap)
+				init_connect, asio::deferred, std::ref(*sptr),
+				std::ref(_owner._stream_context.mqtt_context()),
+				eps, std::move(ap)
 			),
 			_owner._connect_timer.async_wait(asio::deferred)
 		);
@@ -185,7 +190,6 @@ private:
 			asio::prepend(std::move(_handler), ec)
 		);
 	}
-
 };
 
 

@@ -7,10 +7,10 @@
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/any_completion_handler.hpp>
 
 #include <boost/beast/websocket.hpp>
-
-#include <boost/asio/ip/tcp.hpp>
 
 #include <async_mqtt5/error.hpp>
 
@@ -18,15 +18,12 @@
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/base_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 
-template <
-	typename Stream, typename Handler
->
+template <typename Stream>
 class connect_op {
 	static constexpr size_t min_packet_sz = 5;
 
@@ -43,18 +40,22 @@ class connect_op {
 
 	Stream& _stream;
 	mqtt_context& _ctx;
-	Handler _handler;
+
+	using handler_type = asio::any_completion_handler<void (error_code)>;
+	handler_type _handler;
+
 	std::unique_ptr<std::string> _buffer_ptr;
 
 	using endpoint = asio::ip::tcp::endpoint;
 	using epoints = asio::ip::tcp::resolver::results_type;
 
 public:
+	template <typename Handler>
 	connect_op(
 		Stream& stream, Handler&& handler, mqtt_context& ctx
 	) :
 		_stream(stream), _ctx(ctx),
-		_handler(std::move(handler))
+		_handler(std::forward<Handler>(handler))
 	{}
 
 	connect_op(connect_op&&) noexcept = default;
@@ -65,13 +66,13 @@ public:
 		return _stream.get_executor();
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
 
 	using cancellation_slot_type =
-		asio::associated_cancellation_slot_t<Handler>;
+		asio::associated_cancellation_slot_t<handler_type>;
 	cancellation_slot_type get_cancellation_slot() const noexcept {
 		return asio::get_associated_cancellation_slot(_handler);
 	}
@@ -233,6 +234,7 @@ public:
 		auto varlen = decoders::type_parse(
 			varlen_ptr, _buffer_ptr->cend(), decoders::basic::varint_
 		);
+
 		if (!varlen)
 			complete(asio::error::try_again);
 

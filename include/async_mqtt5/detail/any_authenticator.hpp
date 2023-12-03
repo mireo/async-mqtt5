@@ -14,7 +14,7 @@ using error_code = boost::system::error_code;
 namespace detail {
 
 using auth_handler_type = asio::any_completion_handler<
-	void(error_code ec, std::string auth_data)
+	void (error_code ec, std::string auth_data)
 >;
 
 template <typename T>
@@ -91,14 +91,19 @@ public:
 		auth_step_e step, std::string data,
 		CompletionToken&& token
 	) {
-		using Signature = void(error_code, std::string);
+		using Signature = void (error_code, std::string);
 
-		auto initiate = [this](auto handler, auth_step_e step, std::string data) {
-			_auth_fun->async_auth(step, std::move(data), std::move(handler));
+		auto initiation = [](
+			auto handler, any_authenticator& self, 
+			auth_step_e step, std::string data
+		) {
+			self._auth_fun->async_auth(
+				step, std::move(data), std::move(handler)
+			);
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			initiate, token, step, std::move(data)
+			initiation, token, std::ref(*this), step, std::move(data)
 		);
 	}
 };

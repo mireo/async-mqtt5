@@ -19,7 +19,9 @@ class read_op {
 	struct on_reconnect {};
 
 	Owner& _owner;
-	Handler _handler;
+
+	using handler_type = Handler;
+	handler_type _handler;
 
 public:
 	read_op(Owner& owner, Handler&& handler) :
@@ -35,7 +37,7 @@ public:
 		return _owner.get_executor();
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
@@ -107,7 +109,8 @@ private:
 	static bool should_reconnect(error_code ec) {
 		using namespace asio::error;
 		return ec == connection_aborted || ec == not_connected ||
-			ec == timed_out || ec == connection_reset || ec == broken_pipe;
+			ec == timed_out || ec == connection_reset || 
+			ec == broken_pipe || ec == asio::error::eof;
 	}
 };
 

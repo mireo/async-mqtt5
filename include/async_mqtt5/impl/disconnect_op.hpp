@@ -19,8 +19,7 @@ namespace asio = boost::asio;
 
 template <
 	typename ClientService,
-	typename DisconnectContext,
-	typename Handler
+	typename DisconnectContext
 >
 class disconnect_op {
 	using client_service = ClientService;
@@ -29,12 +28,15 @@ class disconnect_op {
 
 	std::shared_ptr<client_service> _svc_ptr;
 	DisconnectContext _context;
-	cancellable_handler<
-		Handler,
+
+	using handler_type = cancellable_handler<
+		asio::any_completion_handler<void (error_code)>,
 		typename ClientService::executor_type
-	> _handler;
+	>;
+	handler_type _handler;
 
 public:
+	template <typename Handler>
 	disconnect_op(
 		const std::shared_ptr<client_service>& svc_ptr,
 		DisconnectContext&& context, Handler&& handler
@@ -52,7 +54,7 @@ public:
 		return _svc_ptr->get_executor();
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}

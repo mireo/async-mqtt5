@@ -15,7 +15,6 @@
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/base_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 
 
@@ -49,19 +48,21 @@ public:
 template <typename ClientService, typename Handler>
 class assemble_op {
 	using client_service = ClientService;
+	using handler_type = Handler;
+
 	struct on_read {};
 
 	static constexpr size_t max_packet_size = 65536;
 
 	client_service& _svc;
-	Handler _handler;
+	handler_type _handler;
 
 	std::string& _read_buff;
 	data_span& _data_span;
 
 public:
 	assemble_op(
-		client_service& svc, Handler&& handler,
+		client_service& svc, handler_type&& handler,
 		std::string& read_buff, data_span& active_span
 	) :
 		_svc(svc),
@@ -77,7 +78,7 @@ public:
 		return _svc.get_executor();
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
@@ -214,10 +215,7 @@ private:
 	) {
 		asio::dispatch(
 			get_executor(),
-			asio::prepend(
-				std::move(_handler), ec, control_code,
-				first, last
-			)
+			asio::prepend(std::move(_handler), ec, control_code, first, last)
 		);
 	}
 };

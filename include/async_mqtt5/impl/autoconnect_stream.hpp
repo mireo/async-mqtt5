@@ -24,6 +24,7 @@ template <
 >
 class autoconnect_stream {
 public:
+	using self_type = autoconnect_stream<StreamType, StreamContext>;
 	using stream_type = StreamType;
 	using stream_context_type = StreamContext;
 	using executor_type = typename stream_type::executor_type;
@@ -38,16 +39,16 @@ private:
 	stream_ptr _stream_ptr;
 	stream_context_type& _stream_context;
 
-	template <typename Stream, typename Handler>
-	friend class reconnect_op;
-
 	template <typename Owner, typename Handler>
 	friend class read_op;
 
 	template <typename Owner, typename Handler>
 	friend class write_op;
 
-	template <typename Owner, typename DisconnectContext, typename Handler>
+	template <typename Stream>
+	friend class reconnect_op;
+
+	template <typename Owner, typename DisconnectContext>
 	friend class disconnect_op;
 
 public:
@@ -116,16 +117,17 @@ public:
 	decltype(auto) async_read_some(
 		const BufferType& buffer, duration wait_for, CompletionToken&& token
 	) {
-		auto initiation = [this](
-			auto handler, const BufferType& buffer, duration wait_for
+		using Signature = void (error_code, size_t);
+
+		auto initiation = [](
+			auto handler, self_type& self,
+			const BufferType& buffer, duration wait_for
 		) {
-			read_op { *this, std::move(handler) }
-				.perform(buffer, wait_for);
+			read_op { self, std::move(handler) }.perform(buffer, wait_for);
 		};
 
-		return asio::async_initiate<CompletionToken, void (error_code, size_t)>(
-			std::move(initiation), token,
-			buffer, wait_for
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, std::ref(*this), buffer, wait_for
 		);
 	}
 
@@ -133,14 +135,16 @@ public:
 	decltype(auto) async_write(
 		const BufferType& buffer, CompletionToken&& token
 	) {
-		auto initiation = [this](
-			auto handler, const BufferType& buffer
+		using Signature = void (error_code, size_t);
+
+		auto initiation = [](
+			auto handler, self_type& self, const BufferType& buffer
 		) {
-			write_op { *this, std::move(handler) }.perform(buffer);
+			write_op { self, std::move(handler) }.perform(buffer);
 		};
 
-		return asio::async_initiate<CompletionToken, void (error_code, size_t)>(
-			std::move(initiation), token, buffer
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, std::ref(*this), buffer
 		);
 	}
 
@@ -176,12 +180,14 @@ private:
 
 	template <typename CompletionToken>
 	decltype(auto) async_reconnect(stream_ptr s, CompletionToken&& token) {
-		auto initiation = [this](auto handler, stream_ptr s) {
-			reconnect_op { *this, std::move(handler) }.perform(s);
+		using Signature = void (error_code);
+
+		auto initiation = [](auto handler, self_type& self, stream_ptr s) {
+			reconnect_op { self, std::move(handler) }.perform(s);
 		};
 
-		return asio::async_initiate<CompletionToken, void (error_code)>(
-			std::move(initiation), token, s
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, std::ref(*this), s
 		);
 	}
 };

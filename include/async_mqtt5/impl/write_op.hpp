@@ -15,13 +15,15 @@ class write_op {
 	struct on_reconnect {};
 
 	Owner& _owner;
-	Handler _handler;
+
+	using handler_type = Handler;
+	handler_type _handler;
 
 public:
 	write_op(
 		Owner& owner, Handler&& handler) :
 		_owner(owner),
-		_handler(std::forward<Handler>(handler))
+		_handler(std::move(handler))
 	{}
 
 	write_op(write_op&&) noexcept = default;
@@ -32,7 +34,7 @@ public:
 		return _owner.get_executor();
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}

@@ -6,10 +6,8 @@
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
-
-#include <boost/asio/experimental/parallel_group.hpp>
-
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/experimental/parallel_group.hpp>
 
 #include <boost/spirit/home/x3.hpp>
 
@@ -26,13 +24,13 @@ class resolve_op {
 	struct on_resolve {};
 
 	Owner& _owner;
-	Handler _handler;
+
+	using handler_type = Handler;
+	handler_type _handler;
 
 public:
-	resolve_op(
-		Owner& owner, Handler&& handler) :
-		_owner(owner),
-		_handler(std::move(handler))
+	resolve_op(Owner& owner, Handler&& handler) :
+		_owner(owner), _handler(std::move(handler))
 	{}
 
 	resolve_op(resolve_op&&) noexcept = default;
@@ -43,13 +41,13 @@ public:
 		return _owner.get_executor();
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
 
 	using cancellation_slot_type =
-		asio::associated_cancellation_slot_t<Handler>;
+		asio::associated_cancellation_slot_t<handler_type>;
 	cancellation_slot_type get_cancellation_slot() const noexcept {
 		return asio::get_associated_cancellation_slot(_handler);
 	}
@@ -165,15 +163,14 @@ public:
 
 	template <typename CompletionToken>
 	decltype(auto) async_next_endpoint(CompletionToken&& token) {
-		auto initiation = [this](auto handler) {
-			resolve_op { *this, std::move(handler) }.perform();
+		using Signature = void (error_code, epoints, authority_path);
+
+		auto initiation = [](auto handler, endpoints& self) {
+			resolve_op { self, std::move(handler) }.perform();
 		};
 
-		return asio::async_initiate<
-			CompletionToken,
-			void (error_code, epoints, authority_path)
-		>(
-			std::move(initiation), token
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, std::ref(*this)
 		);
 	}
 

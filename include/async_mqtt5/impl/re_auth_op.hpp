@@ -6,6 +6,7 @@
 #include <async_mqtt5/error.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
+#include <async_mqtt5/detail/any_authenticator.hpp>
 
 #include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
@@ -25,9 +26,7 @@ class re_auth_op {
 	any_authenticator& _auth;
 
 public:
-	re_auth_op(
-		const std::shared_ptr<client_service>& svc_ptr
-	) :
+	re_auth_op(const std::shared_ptr<client_service>& svc_ptr) :
 		_svc_ptr(svc_ptr),
 		_auth(_svc_ptr->_stream_context.mqtt_context().authenticator)
 	{}
@@ -75,10 +74,10 @@ public:
 				disconnect_rc_e::protocol_error
 			);
 
-		auto auth_step = auth_rc == reason_codes::success
-			? auth_step_e::server_final
-			: auth_step_e::server_challenge;
+		auto auth_step = auth_rc == reason_codes::success ?
+			auth_step_e::server_final : auth_step_e::server_challenge;
 		auto data = auth_props[prop::authentication_data].value_or("");
+
 		return _auth.async_auth(
 			auth_step, std::move(data),
 			asio::prepend(std::move(*this), on_auth_data {}, auth_step)
@@ -100,9 +99,9 @@ public:
 		auth_props props;
 		props[prop::authentication_method] = _auth.method();
 		props[prop::authentication_data] = std::move(data);
-		auto rc = auth_step == auth_step_e::client_initial
-			? reason_codes::reauthenticate
-			: reason_codes::continue_authentication;
+		auto rc = auth_step == auth_step_e::client_initial ?
+			reason_codes::reauthenticate : reason_codes::continue_authentication;
+
 		auto packet = control_packet<allocator_type>::of(
 			no_pid, get_allocator(),
 			encoders::encode_auth,
@@ -110,6 +109,7 @@ public:
 		);
 
 		const auto& wire_data = packet.wire_data();
+
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::none,
@@ -121,10 +121,8 @@ private:
 	void on_auth_fail(std::string message, disconnect_rc_e reason) {
 		auto props = disconnect_props{};
 		props[prop::reason_string] = std::move(message);
-		async_disconnect(
-			reason, props, false, _svc_ptr,
-			asio::detached
-		);
+
+		async_disconnect(reason, props, false, _svc_ptr, asio::detached);
 	}
 
 };

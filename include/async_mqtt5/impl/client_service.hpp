@@ -126,6 +126,7 @@ template <
 	typename TlsContext = std::monostate
 >
 class client_service {
+	using self_type = client_service<StreamType, TlsContext>;
 	using stream_context_type = stream_context<StreamType, TlsContext>;
 	using stream_type = autoconnect_stream<
 		StreamType, stream_context_type
@@ -281,18 +282,21 @@ public:
 
 	template <typename CompletionToken>
 	decltype(auto) async_assemble(duration wait_for, CompletionToken&& token) {
-		auto initiation = [this] (auto handler, duration wait_for) mutable {
+		using Signature = void (error_code, uint8_t, byte_citer, byte_citer);
+
+		auto initiation = [] (
+			auto handler, self_type& self,
+			duration wait_for, std::string& read_buff, data_span& active_span
+		) {
 			assemble_op {
-				*this, std::move(handler),
-				_read_buff, _active_span
+				self, std::move(handler), read_buff, active_span
 			}.perform(wait_for, asio::transfer_at_least(0));
 		};
 
-		using Signature = void (
-			error_code, uint8_t, byte_citer, byte_citer
-		);
 		return asio::async_initiate<CompletionToken, Signature> (
-			std::move(initiation), token, wait_for
+			initiation,
+			token, std::ref(*this),
+			wait_for, std::ref(_read_buff), std::ref(_active_span)
 		);
 	}
 

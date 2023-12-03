@@ -5,9 +5,7 @@
 #include <optional>
 
 #include <async_mqtt5/types.hpp>
-
 #include <async_mqtt5/impl/internal/codecs/base_encoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::encoders {
 
