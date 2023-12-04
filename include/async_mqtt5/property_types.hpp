@@ -91,7 +91,7 @@ class properties {
 
 	template <property_type p>
 	struct property {
-		using key = std::integral_constant<uint8_t, p>;
+		using key = std::integral_constant<property_type, p>;
 		constexpr static std::string_view name = name_v<p>;
 		value_type_t<p> value;
 	};

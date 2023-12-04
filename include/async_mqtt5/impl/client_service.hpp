@@ -25,31 +25,31 @@ requires has_tls_layer<StreamType>
 class stream_context<StreamType, TlsContext> {
 	using tls_context_type = TlsContext;
 
-	mqtt_context _mqtt_context;
+	mqtt_ctx _mqtt_context;
 	tls_context_type _tls_context;
 public:
 	explicit stream_context(TlsContext tls_context) :
 		_tls_context(std::move(tls_context))
 	{}
 
-	mqtt_context& mqtt_context() {
+	auto& mqtt_context() {
 		return _mqtt_context;
 	}
 
-	TlsContext& tls_context() {
+	auto& tls_context() {
 		return _tls_context;
 	}
 
 	auto& session_state() {
-		return _mqtt_context.session_state;
+		return _mqtt_context.state;
 	}
 
 	const auto& session_state() const {
-		return _mqtt_context.session_state;
+		return _mqtt_context.state;
 	}
 
 	void will(will will) {
-		_mqtt_context.will = std::move(will);
+		_mqtt_context.will_msg = std::move(will);
 	}
 
 	template <typename Prop>
@@ -61,7 +61,7 @@ public:
 		std::string client_id,
 		std::string username = "", std::string password = ""
 	) {
-		_mqtt_context.credentials = {
+		_mqtt_context.creds = {
 			std::move(client_id),
 			std::move(username), std::move(password)
 		};
@@ -78,24 +78,24 @@ public:
 template <typename StreamType>
 requires (!has_tls_layer<StreamType>)
 class stream_context<StreamType, std::monostate> {
-	mqtt_context _mqtt_context;
+	mqtt_ctx _mqtt_context;
 public:
 	explicit stream_context(std::monostate) {}
 
-	mqtt_context& mqtt_context() {
+	auto& mqtt_context() {
 		return _mqtt_context;
 	}
 
 	auto& session_state() {
-		return _mqtt_context.session_state;
+		return _mqtt_context.state;
 	}
 
 	const auto& session_state() const {
-		return _mqtt_context.session_state;
+		return _mqtt_context.state;
 	}
 
 	void will(will will) {
-		_mqtt_context.will = std::move(will);
+		_mqtt_context.will_msg = std::move(will);
 	}
 
 	template <typename Prop>
@@ -107,7 +107,7 @@ public:
 		std::string client_id,
 		std::string username = "", std::string password = ""
 	) {
-		_mqtt_context.credentials = {
+		_mqtt_context.creds = {
 			std::move(client_id),
 			std::move(username), std::move(password)
 		};

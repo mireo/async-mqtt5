@@ -122,7 +122,7 @@ decltype(auto) async_disconnect(
 	using Signature = void (error_code);
 
 	auto initiation = [](
-		auto handler, disconnect_context ctx,
+		auto handler, disconnect_ctx ctx,
 		const std::shared_ptr<ClientService>& svc_ptr
 	) {
 		disconnect_op {
@@ -132,7 +132,7 @@ decltype(auto) async_disconnect(
 
 	return asio::async_initiate<CompletionToken, Signature>(
 		initiation, token,
-		disconnect_context { reason_code, props, terminal },
+		disconnect_ctx { reason_code, props, terminal },
 		svc_ptr
 	);
 }

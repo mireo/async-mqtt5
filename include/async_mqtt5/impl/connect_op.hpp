@@ -39,7 +39,7 @@ class connect_op {
 	struct on_complete_auth {};
 
 	Stream& _stream;
-	mqtt_context& _ctx;
+	mqtt_ctx& _ctx;
 
 	using handler_type = asio::any_completion_handler<void (error_code)>;
 	handler_type _handler;
@@ -52,7 +52,7 @@ class connect_op {
 public:
 	template <typename Handler>
 	connect_op(
-		Stream& stream, Handler&& handler, mqtt_context& ctx
+		Stream& stream, Handler&& handler, mqtt_ctx& ctx
 	) :
 		_stream(stream), _ctx(ctx),
 		_handler(std::forward<Handler>(handler))
@@ -190,9 +190,9 @@ public:
 		auto packet = control_packet<allocator_type>::of(
 			no_pid, get_allocator(),
 			encoders::encode_connect,
-			_ctx.credentials.client_id,
-			_ctx.credentials.username, _ctx.credentials.password,
-			10u, false, _ctx.co_props, _ctx.will
+			_ctx.creds.client_id,
+			_ctx.creds.username, _ctx.creds.password,
+			10u, false, _ctx.co_props, _ctx.will_msg
 		);
 
 		const auto& wire_data = packet.wire_data();
@@ -283,7 +283,7 @@ public:
 		const auto& [session_present, reason_code, ca_props] = *rv;
 
 		_ctx.ca_props = ca_props;
-		_ctx.session_state.session_present(session_present);
+		_ctx.state.session_present(session_present);
 
 		// TODO: session_present logic
 		//  Unexpected result handling:

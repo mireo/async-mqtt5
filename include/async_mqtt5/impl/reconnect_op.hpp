@@ -126,7 +126,7 @@ public:
 
 		auto init_connect = [](
 			auto handler, typename Owner::stream_type& stream,
-			mqtt_context& context, const epoints& eps, authority_path ap
+			mqtt_ctx& context, const epoints& eps, authority_path ap
 		) {
 			connect_op { stream, std::move(handler), context }
 				.perform(eps, std::move(ap));

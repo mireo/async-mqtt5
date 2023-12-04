@@ -1,15 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include <boost/asio/as_tuple.hpp>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/use_awaitable.hpp>
-
 #include <async_mqtt5.hpp>
 #include <test_common/test_service.hpp>
 
 using namespace async_mqtt5;
-
-constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 BOOST_AUTO_TEST_SUITE(session/*, *boost::unit_test::disabled()*/)
 

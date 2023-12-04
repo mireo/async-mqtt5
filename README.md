@@ -107,6 +107,7 @@ Async.MQTT5 is a header-only library. To use Async.MQTT5 it requires the followi
 
 Async.MQTT5 has been tested with the following compilers: 
 - clang 14.0 (Linux)
+- GCC 12 (Linux)
 - MSVC 14.37 - Visual Studio 2022 (Windows)
 
 Contributing

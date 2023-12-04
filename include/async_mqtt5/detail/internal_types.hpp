@@ -66,16 +66,16 @@ private:
 	}
 };
 
-struct mqtt_context {
-	credentials credentials;
-	std::optional<will> will;
+struct mqtt_ctx {
+	credentials creds;
+	std::optional<will> will_msg;
 	connect_props co_props;
 	connack_props ca_props;
-	session_state session_state;
+	session_state state;
 	any_authenticator authenticator;
 };
 
-struct disconnect_context {
+struct disconnect_ctx {
 	disconnect_rc_e reason_code = disconnect_rc_e::normal_disconnection;
 	disconnect_props props = {};
 	bool terminal = false;
