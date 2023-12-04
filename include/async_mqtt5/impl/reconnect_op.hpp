@@ -4,16 +4,13 @@
 #include <boost/asio/deferred.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/any_completion_handler.hpp>
 
 #include <boost/asio/experimental/parallel_group.hpp>
 
-#include <boost/asio/ip/tcp.hpp>
-
 #include <async_mqtt5/types.hpp>
-
 #include <async_mqtt5/detail/async_traits.hpp>
-
 #include <async_mqtt5/impl/connect_op.hpp>
 
 namespace async_mqtt5::detail {

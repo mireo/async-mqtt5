@@ -20,8 +20,7 @@ class write_op {
 	handler_type _handler;
 
 public:
-	write_op(
-		Owner& owner, Handler&& handler) :
+	write_op(Owner& owner, Handler&& handler) :
 		_owner(owner),
 		_handler(std::move(handler))
 	{}

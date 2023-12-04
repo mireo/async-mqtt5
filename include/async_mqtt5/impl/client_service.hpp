@@ -294,8 +294,7 @@ public:
 		};
 
 		return asio::async_initiate<CompletionToken, Signature> (
-			initiation,
-			token, std::ref(*this),
+			initiation, token, std::ref(*this),
 			wait_for, std::ref(_read_buff), std::ref(_active_span)
 		);
 	}

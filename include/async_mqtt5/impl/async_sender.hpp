@@ -4,7 +4,6 @@
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/prepend.hpp>
-
 #include <boost/asio/ip/tcp.hpp>
 
 #include <async_mqtt5/detail/internal_types.hpp>
@@ -19,35 +18,50 @@ class write_req {
 	asio::const_buffer _buffer;
 	serial_num_t _serial_num;
 	unsigned _flags;
-	asio::any_completion_handler<void (error_code)> _handler;
+
+	using handler_type = asio::any_completion_handler<void (error_code)>;
+	handler_type _handler;
 
 public:
 	write_req(
 		asio::const_buffer buffer,
 		serial_num_t serial_num, unsigned flags,
-		asio::any_completion_handler<void (error_code)> handler
-	) : _buffer(buffer), _serial_num(serial_num), _flags(flags),
-		_handler(std::move(handler)) {}
+		handler_type handler
+	) :
+		_buffer(buffer), _serial_num(serial_num), _flags(flags),
+		_handler(std::move(handler))
+	{}
 
 	static serial_num_t next_serial_num(serial_num_t last) {
 		return last + 1;
 	}
 
-	asio::const_buffer buffer() const { return _buffer; }
-	void complete(error_code ec) { std::move(_handler)(ec); }
-	bool throttled() const { return _flags & send_flag::throttled; }
-	bool terminal() const { return _flags & send_flag::terminal; }
+	asio::const_buffer buffer() const {
+		 return _buffer;
+	}
+
+	void complete(error_code ec) {
+		std::move(_handler)(ec);
+	}
+
+	bool throttled() const {
+		return _flags & send_flag::throttled;
+	}
+
+	bool terminal() const {
+		return _flags & send_flag::terminal;
+	}
 
 	bool operator<(const write_req& other) const {
-		if (prioritized() != other.prioritized()) {
+		if (prioritized() != other.prioritized())
 			return prioritized();
-		}
 
 		auto s1 = _serial_num;
 		auto s2 = other._serial_num;
 
 		if (s1 < s2)
 			return (s2 - s1) < (1 << (SERIAL_BITS - 1));
+
 		return (s1 - s2) >= (1 << (SERIAL_BITS - 1));
 	}
 
@@ -55,8 +69,11 @@ private:
 	bool prioritized() const { return _flags & send_flag::prioritized; }
 };
 
+
 template <typename ClientService>
 class async_sender {
+	using self_type = async_sender<ClientService>;
+
 	using client_service = ClientService;
 
 	using queue_allocator_type = asio::recycling_allocator<write_req>;
@@ -95,18 +112,21 @@ public:
 		serial_num_t serial_num, unsigned flags,
 		CompletionToken&& token
 	) {
-		auto initiation = [this](
-			auto handler, const BufferType& buffer,
+		using Signature = void (error_code);
+
+		auto initiation = [](
+			auto handler, self_type& self, const BufferType& buffer,
 			serial_num_t serial_num, unsigned flags
 		) {
-			_write_queue.emplace_back(
+			self._write_queue.emplace_back(
 				asio::buffer(buffer), serial_num, flags, std::move(handler)
 			);
-			do_write();
+			self.do_write();
 		};
 
-		return asio::async_initiate<CompletionToken, void (error_code)>(
-			std::move(initiation), token, buffer, serial_num, flags
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, std::ref(*this),
+			buffer, serial_num, flags
 		);
 	}
 
@@ -120,8 +140,8 @@ public:
 		if (_write_in_progress)
 			return;
 
-		// The _write_in_progress flag is set to true to prevent any write 
-		// operations executing before the _write_queue is filled with 
+		// The _write_in_progress flag is set to true to prevent any write
+		// operations executing before the _write_queue is filled with
 		// all the packets that require resending.
 		_write_in_progress = true;
 
@@ -188,12 +208,14 @@ private:
 			_write_queue.begin(), _write_queue.end(),
 			[](const auto& op) { return op.terminal(); }
 		);
+
 		if (terminal_req != _write_queue.end()) {
 			write_queue.push_back(std::move(*terminal_req));
 			_write_queue.erase(terminal_req);
 		}
-		else if (_limit == MAX_LIMIT)
+		else if (_limit == MAX_LIMIT) {
 			write_queue = std::move(_write_queue);
+		}
 		else {
 			auto throttled_ptr = std::stable_partition(
 				_write_queue.begin(), _write_queue.end(),
@@ -214,6 +236,7 @@ private:
 				std::make_move_iterator(_write_queue.begin()),
 				std::make_move_iterator(throttled_ptr)
 			);
+
 			_write_queue.erase(_write_queue.begin(), throttled_ptr);
 		}
 
@@ -225,8 +248,7 @@ private:
 		_svc._replies.clear_fast_replies();
 
 		_svc._stream.async_write(
-			buffers,
-			asio::prepend(std::ref(*this), std::move(write_queue))
+			buffers, asio::prepend(std::ref(*this), std::move(write_queue))
 		);
 	}
 

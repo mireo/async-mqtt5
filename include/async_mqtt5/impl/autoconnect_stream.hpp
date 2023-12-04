@@ -88,6 +88,7 @@ public:
 	void open() {
 		error_code ec;
 		lowest_layer(*_stream_ptr).open(asio::ip::tcp::v4(), ec);
+		lowest_layer(*_stream_ptr).set_option(asio::ip::tcp::no_delay(true));
 	}
 
 	void cancel() {

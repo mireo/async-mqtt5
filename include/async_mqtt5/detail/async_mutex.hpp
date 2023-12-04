@@ -120,11 +120,14 @@ public:
 	// It's the responsibility of the completion handler to unlock the mutex.
 	template <typename CompletionToken>
 	decltype(auto) lock(CompletionToken&& token) noexcept {
-		auto initiation = [this] (auto handler) {
-			this->execute_or_queue(std::move(handler));
+		using Signature = void (error_code);
+
+		auto initiation = [] (auto handler, async_mutex& self) {
+			self.execute_or_queue(std::move(handler));
 		};
-		return asio::async_initiate<CompletionToken, void (error_code)>(
-			std::move(initiation), token
+
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, std::ref(*this)
 		);
 	}
 

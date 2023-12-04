@@ -3,6 +3,7 @@
 
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/consign.hpp>
+#include <boost/asio/append.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/asio/post.hpp>
 
@@ -14,12 +15,12 @@ namespace async_mqtt5::detail {
 namespace asio = boost::asio;
 
 class replies {
-	using signature = void (error_code, byte_citer, byte_citer);
+	using Signature = void (error_code, byte_citer, byte_citer);
 
 	static constexpr auto max_reply_time = std::chrono::seconds(20);
 
-	class handler_type : public asio::any_completion_handler<signature> {
-		using base = asio::any_completion_handler<signature>;
+	class handler_type : public asio::any_completion_handler<Signature> {
+		using base = asio::any_completion_handler<Signature>;
 		control_code_e _code;
 		uint16_t _packet_id;
 		std::chrono::time_point<std::chrono::system_clock> _ts;
@@ -81,32 +82,42 @@ public:
 		}
 
 		auto freply = find_fast_reply(code, packet_id);
+
 		if (freply == _fast_replies.end()) {
-			auto initiate = [this](
-				auto handler, control_code_e code, uint16_t packet_id
+			auto initiation = [](
+				auto handler, replies& self,
+				control_code_e code, uint16_t packet_id
 			) {
-				_handlers.emplace_back(code, packet_id, std::move(handler));
+				self._handlers.emplace_back(
+					code, packet_id, std::move(handler)
+				);
 			};
-			return asio::async_initiate<CompletionToken, signature>(
-				std::move(initiate), token, code, packet_id
+			return asio::async_initiate<CompletionToken, Signature>(
+				initiation, token, std::ref(*this), code, packet_id
 			);
 		}
 
 		auto fdata = std::move(*freply);
 		_fast_replies.erase(freply);
 
-		byte_citer first = fdata.packet->cbegin(), last = fdata.packet->cend();
-		auto with_packet = asio::consign(
-			std::forward<CompletionToken>(token), std::move(fdata.packet)
-		);
-		auto initiate = [](auto handler, byte_citer first, byte_citer last) {
+		auto initiation = [](
+			auto handler, std::unique_ptr<std::string> packet
+		) {
 			auto ex = asio::get_associated_executor(handler);
-			asio::post(ex, [h = std::move(handler), first, last]() mutable {
-				std::move(h)(error_code {}, first, last);
-			});
+			byte_citer first = packet->cbegin();
+			byte_citer last = packet->cend();
+
+			asio::post(
+				ex,
+				asio::consign(
+					asio::append(std::move(handler), error_code{}, first, last),
+					std::move(packet)
+				)
+			);
 		};
-		return asio::async_initiate<decltype(with_packet), signature>(
-			std::move(initiate), with_packet, first, last
+
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, std::move(fdata.packet)
 		);
 	}
 
@@ -115,12 +126,15 @@ public:
 		byte_citer first, byte_citer last
 	) {
 		auto handler_ptr = find_handler(code, packet_id);
+
 		if (handler_ptr == _handlers.end()) {
 			_fast_replies.push_back({
-				code, packet_id, std::make_unique<std::string>(first, last)
+				code, packet_id,
+				std::make_unique<std::string>(first, last)
 			});
 			return;
 		}
+
 		auto handler = std::move(*handler_ptr);
 		_handlers.erase(handler_ptr);
 		std::move(handler)(ec, first, last);
@@ -159,7 +173,8 @@ public:
 		for (auto it = _handlers.begin(); it != _handlers.end();) {
 			if (it->code() == control_code_e::pubrel) {
 				std::move(*it)(
-					asio::error::operation_aborted, byte_citer {}, byte_citer {}
+					asio::error::operation_aborted,
+					byte_citer {}, byte_citer {}
 				);
 				it = _handlers.erase(it);
 			}

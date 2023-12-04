@@ -363,7 +363,7 @@ public:
 	) {
 		using Signature = detail::on_publish_signature<qos_type>;
 
-		auto initiate = [] (
+		auto initiation = [] (
 			auto handler, std::string topic, std::string payload,
 			retain_e retain, const publish_props& props,
 			const clisvc_ptr& svc_ptr
@@ -378,7 +378,7 @@ public:
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			std::move(initiate), token,
+			initiation, token,
 			std::move(topic), std::move(payload), retain, props, _svc_ptr
 		);
 	}
@@ -437,7 +437,7 @@ public:
 			error_code, std::vector<reason_code>, suback_props
 		);
 
-		auto initiate = [] (
+		auto initiation = [] (
 			auto handler, const std::vector<subscribe_topic>& topics,
 			const subscribe_props& props, const clisvc_ptr& impl
 		) {
@@ -446,7 +446,7 @@ public:
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			std::move(initiate), token, topics, props, _svc_ptr
+			initiation, token, topics, props, _svc_ptr
 		);
 	}
 
@@ -558,7 +558,7 @@ public:
 			error_code, std::vector<reason_code>, unsuback_props
 		);
 
-		auto initiate = [](
+		auto initiation = [](
 			auto handler,
 			const std::vector<std::string>& topics,
 			const unsubscribe_props& props,	const clisvc_ptr& impl
@@ -568,7 +568,7 @@ public:
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			std::move(initiate), token, topics, props, _svc_ptr
+			initiation, token, topics, props, _svc_ptr
 		);
 	}
 
