@@ -210,112 +210,112 @@ reason codes:
 /// \cond
 
 class connect_props : public prop::properties<
-	prop::session_expiry_interval,
-	prop::receive_maximum,
-	prop::maximum_packet_size,
-	prop::topic_alias_maximum,
-	prop::request_response_information,
-	prop::request_problem_information,
-	prop::user_property,
-	prop::authentication_method,
-	prop::authentication_data
+	prop::session_expiry_interval_t,
+	prop::receive_maximum_t,
+	prop::maximum_packet_size_t,
+	prop::topic_alias_maximum_t,
+	prop::request_response_information_t,
+	prop::request_problem_information_t,
+	prop::user_property_t,
+	prop::authentication_method_t,
+	prop::authentication_data_t
 > {};
 
 class connack_props : public prop::properties<
-	prop::session_expiry_interval,
-	prop::receive_maximum,
-	prop::maximum_qos,
-	prop::retain_available,
-	prop::maximum_packet_size,
-	prop::assigned_client_identifier,
-	prop::topic_alias_maximum,
-	prop::reason_string,
-	prop::user_property,
-	prop::wildcard_subscription_available,
-	prop::subscription_identifier_available,
-	prop::shared_subscription_available,
-	prop::server_keep_alive,
-	prop::response_information,
-	prop::server_reference,
-	prop::authentication_method,
-	prop::authentication_data
+	prop::session_expiry_interval_t,
+	prop::receive_maximum_t,
+	prop::maximum_qos_t,
+	prop::retain_available_t,
+	prop::maximum_packet_size_t,
+	prop::assigned_client_identifier_t,
+	prop::topic_alias_maximum_t,
+	prop::reason_string_t,
+	prop::user_property_t,
+	prop::wildcard_subscription_available_t,
+	prop::subscription_identifier_available_t,
+	prop::shared_subscription_available_t,
+	prop::server_keep_alive_t,
+	prop::response_information_t,
+	prop::server_reference_t,
+	prop::authentication_method_t,
+	prop::authentication_data_t
 > {};
 
 class publish_props : public prop::properties<
-	prop::payload_format_indicator,
-	prop::message_expiry_interval,
-	prop::content_type,
-	prop::response_topic,
-	prop::correlation_data,
-	prop::subscription_identifier,
-	prop::topic_alias,
-	prop::user_property
+	prop::payload_format_indicator_t,
+	prop::message_expiry_interval_t,
+	prop::content_type_t,
+	prop::response_topic_t,
+	prop::correlation_data_t,
+	prop::subscription_identifier_t,
+	prop::topic_alias_t,
+	prop::user_property_t
 > {};
 
 // puback, pubcomp
 class puback_props : public prop::properties<
-	prop::reason_string,
-	prop::user_property
+	prop::reason_string_t,
+	prop::user_property_t
 > {};
 
 class pubcomp_props : public prop::properties<
-	prop::reason_string,
-	prop::user_property
+	prop::reason_string_t,
+	prop::user_property_t
 > {};
 
 class pubrec_props : public prop::properties<
-	prop::reason_string,
-	prop::user_property
+	prop::reason_string_t,
+	prop::user_property_t
 > {};
 
 class pubrel_props : public prop::properties<
-	prop::reason_string,
-	prop::user_property
+	prop::reason_string_t,
+	prop::user_property_t
 > {};
 
 
 class subscribe_props : public prop::properties<
-	prop::subscription_identifier,
-	prop::user_property
+	prop::subscription_identifier_t,
+	prop::user_property_t
 > {};
 
 class suback_props : public prop::properties<
-	prop::reason_string,
-	prop::user_property
+	prop::reason_string_t,
+	prop::user_property_t
 > {};
 
 class unsubscribe_props : public prop::properties<
-	prop::user_property
+	prop::user_property_t
 > {};
 
 class unsuback_props : public prop::properties<
-	prop::reason_string,
-	prop::user_property
+	prop::reason_string_t,
+	prop::user_property_t
 > {};
 
 class disconnect_props : public prop::properties<
-	prop::session_expiry_interval,
-	prop::reason_string,
-	prop::user_property,
-	prop::server_reference
+	prop::session_expiry_interval_t,
+	prop::reason_string_t,
+	prop::user_property_t,
+	prop::server_reference_t
 > {};
 
 class auth_props : public prop::properties<
-	prop::authentication_method,
-	prop::authentication_data,
-	prop::reason_string,
-	prop::user_property
+	prop::authentication_method_t,
+	prop::authentication_data_t,
+	prop::reason_string_t,
+	prop::user_property_t
 > {};
 
 
 class will_props : public prop::properties<
-	prop::will_delay_interval,
-	prop::payload_format_indicator,
-	prop::message_expiry_interval,
-	prop::content_type,
-	prop::response_topic,
-	prop::correlation_data,
-	prop::user_property
+	prop::will_delay_interval_t,
+	prop::payload_format_indicator_t,
+	prop::message_expiry_interval_t,
+	prop::content_type_t,
+	prop::response_topic_t,
+	prop::correlation_data_t,
+	prop::user_property_t
 >{};
 
 /// \endcond
