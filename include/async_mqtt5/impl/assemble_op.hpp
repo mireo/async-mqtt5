@@ -171,15 +171,13 @@ public:
 
 private:
 	static bool valid_header(uint8_t control_byte) {
-		using enum control_code_e;
-
 		auto code = control_code_e(control_byte & 0b11110000);
 
-		if (code == publish)
+		if (code == control_code_e::publish)
 			return true;
 
 		auto res = control_byte & 0b00001111;
-		if (code == pubrel)
+		if (code == control_code_e::pubrel)
 			return res == 0b00000010;
 		return res == 0b00000000;
 	}
@@ -189,17 +187,18 @@ private:
 		uint8_t control_byte, byte_citer first, byte_citer last
 	) {
 		using namespace decoders;
-		using enum control_code_e;
 
 		if (!valid_header(control_byte))
 			return complete(client::error::malformed_packet, 0, {}, {});
 
 		auto code = control_code_e(control_byte & 0b11110000);
 
-		if (code == pingresp)
+		if (code == control_code_e::pingresp)
 			return perform(wait_for, asio::transfer_at_least(0));
 
-		bool is_reply = code != publish && code != auth && code != disconnect;
+		bool is_reply = code != control_code_e::publish &&
+				code != control_code_e::auth &&
+				code != control_code_e::disconnect;
 		if (is_reply) {
 			auto packet_id = decoders::decode_packet_id(first).value();
 			_svc._replies.dispatch(error_code {}, code, packet_id, first, last);

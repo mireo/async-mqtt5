@@ -83,11 +83,9 @@ private:
 		uint8_t control_byte,
 		byte_citer first, byte_citer last
 	) {
-		using enum control_code_e;
 		auto code = control_code_e(control_byte & 0b11110000);
-
 		switch (code) {
-			case publish: {
+			case control_code_e::publish: {
 				auto msg = decoders::decode_publish(
 					control_byte, std::distance(first, last), first
 				);
@@ -99,12 +97,12 @@ private:
 				publish_rec_op { _svc_ptr }.perform(std::move(*msg));
 			}
 			break;
-			case disconnect: {
+			case control_code_e::disconnect: {
 				_svc_ptr->close_stream();
 				_svc_ptr->open_stream();
 			}
 			break;
-			case auth: {
+			case control_code_e::auth: {
 				auto rv = decoders::decode_auth(
 					std::distance(first, last), first
 				);

@@ -80,23 +80,21 @@ enum class error : int {
 
 
 inline std::string client_error_to_string(error err) {
-	using enum error;
-
 	switch (err) {
-		case malformed_packet:
+		case error::malformed_packet:
 			return "Malformed packet has been detected";
-		case session_expired:
+		case error::session_expired:
 			return "The Client's session does not exist or it has expired. ";
-		case pid_overrun:
+		case error::pid_overrun:
 			return "There are no more available Packet Identifiers to use.";
-		case invalid_topic:
+		case error::invalid_topic:
 			return "The Topic is invalid and "
 				"does not conform to the specification.";
-		case qos_not_supported:
+		case error::qos_not_supported:
 			return "The Server does not support the specified QoS";
-		case retain_not_available:
+		case error::retain_not_available:
 			return "The Server does not support retained messages.";
-		case topic_alias_maximum_reached:
+		case error::topic_alias_maximum_reached:
 			return "The Client attempted to send a Topic Alias "
 				"that is greater than Topic Alias Maximum.";
 		default:
@@ -216,10 +214,9 @@ public:
 	std::string message() const {
 		switch (_code) {
 			case 0x00:
-				using enum reason_codes::category;
-				if (_category == suback)
+				if (_category == reason_codes::category::suback)
 					return "The subscription is accepted with maximum QoS sent at 0";
-				if (_category == disconnect)
+				if (_category == reason_codes::category::disconnect)
 					return "Close the connection normally. Do not send the Will Message";
 				return "The operation completed successfully";
 			case 0x01:
@@ -325,8 +322,6 @@ public:
 
 namespace reason_codes {
 
-using enum category;
-
 /** No Reason Code. A \ref client::error occurred.*/
 constexpr reason_code empty {};
 
@@ -334,10 +329,10 @@ constexpr reason_code empty {};
 constexpr reason_code success { 0x00 };
 
 /** Close the connection normally. Do not send the Will Message. */
-constexpr reason_code normal_disconnection { 0x00, disconnect };
+constexpr reason_code normal_disconnection { 0x00, category::disconnect };
 
 /** The subscription is accepted with maximum QoS sent at 0. */
-constexpr reason_code granted_qos_0 { 0x00, suback };
+constexpr reason_code granted_qos_0 { 0x00, category::suback };
 
 /** The subscription is accepted with maximum QoS sent at 1. */
 constexpr reason_code granted_qos_1 { 0x01 };
@@ -475,11 +470,11 @@ constexpr reason_code wildcard_subscriptions_not_supported { 0xa2 };
 
 namespace detail {
 
-using enum category;
-
-template <category cat>
-std::pair<reason_code*, size_t> valid_codes()
-requires (cat == connack) {
+template <
+	category cat,
+	std::enable_if_t<cat == category::connack, bool> = true
+>
+std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		success, unspecified_error, malformed_packet,
 		protocol_error, implementation_specific_error,
@@ -496,9 +491,11 @@ requires (cat == connack) {
 	return std::make_pair(valid_codes, len);
 }
 
-template <category cat>
-std::pair<reason_code*, size_t> valid_codes()
-requires (cat == auth) {
+template <
+	category cat,
+	std::enable_if_t<cat == category::auth, bool> = true
+>
+std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		success, continue_authentication
 	};
@@ -506,9 +503,13 @@ requires (cat == auth) {
 	return std::make_pair(valid_codes, len);
 }
 
-template <category cat>
-std::pair<reason_code*, size_t> valid_codes()
-requires (cat == puback || cat == pubrec) {
+template <
+	category cat,
+	std::enable_if_t<
+		cat == category::puback || cat == category::pubrec, bool
+	> = true
+>
+std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		success, no_matching_subscribers, unspecified_error,
 		implementation_specific_error, not_authorized,
@@ -519,9 +520,13 @@ requires (cat == puback || cat == pubrec) {
 	return std::make_pair(valid_codes, len);
 }
 
-template <category cat>
-std::pair<reason_code*, size_t> valid_codes()
-requires (cat == pubrel || cat == pubcomp) {
+template <
+	category cat,
+	std::enable_if_t<
+		cat == category::pubrel || cat == category::pubcomp, bool
+	> = true
+>
+std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		success, packet_id_not_found
 	};
@@ -529,9 +534,11 @@ requires (cat == pubrel || cat == pubcomp) {
 	return std::make_pair(valid_codes, len);
 }
 
-template <category cat>
-std::pair<reason_code*, size_t> valid_codes()
-requires (cat == suback) {
+template <
+	category cat,
+	std::enable_if_t<cat == category::suback, bool> = true
+>
+std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		granted_qos_0, granted_qos_1, granted_qos_2,
 		unspecified_error, implementation_specific_error,
@@ -545,9 +552,11 @@ requires (cat == suback) {
 	return std::make_pair(valid_codes, len);
 }
 
-template <category cat>
-std::pair<reason_code*, size_t> valid_codes()
-requires (cat == unsuback) {
+template <
+	category cat,
+	std::enable_if_t<cat == category::unsuback, bool> = true
+>
+std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		success, no_subscription_existed,
 		unspecified_error, implementation_specific_error,
@@ -558,9 +567,11 @@ requires (cat == unsuback) {
 	return std::make_pair(valid_codes, len);
 }
 
-template <category cat>
-std::pair<reason_code*, size_t> valid_codes()
-requires (cat == disconnect) {
+template <
+	category cat,
+	std::enable_if_t<cat == category::disconnect, bool> = true
+>
+std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		normal_disconnection, unspecified_error,
 		malformed_packet,protocol_error,
@@ -605,5 +616,6 @@ template <>
 struct is_error_code_enum <async_mqtt5::client::error> : std::true_type {};
 
 } // end namespace boost::system
+
 
 #endif // !ASYNC_MQTT5_ERROR_HPP

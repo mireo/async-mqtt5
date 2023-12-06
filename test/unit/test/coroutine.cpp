@@ -1,11 +1,13 @@
 #include <boost/test/unit_test.hpp>
 
+#include <boost/asio/use_awaitable.hpp>
+#ifdef BOOST_ASIO_HAS_CO_AWAIT
+
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/asio/use_awaitable.hpp>
 
 #include <boost/beast/websocket.hpp>
 
@@ -60,7 +62,7 @@ asio::awaitable<void> sanity_check(mqtt_client<StreamType, TlsContext>& c) {
 	auto [rec, topic, payload, publish_props] = co_await c.async_receive(use_nothrow_awaitable);
 
 	auto [unsub_ec, unsub_codes, unsub_props] = co_await c.async_unsubscribe(
-		std::vector<std::string>{"test/mqtt-test"}, unsubscribe_props{},
+		std::vector<std::string>{"test/mqtt-test"}, unsubscribe_props {},
 		use_nothrow_awaitable
 	);
 	BOOST_CHECK(!unsub_ec);
@@ -145,3 +147,6 @@ BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+#endif

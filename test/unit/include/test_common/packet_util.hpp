@@ -18,17 +18,16 @@ inline qos_e extract_qos(uint8_t flags) {
 }
 
 inline control_code_e extract_code(uint8_t control_byte) {
-	using enum control_code_e;
-
 	constexpr uint8_t mask = 0b11110000;
 	constexpr uint8_t publish_bits = 0b0011;
 	constexpr uint8_t special_mask = 0b00000010;
 	constexpr control_code_e codes_with_non_zero_end[] = {
-		pubrel, subscribe, unsubscribe
+		control_code_e::pubrel, control_code_e::subscribe,
+		control_code_e::unsubscribe
 	};
 
 	if ((control_byte >> 4) == publish_bits)
-		return publish;
+		return control_code_e::publish;
 	if ((control_byte & mask) == control_byte)
 		return control_code_e(control_byte & mask);
 
@@ -36,29 +35,27 @@ inline control_code_e extract_code(uint8_t control_byte) {
 		if (control_byte == (uint8_t(special_code) | special_mask))
 			return special_code;
 
-	return no_packet;
+	return control_code_e::no_packet;
 }
 
 
 inline std::string_view code_to_str(control_code_e code) {
-	using enum control_code_e;
-
 	switch (code) {
-		case connect: return "CONNECT";
-		case connack: return "CONNACK";
-		case publish: return "PUBLISH";
-		case puback: return "PUBACK";
-		case pubrec: return "PUBREC";
-		case pubrel: return "PUBREL";
-		case pubcomp: return "PUBCOMP";
-		case subscribe: return "SUBSCRIBE";
-		case suback: return "SUBACK";
-		case unsubscribe: return "UNSUBSCRIBE";
-		case unsuback: return "UNSUBACK";
-		case auth: return "AUTH";
-		case disconnect: return "DISCONNECT";
-		case pingreq: return "PINGREQ";
-		case pingresp: return "PINGRESP";
+		case control_code_e::connect: return "CONNECT";
+		case control_code_e::connack: return "CONNACK";
+		case control_code_e::publish: return "PUBLISH";
+		case control_code_e::puback: return "PUBACK";
+		case control_code_e::pubrec: return "PUBREC";
+		case control_code_e::pubrel: return "PUBREL";
+		case control_code_e::pubcomp: return "PUBCOMP";
+		case control_code_e::subscribe: return "SUBSCRIBE";
+		case control_code_e::suback: return "SUBACK";
+		case control_code_e::unsubscribe: return "UNSUBSCRIBE";
+		case control_code_e::unsuback: return "UNSUBACK";
+		case control_code_e::auth: return "AUTH";
+		case control_code_e::disconnect: return "DISCONNECT";
+		case control_code_e::pingreq: return "PINGREQ";
+		case control_code_e::pingresp: return "PINGRESP";
 	}
 	return "UNKNOWN";
 }
@@ -66,12 +63,10 @@ inline std::string_view code_to_str(control_code_e code) {
 inline std::string to_readable_packet(
 	std::string packet, error_code ec = {}, bool incoming = false
 ) {
-	using enum control_code_e;
-
 	auto control_byte = uint8_t(*packet.data());
 	auto code = extract_code(control_byte);
 
-	if (code == no_packet)
+	if (code == control_code_e::no_packet)
 		return {};
 
 	std::ostringstream stream;
@@ -79,7 +74,10 @@ inline std::string to_readable_packet(
 	if (incoming)
 		stream << "-> ";
 
-	if (code == connect || code == connack || code == disconnect) {
+	if (
+		code == control_code_e::connect || code == control_code_e::connack ||
+		code == control_code_e::disconnect
+	) {
 		stream << code_to_str(code) << (ec ? " ec: " + ec.message() : "");
 		return stream.str();
 	}
@@ -89,7 +87,7 @@ inline std::string to_readable_packet(
 		begin, packet.cend(), decoders::basic::varint_
 	);
 
-	if (code == publish) {
+	if (code == control_code_e::publish) {
 		auto publish = decoders::decode_publish(
 			control_byte, *varlen, begin
 		);

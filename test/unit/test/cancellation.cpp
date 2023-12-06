@@ -5,25 +5,24 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/asio/use_awaitable.hpp>
 
 #include <async_mqtt5.hpp>
 
 using namespace async_mqtt5;
 
-constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
-
 namespace async_mqtt5::test {
 
-enum cancellation_type {
+enum cancel_type {
 	ioc_stop = 1,
 	client_cancel
 };
 
 } // end namespace async_mqtt5::test
 
-template <test::cancellation_type type>
+template <test::cancel_type type>
 void cancel_async_receive() {
-	using enum test::cancellation_type;
+	using namespace test;
 
 	constexpr int num_handlers = 3;
 	constexpr int expected_handlers_called = type == ioc_stop ? 0 : num_handlers;
@@ -59,9 +58,9 @@ void cancel_async_receive() {
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
-template <test::cancellation_type type>
+template <test::cancel_type type>
 void cancel_async_publish() {
-	using enum test::cancellation_type;
+	using namespace test;
 
 	constexpr int expected_handlers_called = type == ioc_stop ? 0 : 3;
 	int handlers_called = 0;
@@ -113,9 +112,9 @@ void cancel_async_publish() {
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
-template <test::cancellation_type type>
+template <test::cancel_type type>
 void cancel_during_connecting() {
-	using enum test::cancellation_type;
+	using namespace test;
 
 	constexpr int expected_handlers_called = type == ioc_stop ? 0 : 1;
 	int handlers_called = 0;
@@ -155,31 +154,35 @@ BOOST_AUTO_TEST_SUITE(cancellation/*, *boost::unit_test::disabled()*/)
 
 
 BOOST_AUTO_TEST_CASE(ioc_stop_async_receive) {
-	cancel_async_receive<test::ioc_stop>();
+	cancel_async_receive<test::cancel_type::ioc_stop>();
 }
 
 
 BOOST_AUTO_TEST_CASE(client_cancel_async_receive) {
-	cancel_async_receive<test::client_cancel>();
+	cancel_async_receive<test::cancel_type::client_cancel>();
 }
 
 // passes on debian, hangs on windows in io_context destructor
 BOOST_AUTO_TEST_CASE(ioc_stop_async_publish, *boost::unit_test::disabled() ) {
-	cancel_async_publish<test::ioc_stop>();
+	cancel_async_publish<test::cancel_type::ioc_stop>();
 }
 
 BOOST_AUTO_TEST_CASE(client_cancel_async_publish) {
-	cancel_async_publish<test::client_cancel>();
+	cancel_async_publish<test::cancel_type::client_cancel>();
 }
 
 // passes on debian, hangs on windows 
 BOOST_AUTO_TEST_CASE(ioc_stop_cancel_during_connecting, *boost::unit_test::disabled() ) {
-	cancel_during_connecting<test::ioc_stop>();
+	cancel_during_connecting<test::cancel_type::ioc_stop>();
 }
 
 BOOST_AUTO_TEST_CASE(client_cancel_during_connecting) {
-	cancel_during_connecting<test::client_cancel>();
+	cancel_during_connecting<test::cancel_type::client_cancel>();
 }
+
+#ifdef BOOST_ASIO_HAS_CO_AWAIT
+
+constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 BOOST_AUTO_TEST_CASE(rerunning_the_client) {
 	asio::io_context ioc;
@@ -221,5 +224,7 @@ BOOST_AUTO_TEST_CASE(rerunning_the_client) {
 
 	ioc.run();
 }
+
+#endif
 
 BOOST_AUTO_TEST_SUITE_END();
