@@ -66,10 +66,10 @@ public:
 			static_cast<uint8_t>(_context.reason_code), _context.props
 		);
 
-		send_disconnect(std::move(disconnect));
+		asio::dispatch(asio::prepend(std::move(*this), std::move(disconnect)));
 	}
 
-	void send_disconnect(control_packet<allocator_type> disconnect) {
+	void operator()(control_packet<allocator_type> disconnect) {
 		const auto& wire_data = disconnect.wire_data();
 
 		_svc_ptr->async_send(

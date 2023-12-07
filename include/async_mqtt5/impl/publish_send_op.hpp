@@ -103,6 +103,18 @@ public:
 		if (ec)
 			return complete_post(ec);
 
+		asio::dispatch(
+			asio::prepend(
+				std::move(*this), std::move(topic),
+				std::move(payload), retain, props
+			)
+		);
+	}
+
+	void operator()(
+		std::string topic, std::string payload,
+		retain_e retain, const publish_props& props
+	) {
 		uint16_t packet_id = 0;
 		if constexpr (qos_type != qos_e::at_most_once) {
 			packet_id = _svc_ptr->allocate_pid();
@@ -334,15 +346,18 @@ private:
 		if (!is_valid_utf8_topic(topic))
 			return client::error::invalid_topic;
 
-		auto max_qos = _svc_ptr->connack_prop(prop::maximum_qos);
+		const auto& [max_qos, retain_avail, topic_alias_max] =
+			_svc_ptr->connack_props(
+				prop::maximum_qos, prop::retain_available,
+				prop::topic_alias_maximum
+			);
+
 		if (max_qos && uint8_t(qos_type) > *max_qos)
 			return client::error::qos_not_supported;
 
-		auto retain_avail = _svc_ptr->connack_prop(prop::retain_available);
 		if (retain_avail && *retain_avail == 0 && retain == retain_e::yes)
 			return client::error::retain_not_available;
 
-		auto topic_alias_max = _svc_ptr->connack_prop(prop::topic_alias_maximum);
 		auto topic_alias = props[prop::topic_alias];
 		if (
 			(!topic_alias_max || topic_alias_max && *topic_alias_max == 0) &&

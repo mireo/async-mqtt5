@@ -1,7 +1,6 @@
 #ifndef ASYNC_MQTT5_CONTROL_PACKET_HPP
 #define ASYNC_MQTT5_CONTROL_PACKET_HPP
 
-#include <mutex>
 #include <vector>
 
 #include <boost/smart_ptr/allocate_unique.hpp>
@@ -115,7 +114,6 @@ class packet_id_allocator {
 		{}
 	};
 
-	std::mutex _mtx;
 	std::vector<interval> _free_ids;
 	static constexpr uint16_t MAX_PACKET_ID = 65535;
 
@@ -125,7 +123,6 @@ public:
 	}
 
 	uint16_t allocate() {
-		std::lock_guard _(_mtx);
 		if (_free_ids.empty()) return 0;
 		auto& last = _free_ids.back();
 		if (last.start == ++last.end) {
@@ -137,7 +134,6 @@ public:
 	}
 
 	void free(uint16_t pid) {
-		std::lock_guard _(_mtx);
 		auto it = std::upper_bound(
 			_free_ids.begin(), _free_ids.end(), pid,
 			[](const uint16_t x, const interval& i) { return x > i.start; }

@@ -283,7 +283,11 @@ public:
 			return complete(client::error::malformed_packet);
 		const auto& [session_present, reason_code, ca_props] = *rv;
 
-		_ctx.ca_props = ca_props;
+		{
+			std::unique_lock writer_lock(_ctx.ca_mtx);
+			_ctx.ca_props = ca_props;
+		}
+
 		_ctx.state.session_present(session_present);
 
 		//  Unexpected result handling:

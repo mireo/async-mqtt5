@@ -66,6 +66,15 @@ public:
 		if (ec)
 			return complete_post(ec, topics.size());
 
+		asio::dispatch(
+			asio::prepend(std::move(*this), topics, props)
+		);
+	}
+
+	void operator()(
+		const std::vector<subscribe_topic>& topics,
+		const subscribe_props& props
+	) {
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
 			return complete_post(client::error::pid_overrun, topics.size());
