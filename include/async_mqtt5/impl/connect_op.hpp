@@ -10,7 +10,9 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/any_completion_handler.hpp>
 
-#include <boost/beast/websocket.hpp>
+#include <boost/beast/http/field.hpp>
+#include <boost/beast/websocket/rfc6455.hpp>
+#include <boost/beast/websocket/stream_base.hpp>
 
 #include <async_mqtt5/error.hpp>
 
@@ -133,7 +135,7 @@ public:
 		do_ws_handshake(std::move(ep), std::move(ap));
 	}
 
-	void do_ws_handshake(endpoint ep, authority_path ap) {
+	void do_ws_handshake(endpoint, authority_path ap) {
 		if constexpr (has_ws_handshake<Stream>) {
 			using namespace boost::beast;
 

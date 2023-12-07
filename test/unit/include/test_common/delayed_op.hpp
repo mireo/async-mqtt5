@@ -11,6 +11,7 @@
 #include <boost/asio/recycling_allocator.hpp>
 #include <boost/asio/steady_timer.hpp>
 
+#include <boost/type_traits/remove_cv_ref.hpp>
 
 namespace async_mqtt5::test {
 
@@ -88,7 +89,7 @@ decltype(auto) async_delay(
 	delayed_op<BoundArgs...>&& op,
 	CompletionToken&& token
 ) {
-	using Signature = void (error_code, std::remove_cvref_t<BoundArgs>...);
+	using Signature = void (error_code, boost::remove_cv_ref_t<BoundArgs>...);
 
 	auto initiation = [](
 		auto handler, asio::cancellation_slot cancel_slot,

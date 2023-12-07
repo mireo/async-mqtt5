@@ -216,7 +216,7 @@ struct varint_parser : x3::parser<varint_parser> {
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
 	bool parse(
 		It& first, const It last,
-		const Ctx& ctx, RCtx& rctx, Attr& attr
+		const Ctx& ctx, RCtx&, Attr& attr
 	) const {
 
 		It iter = first;

@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 	client_type c(ioc.get_executor(), "");
 
 	c.credentials("test-client", "", "")
-		.brokers("mqtt.mireo.local", 1883)
+		.brokers("mqtt.broker", 1883)
 		.run();
 
 	for (int i = 0; i < thread_num - 1; ++i)

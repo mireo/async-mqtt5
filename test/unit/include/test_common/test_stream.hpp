@@ -288,7 +288,7 @@ public:
 			asio::post(get_executor(), asio::prepend(std::move(handler), ec));
 		};
 
-		return async_initiate<ConnectToken, void (error_code)>(
+		return asio::async_initiate<ConnectToken, void (error_code)>(
 			std::move(initiation), token, ep
 		);
 	}

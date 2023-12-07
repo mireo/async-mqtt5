@@ -23,12 +23,12 @@ void publish_qos0_websocket_tcp() {
 	client_type c(ioc, "");
 
 	c.credentials("test-qos0-websocket-tcp", "", "")
-		.brokers("fcluster-5/mqtt", 8083)
+		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
 	c.async_publish<qos_e::at_most_once>(
-		"test/mqtt-test", "hello world with qos0!", 
+		"test/mqtt-test", "hello world with qos0!",
 		retain_e::no, publish_props{},
 		[&c](error_code ec) {
 			std::cout << "error_code: " << ec.message() << std::endl;
@@ -53,7 +53,7 @@ void publish_qos1_websocket_tcp() {
 	client_type c(ioc, "");
 
 	c.credentials("test-qos1-websocket-tcp", "", "")
-		.brokers("fcluster-5/mqtt", 8083)
+		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
@@ -84,7 +84,7 @@ void publish_qos2_websocket_tcp() {
 	client_type c(ioc, "");
 
 	c.credentials("test-qos2-websocket-tcp", "", "")
-		.brokers("fcluster-5/mqtt", 8083)
+		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
@@ -116,7 +116,7 @@ void subscribe_and_receive_websocket_tcp(int num_receive) {
 	client_type c(ioc, "");
 
 	c.credentials("test-subscriber-websocket-tcp", "", "")
-		.brokers("fcluster-5/mqtt", 8083)
+		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 

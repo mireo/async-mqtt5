@@ -71,7 +71,7 @@ public:
 	void operator()(
 		on_read, typename Owner::stream_ptr stream_ptr,
 		std::array<std::size_t, 2> ord, error_code read_ec, size_t bytes_read,
-		error_code timer_ec
+		error_code
 	) {
 		if (!_owner.is_open())
 			return complete(asio::error::operation_aborted, bytes_read);

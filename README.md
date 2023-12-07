@@ -1,6 +1,6 @@
-Async.MQTT5: A C++20 MQTT client based on Boost.Asio
+Async.MQTT5: A ~~C++20~~ C++17 MQTT client based on Boost.Asio
 ===============================
-Async.MQTT5 is a professional, industrial-grade C++20 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. Async.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
+Async.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. Async.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
 
 Our clear intention is to include the Async.MQTT5 library into [Boost](https://www.boost.org/). We are actively working on it.
 
@@ -42,7 +42,7 @@ Using the library
 
 You can compile the example below with the following command line on Linux:
 
-    $ clang++ -std=c++20 <source-cpp-file> -o example -I<path-to-boost> -Iinclude -pthread
+    $ clang++ -std=c++17 <source-cpp-file> -o example -I<path-to-boost> -Iinclude -pthread
 
 Usage and API
 ---------
@@ -101,7 +101,7 @@ It may not be suitable for you if:
 Requirements
 ---------
 Async.MQTT5 is a header-only library. To use Async.MQTT5 it requires the following: 
-- **C++20 capable compiler**
+- **C++17 capable compiler**
 - **Boost 1.82 or later**. In addition to Asio, we use other header-only libraries such as Beast, Spirit, and more. 
 - **OpenSSL**. Only if you require an SSL connection by using [boost::asio::ssl::stream](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio/reference/ssl__stream.html).
 

@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/type_traits/remove_cv_ref.hpp>
+
 #include "test_common/delayed_op.hpp"
 
 namespace async_mqtt5::test {
@@ -49,7 +51,6 @@ public:
 	}
 };
 
-
 } // end namespace detail
 
 
@@ -81,15 +82,7 @@ public:
 	template <typename ...Args>
 	client_message& reply_with(Args&& ...args) {
 		// just to allow duration to be the last parameter
-		auto t = std::make_tuple(std::forward<Args>(args)...);
-		using Tuple = decltype(t);
-
-		return[&]<auto... I>(std::index_sequence<I...>) -> client_message& {
-			return reply_with_impl(
-				std::get<std::tuple_size_v<Tuple> -1>(t),
-				std::get<I>(t)...
-			);
-		}(std::make_index_sequence<std::tuple_size_v<Tuple> -1>{});
+		return reply_with_dur(std::make_tuple(std::forward<Args>(args)...));
 	}
 
 	template <typename ...Args>
@@ -116,8 +109,25 @@ public:
 
 private:
 
-	template <typename ...Args>
-	requires (std::is_same_v<std::remove_cvref_t<Args>, std::string> && ...)
+	template<typename Tuple, size_t ...I>
+	client_message& reply_with_dur(const Tuple& t) {
+		constexpr auto indices = std::make_index_sequence<
+				std::tuple_size_v<Tuple> - 1
+		> {};
+
+		return reply_with_impl(
+			std::get<std::tuple_size_v<Tuple> - 1>(t),
+			std::get<I>(t)...
+		);
+	}
+
+	template <
+		typename ...Args,
+		std::enable_if_t<
+				(std::is_same_v<boost::remove_cv_ref_t<Args>, std::string> && ...),
+				bool
+		> = true
+	>
 	client_message& reply_with_impl(duration af, Args&& ...args) {
 		_replies.emplace_back(
 			error_code {}, af, std::forward<Args>(args)...
@@ -164,8 +174,13 @@ class msg_exchange {
 	std::vector<broker_message> _from_broker;
 
 public:
-	template <typename ...Args>
-	requires (std::is_same_v<std::remove_cvref_t<Args>, std::string> && ...)
+	template <
+		typename ...Args,
+		std::enable_if_t<
+			(std::is_same_v<boost::remove_cv_ref_t<Args>, std::string> && ...),
+			bool
+		> = true
+	>
 	client_message& expect(Args&& ...args) {
 		_to_broker.emplace_back(this, std::forward<Args>(args)...);
 		return _to_broker.back();
@@ -174,15 +189,7 @@ public:
 	template <typename ...Args>
 	broker_message& send(Args&& ...args) {
 		// just to allow duration to be the last parameter
-		auto t = std::make_tuple(std::forward<Args>(args)...);
-		using Tuple = decltype(t);
-
-		return[&]<auto... I>(std::index_sequence<I...>) -> broker_message& {
-			return send_impl(
-				std::get<std::tuple_size_v<Tuple> -1>(t),
-				std::get<I>(t)...
-			);
-		}(std::make_index_sequence<std::tuple_size_v<Tuple> -1>{});
+		return send_with_dur(std::make_tuple(std::forward<Args>(args)...));
 	}
 
 	std::optional<client_message> pop_reply_action() {
@@ -207,8 +214,25 @@ public:
 
 private:
 
-	template <typename ...Args>
-	requires (std::is_same_v<std::remove_cvref_t<Args>, std::string> && ...)
+	template<typename Tuple, size_t ...I>
+	broker_message& send_with_dur(const Tuple& t) {
+		constexpr auto indices = std::make_index_sequence<
+				std::tuple_size_v<Tuple> - 1
+		> {};
+
+		return send_impl(
+			std::get<std::tuple_size_v<Tuple> - 1>(t),
+			std::get<I>(t)...
+		);
+	}
+
+	template <
+		typename ...Args,
+		std::enable_if_t<
+				(std::is_same_v<boost::remove_cv_ref_t<Args>, std::string> && ...),
+				bool
+		> = true
+	>
 	broker_message& send_impl(duration after, Args&& ...args) {
 		_from_broker.emplace_back(
 			this, error_code {}, after, std::forward<Args>(args)...

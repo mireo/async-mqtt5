@@ -18,7 +18,7 @@ void publish_qos0_tcp() {
 	client_type c(ioc, "");
 
 	c.credentials("test-qos0-tcp", "", "")
-		.brokers("mqtt.mireo.local", 1883)
+		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!",qos_e::at_least_once })
 		.run();
 
@@ -30,6 +30,7 @@ void publish_qos0_tcp() {
 			c.async_disconnect(asio::detached);
 		}
 	);
+
 
 	ioc.run();
 }
@@ -45,7 +46,7 @@ void publish_qos1_tcp() {
 	client_type c(ioc, "");
 
 	c.credentials("test-qos1-tcp", "", "")
-		.brokers("mqtt.mireo.local", 1883)
+		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
@@ -72,7 +73,7 @@ void publish_qos2_tcp() {
 	client_type c(ioc, "");
 
 	c.credentials("test-qos2-tcp", "", "")
-		.brokers("mqtt.mireo.local", 1883)
+		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
@@ -100,7 +101,7 @@ void subscribe_and_receive_tcp(int num_receive) {
 	client_type c(ioc, "");
 
 	c.credentials("test-subscriber-tcp", "", "")
-		.brokers("mqtt.mireo.local", 1883)
+		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 

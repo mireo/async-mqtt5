@@ -1,7 +1,7 @@
 [section:intro Introduction]
 [nochunk]
 
-__Self__ is a C++20 client built on __Asio__. 
+__Self__ is a C++17 client built on __Asio__. 
 This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. 
 __Self__ represents a comprehensive implementation of the MQTT 5.0 protocol standard, 
 offering full support for publishing or receiving messages with QoS 0, 1, and 2.
@@ -96,7 +96,7 @@ It may not be suitable for you if:
 __Self__ is a header-only library. 
 To use __Self__ it requires the following:
 
-* [*C++20 capable compiler]
+* [*C++17 capable compiler]
 * [*Boost 1.82 or later]. In addition to Asio, we use other header-only libraries such as Beast, Spirit, and more.
 * [*OpenSSL]. Only if you require an SSL connection by using [asioreflink ssl__stream ssl::stream].
 
