@@ -10,6 +10,8 @@
 
 #include <async_mqtt5.hpp>
 
+#ifdef BOOST_ASIO_HAS_CO_AWAIT
+
 namespace asio = boost::asio;
 
 asio::awaitable<void> client_publisher(asio::io_context& ioc) {
@@ -53,3 +55,5 @@ int main() {
 }
 
 //]
+
+#endif

@@ -5,8 +5,8 @@
 
 #include <async_mqtt5/detail/control_packet.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::test {
 

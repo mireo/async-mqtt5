@@ -26,8 +26,10 @@ class cancellable_handler {
 		cancellable_handler* _owner;
 
 		op_state(
-			Handler&& handler, const Executor& ex, cancellable_handler* owner
-		) : _handler(std::move(handler)),
+			Handler&& handler, const Executor& ex,
+			cancellable_handler* owner
+		) :
+			_handler(std::move(handler)),
 			_handler_ex(tracking_executor(_handler, ex)),
 			_owner(owner)
 		{}
@@ -46,17 +48,18 @@ class cancellable_handler {
 		{}
 
 		void operator()(asio::cancellation_type_t type) {
-			if ((type & asio::cancellation_type_t::terminal) ==
-				asio::cancellation_type_t::none)
+			if (
+				(type & asio::cancellation_type_t::terminal) ==
+				asio::cancellation_type_t::none
+			)
 				return;
+
 			auto op = [wptr = _state_weak_ptr]() {
 				if (auto state = wptr.lock())
 					state->cancel_op();
 			};
-			asio::dispatch(
-				_executor,
-				std::move(op)
-			);
+
+			asio::dispatch(_executor, std::move(op));
 		}
 	};
 
@@ -69,9 +72,11 @@ public:
 		_state = std::allocate_shared<op_state>(
 			alloc, std::move(handler), ex, this
 		);
+
 		auto slot = asio::get_associated_cancellation_slot(_state->_handler);
 		if (slot.is_connected())
 			slot.template emplace<cancel_proxy>(_state, ex);
+
 		_executor = ex;
 	}
 
@@ -106,11 +111,14 @@ public:
 		auto handler_ex = std::move(_state->_handler_ex);
 		_state.reset();
 
-		auto op = std::apply([&h](auto... args) {
-			return asio::prepend(
-				std::move(h), asio::error::operation_aborted, args...
-			);
-		}, CancelArgs {});
+		auto op = std::apply(
+			[&h](auto... args) {
+				return asio::prepend(
+					std::move(h), asio::error::operation_aborted, args...
+				);
+			},
+			CancelArgs {}
+		);
 
 		asio::dispatch(handler_ex, std::move(op));
 	}

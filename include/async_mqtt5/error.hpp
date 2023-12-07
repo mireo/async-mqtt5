@@ -50,7 +50,7 @@ namespace client {
 /**
  * \brief MQTT client error codes.
  *
- * \details Represents error that occur on the client side. 
+ * \details Represents error that occur on the client side.
  */
 enum class error : int {
 	/// \cond INTERNAL
@@ -162,7 +162,7 @@ public:
 	{}
 
 	constexpr explicit reason_code(uint8_t code) : _code(code) {}
-/// \endcond 
+/// \endcond
 
 	/// Copy constructor.
 	reason_code(const reason_code&) = default;
@@ -393,7 +393,7 @@ constexpr reason_code banned { 0x8a };
 /** The Server is shutting down. */
 constexpr reason_code server_shutting_down { 0x8b };
 
-/** The authentication method is not supported or 
+/** The authentication method is not supported or
  does not match the method currently in use. */
 constexpr reason_code bad_authentication_method { 0x8c };
 

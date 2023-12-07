@@ -114,7 +114,7 @@ public:
 	bool is_locked() const noexcept {
 		return _locked.load(std::memory_order_relaxed);
 	}
-	
+
 	// Schedules mutex for lock operation and return immediately.
 	// Calls given completion handler when mutex is locked.
 	// It's the responsibility of the completion handler to unlock the mutex.
@@ -187,7 +187,8 @@ private:
 	// or queues it for later execution otherwise. In both cases
 	// the operation will be executed in a manner equivalent
 	// to asio::post to avoid recursion.
-	void execute_or_queue(auto handler) noexcept {
+	template <typename Handler>
+	void execute_or_queue(Handler&& handler) noexcept {
 		std::unique_lock l { _thread_mutex };
 		tracked_op h { std::move(handler), _ex };
 		if (_locked.load(std::memory_order_relaxed)) {

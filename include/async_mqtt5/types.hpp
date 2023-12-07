@@ -390,12 +390,12 @@ public:
 	will& operator=(will&&) noexcept = default;
 
 	/// Get the Topic Name.
-	constexpr std::string_view topic() const {
+	std::string_view topic() const {
 		return _topic;
 	}
 
 	/// Get the Application Message.
-	constexpr std::string_view message() const {
+	std::string_view message() const {
 		return _message;
 	}
 

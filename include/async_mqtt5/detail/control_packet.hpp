@@ -109,7 +109,10 @@ public:
 class packet_id_allocator {
 	struct interval {
 		uint16_t start, end;
-		interval(uint16_t start, uint16_t end) : start(start), end(end) {}
+
+		interval(uint16_t start, uint16_t end) :
+			start(start), end(end)
+		{}
 	};
 
 	std::mutex _mtx;
@@ -152,7 +155,8 @@ public:
 				*end_p = it->end;
 				_free_ids.erase(it);
 			}
-		} else {
+		}
+		else {
 			if (!end_p)
 				_free_ids.insert(it, interval(pid, pid - 1));
 			else

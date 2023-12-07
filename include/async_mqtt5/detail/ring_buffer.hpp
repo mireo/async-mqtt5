@@ -49,17 +49,32 @@ public:
 
 	ring_buffer() = default;
 
-	template <typename Alloc> requires std::is_constructible_v<allocator_type, const Alloc&>
-	explicit ring_buffer(size_type capacity, Alloc&& allocator) : _alloc((Alloc&&)allocator) {
+	template <
+		typename Alloc,
+		std::enable_if_t<
+			std::is_constructible_v<allocator_type, const Alloc&>, bool
+		> = true
+	>
+	explicit ring_buffer(size_type capacity, Alloc&& allocator) :
+		_alloc((Alloc&&)allocator)
+	{
 		reserve(capacity);
 	}
 
-	template <typename Alloc> requires std::is_constructible_v<allocator_type, const Alloc&>
-	explicit ring_buffer(Alloc&& allocator) : _alloc((Alloc&&)allocator) {
-	}
+	template <
+		typename Alloc,
+		std::enable_if_t<
+			std::is_constructible_v<allocator_type, const Alloc&>,
+			bool
+		> = true
+	>
+	explicit ring_buffer(Alloc&& allocator) :
+		_alloc((Alloc&&)allocator)
+	{}
 
-	explicit ring_buffer(size_type capacity) : ring_buffer(capacity, allocator_type { }) {
-	}
+	explicit ring_buffer(size_type capacity) :
+		ring_buffer(capacity, allocator_type { })
+	{}
 
 	ring_buffer(ring_buffer&& other) noexcept :
 		_buff { std::exchange(other._buff, nullptr) },
@@ -67,8 +82,7 @@ public:
 		_back { std::exchange(other._back, 0) },
 		_capacity { std::exchange(other._capacity, 0) },
 		_alloc { other._alloc }
-	{
-	}
+	{ }
 
 	~ring_buffer() {
 		if (_buff) {
@@ -78,7 +92,9 @@ public:
 	}
 
 	ring_buffer& operator=(ring_buffer&& other) noexcept {
-		if constexpr (allocator_traits::propagate_on_container_move_assignment::value) {
+		if constexpr (
+			allocator_traits::propagate_on_container_move_assignment::value
+		) {
 			clear_and_exchange_with(other);
 			_alloc = other._alloc;
 		}
@@ -220,7 +236,7 @@ public:
 		_front = std::exchange(b._front, _front);
 		_back = std::exchange(b._back, _back);
 		_capacity = std::exchange(b._capacity, _capacity);
-		_alloc = std::exchange(b._alloc, _alloc); //?? allocator_traits::propagate_on_container_swap::value
+		_alloc = std::exchange(b._alloc, _alloc);
 	}
 
 	void reserve(size_type new_capacity) noexcept {
@@ -244,7 +260,9 @@ public:
 		if (_buff) {
 			for (size_type i = 0; i < s; ++i) {
 				auto& v = operator[](i);
-				allocator_traits::construct(_alloc, &new_buff[i], (value_type&&)v);
+				allocator_traits::construct(
+					_alloc, &new_buff[i], (value_type&&)v
+				);
 				allocator_traits::destroy(_alloc, &v);
 			}
 			_alloc.deallocate(_buff, _capacity);
@@ -261,7 +279,7 @@ private:
 	}
 
 	void grow_if_needed() {
-		if (!_buff || full()) [[unlikely]]
+		if (!_buff || full())
 			reserve(_capacity == 0 ? min_capacity : _capacity * 2);
 	}
 
@@ -278,13 +296,14 @@ private:
 	size_type _front = npos;
 	size_type _back = 0;
 	size_type _capacity = 0;
-	[[no_unique_address]] allocator_type _alloc;
+	allocator_type _alloc;
 
 	static constexpr size_type npos = static_cast<size_type>(-1);
 	static constexpr size_type min_capacity = 4;
 };
 
-template <typename T, typename Alloc> template <typename P, typename R, typename ring_pointer>
+template <typename T, typename Alloc>
+template <typename P, typename R, typename ring_pointer>
 class ring_buffer<T, Alloc>::_iter {
 public:
 	using value_type = T;
@@ -341,8 +360,9 @@ public:
 private:
 	friend class ring_buffer;
 
-	_iter(ring_pointer b, size_type i) : _b(b), _i(i), _p(&b->operator[](i)) {
-	}
+	_iter(ring_pointer b, size_type i) :
+		_b(b), _i(i), _p(&b->operator[](i))
+	{}
 
 	ring_pointer _b = nullptr;
 	size_type _i = npos;
@@ -352,7 +372,7 @@ private:
 		return a._i == b._i;
 	}
 
-	friend auto operator<=>(const _iter& a, const _iter& b) noexcept {
+	friend auto operator<(const _iter& a, const _iter& b) noexcept {
 		return difference_type(a._i - b._i);
 	}
 
@@ -370,32 +390,38 @@ private:
 };
 
 template <typename T, typename Alloc>
-typename ring_buffer<T, Alloc>::iterator ring_buffer<T, Alloc>::begin() noexcept {
+typename ring_buffer<T, Alloc>::iterator ring_buffer<T, Alloc>::begin()
+noexcept {
 	return { this, 0 };
 }
 
 template <typename T, typename Alloc>
-typename ring_buffer<T, Alloc>::iterator ring_buffer<T, Alloc>::end() noexcept {
+typename ring_buffer<T, Alloc>::iterator ring_buffer<T, Alloc>::end()
+noexcept {
 	return { this, size() };
 }
 
 template <typename T, typename Alloc>
-typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::begin() const noexcept {
+typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::begin()
+const noexcept {
 	return { this, 0 };
 }
 
 template <typename T, typename Alloc>
-typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::end() const noexcept {
+typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::end()
+const noexcept {
 	return { this, size() };
 }
 
 template <typename T, typename Alloc>
-typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::cbegin() const noexcept {
+typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::cbegin()
+const noexcept {
 	return { this, 0 };
 }
 
 template <typename T, typename Alloc>
-typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::cend() const noexcept {
+typename ring_buffer<T, Alloc>::const_iterator ring_buffer<T, Alloc>::cend()
+const noexcept {
 	return { this, size() };
 }
 
@@ -405,8 +431,8 @@ namespace std {
 
 template <typename T, typename Alloc>
 void swap(
-	async_mqtt5::detail::ring_buffer<T, Alloc>& a, 
-	async_mqtt5::detail::ring_buffer<T, Alloc>& b) 
+	async_mqtt5::detail::ring_buffer<T, Alloc>& a,
+	async_mqtt5::detail::ring_buffer<T, Alloc>& b)
 {
 	a.swap(b);
 }

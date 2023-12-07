@@ -4,6 +4,9 @@
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/async_result.hpp>
 
+#include <boost/type_traits/is_detected.hpp>
+#include <boost/type_traits/is_detected_convertible.hpp>
+
 #include <async_mqtt5/types.hpp>
 
 namespace async_mqtt5 {
@@ -17,13 +20,23 @@ using auth_handler_type = asio::any_completion_handler<
 	void (error_code ec, std::string auth_data)
 >;
 
+template <typename T, typename ...Ts>
+using async_auth_sig = decltype(
+	std::declval<T>().async_auth(std::declval<Ts>()...)
+);
+
 template <typename T>
-concept is_authenticator = requires (T a) {
-	{
-		a.async_auth(auth_step_e {}, std::string {}, auth_handler_type {})
-	} -> std::same_as<void>;
-	{ a.method() } -> std::same_as<std::string_view>;
-};
+using method_sig = decltype(
+	std::declval<T>().method()
+);
+
+template <typename T>
+constexpr bool is_authenticator =
+	boost::is_detected<
+		async_auth_sig, T,
+		auth_step_e, std::string, auth_handler_type
+	>::value &&
+	boost::is_detected_convertible_v<std::string_view, method_sig, T>;
 
 class auth_fun_base {
 	using auth_func = void(*)(
@@ -36,13 +49,17 @@ public:
 	~auth_fun_base() = default;
 
 	void async_auth(
-		auth_step_e step, std::string data, auth_handler_type auth_handler
+		auth_step_e step, std::string data,
+		auth_handler_type auth_handler
 	) {
 		_auth_func(step, std::move(data), std::move(auth_handler), this);
 	}
 };
 
-template <is_authenticator Authenticator>
+template <
+	typename Authenticator,
+	typename = std::enable_if_t<is_authenticator<Authenticator>>
+>
 class auth_fun : public auth_fun_base {
 	Authenticator _authenticator;
 
@@ -72,7 +89,10 @@ class any_authenticator {
 public:
 	any_authenticator() = default;
 
-	template <detail::is_authenticator Authenticator>
+	template <
+		typename Authenticator,
+		std::enable_if_t<detail::is_authenticator<Authenticator>, bool> = true
+	>
 	any_authenticator(Authenticator&& a) :
 		_method(a.method()),
 		_auth_fun(
@@ -94,7 +114,7 @@ public:
 		using Signature = void (error_code, std::string);
 
 		auto initiation = [](
-			auto handler, any_authenticator& self, 
+			auto handler, any_authenticator& self,
 			auth_step_e step, std::string data
 		) {
 			self._auth_fun->async_auth(
@@ -109,5 +129,6 @@ public:
 };
 
 } // end namespace async_mqtt5
+
 
 #endif // !ASYNC_MQTT5_ANY_AUTHENTICATOR

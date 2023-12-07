@@ -4,10 +4,13 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <boost/core/identity.hpp>
 #include <boost/endian/conversion.hpp>
+#include <boost/type_traits/is_detected_exact.hpp>
+#include <boost/type_traits/remove_cv_ref.hpp>
 
 #include <async_mqtt5/property_types.hpp>
-#include <async_mqtt5/impl/internal/codecs/traits.hpp>
+#include <async_mqtt5/impl/codecs/traits.hpp>
 
 namespace async_mqtt5::encoders {
 
@@ -54,10 +57,13 @@ public:
 	flag_def(repr val) : _val(val) {}
 	flag_def() = default;
 
-	template <class T, typename projection = std::identity>
-	requires (is_optional<T>)
+	template <
+		typename T,
+		typename projection = boost::identity,
+		std::enable_if_t<is_optional<T>, bool> = true
+	>
 	auto operator()(T&& value, projection proj = {}) const {
-		if constexpr (std::is_same_v<projection, std::identity>) {
+		if constexpr (std::is_same_v<projection, boost::identity>) {
 			repr val = value.has_value();
 			return flag_def<bits, repr> { val };
 		}
@@ -68,8 +74,11 @@ public:
 		}
 	}
 
-	template <class T, typename projection = std::identity>
-	requires (!is_optional<T>)
+	template <
+		typename T,
+		typename projection = boost::identity,
+		std::enable_if_t<!is_optional<T>, bool> = true
+	>
 	auto operator()(T&& value, projection proj = {}) const {
 		auto val = static_cast<repr>(std::invoke(proj, value));
 		return flag_def<bits, repr> { val };
@@ -157,7 +166,7 @@ public:
 	auto operator()(T&& val, projection proj) const {
 		if constexpr (is_optional<T>) {
 			using rv_type = std::invoke_result_t<
-				projection, typename std::remove_cvref_t<T>::value_type
+				projection, typename boost::remove_cv_ref_t<T>::value_type
 			>;
 			if (val.has_value())
 				return (*this)(std::invoke(proj, *val));
@@ -181,7 +190,9 @@ class array_val : public encoder {
 	T _val;
 	bool _with_length;
 public:
-	array_val(T val, bool with_length) : _val(val), _with_length(with_length) {
+	array_val(T val, bool with_length) :
+		_val(val), _with_length(with_length)
+	{
 		static_assert(
 			std::is_reference_v<T> || std::is_same_v<T, std::string_view>
 		);
@@ -204,11 +215,15 @@ public:
 	}
 
 private:
+	template <typename V>
+	using has_size = decltype(std::declval<V&>().size());
+
 	template <typename U>
 	static size_t val_length(U&& val) {
-		if constexpr (std::same_as<std::remove_cvref_t<U>, const char*>)
+		if constexpr (std::is_same_v<boost::remove_cv_ref_t<U>, const char*>)
 			return std::strlen(val);
-		if constexpr (requires { val.size(); })
+
+		if constexpr (boost::is_detected_exact_v<size_t, has_size, U>)
 			return val.size();
 		else // fallback to type const char (&)[N] (substract 1 for trailing 0)
 			return sizeof(val) - 1;
@@ -243,7 +258,7 @@ public:
 	auto operator()(T&& val, projection proj) const {
 		if constexpr (is_optional<T>) {
 			using rv_type = std::invoke_result_t<
-				projection, typename std::remove_cvref_t<T>::value_type
+				projection, typename boost::remove_cv_ref_t<T>::value_type
 			>;
 			if (val.has_value())
 				return (*this)(std::invoke(proj, *val));
@@ -263,12 +278,13 @@ constexpr auto binary_ = array_def<true>{}; // for now
 constexpr auto verbatim_ = array_def<false>{};
 
 
-template <class T, class U>
+template <typename T, typename U>
 class composed_val : public encoder {
 	T _lhs; U _rhs;
 public:
 	composed_val(T lhs, U rhs) :
-		_lhs(std::forward<T>(lhs)), _rhs(std::forward<U>(rhs)) {}
+		_lhs(std::forward<T>(lhs)), _rhs(std::forward<U>(rhs))
+	{}
 
 	size_t byte_size() const {
 		return _lhs.byte_size() + _rhs.byte_size();
@@ -280,17 +296,22 @@ public:
 	}
 };
 
-template <class T, class U>
-requires (
-	std::derived_from<std::decay_t<T>, encoder> &&
-	std::derived_from<std::decay_t<U>, encoder>
-)
+template <
+	typename T, typename U,
+	std::enable_if_t<
+		std::is_base_of_v<encoder, std::decay_t<T>> &&
+		std::is_base_of_v<encoder, std::decay_t<U>>,
+		bool
+	> = true
+>
 inline auto operator&(T&& t, U&& u) {
 	return composed_val(std::forward<T>(t), std::forward<U>(u));
 }
 
-template <class T>
-requires (std::derived_from<std::decay_t<T>, encoder>)
+template <
+	typename T,
+	std::enable_if_t<std::is_base_of_v<encoder, std::decay_t<T>>, bool> = true
+>
 std::string& operator<<(std::string& s, T&& t) {
 	return t.encode(s);
 }
@@ -347,7 +368,7 @@ using encoder_types = std::tuple<
 	prop_encoder_type<pp::content_type_t, basic::utf8_def>,
 	prop_encoder_type<pp::response_topic_t, basic::utf8_def>,
 	prop_encoder_type<pp::correlation_data_t, basic::utf8_def>,
-	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<intptr_t>>,
+	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<uint32_t>>,
 	prop_encoder_type<pp::session_expiry_interval_t, basic::int_def<int32_t>>,
 	prop_encoder_type<pp::assigned_client_identifier_t, basic::utf8_def>,
 	prop_encoder_type<pp::server_keep_alive_t, basic::int_def<int16_t>>,
@@ -376,14 +397,18 @@ constexpr auto encoder_for_prop = typename std::tuple_element_t<
 >::value {};
 
 
-template <typename T, pp::property_type p>
+template <typename T, pp::property_type p, typename Enable = void>
 class prop_val;
 
-template <typename T, pp::property_type p>
-requires (!is_vector<T> && is_optional<T>)
-class prop_val<T, p> : public basic::encoder {
+template <
+	typename T, pp::property_type p
+>
+class prop_val<
+	T, p,
+	std::enable_if_t<!is_vector<T> && is_optional<T>>
+> : public basic::encoder {
 	 // T is always std::optional
-	using opt_type = typename std::remove_cvref_t<T>::value_type;
+	using opt_type = typename boost::remove_cv_ref_t<T>::value_type;
 	// allows T to be reference type to std::optional
 	static inline std::optional<opt_type> nulltype;
 	T _val;
@@ -408,11 +433,15 @@ public:
 	}
 };
 
-template <typename T, pp::property_type p>
-requires (is_vector<T>)
-class prop_val<T, p> : public basic::encoder {
+template <
+	typename T, pp::property_type p
+>
+class prop_val<
+	T, p,
+	std::enable_if_t<is_vector<T>>
+> : public basic::encoder {
 	// allows T to be reference type to std::vector
-	static inline std::remove_cvref_t<T> nulltype;
+	static inline boost::remove_cv_ref_t<T> nulltype;
 	T _val;
 public:
 	prop_val(T val) : _val(val) {
@@ -464,7 +493,7 @@ class props_val : public basic::encoder {
 		);
 	}
 
-	template <class Func>
+	template <typename Func>
 	auto apply_each(Func&& func) const {
 		return std::apply([&func](const auto&... props) {
 			return (std::invoke(func, props), ...);
@@ -516,7 +545,7 @@ public:
 			if (prop_container.has_value())
 				return (*this)(*prop_container);
 			return props_val<
-				const typename std::remove_cvref_t<T>::value_type&
+				const typename boost::remove_cv_ref_t<T>::value_type&
 			>(true);
 		}
 		else {

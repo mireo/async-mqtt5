@@ -84,7 +84,7 @@ public:
 	}
 
 	void operator()(
-		on_resolve, auto ord,
+		on_resolve, std::array<std::size_t, 2> ord,
 		error_code resolve_ec, epoints epts,
 		error_code timer_ec, authority_path ap
 	) {

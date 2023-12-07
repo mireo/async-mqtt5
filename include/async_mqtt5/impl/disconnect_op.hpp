@@ -11,7 +11,7 @@
 #include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 

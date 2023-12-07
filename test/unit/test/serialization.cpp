@@ -2,8 +2,8 @@
 
 #include <async_mqtt5/types.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 using namespace async_mqtt5;
 using byte_citer = detail::byte_citer;

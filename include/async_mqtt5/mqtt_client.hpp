@@ -76,8 +76,13 @@ public:
 	 * std::is_convertible_v<ExecutionContext&, asio::execution_context&>
 	 * \endcode
 	 */
-	template <typename ExecutionContext>
-	requires (std::is_convertible_v<ExecutionContext&, asio::execution_context&>)
+	template <
+		typename ExecutionContext,
+		std::enable_if_t<
+			std::is_convertible_v<ExecutionContext&, asio::execution_context&>, 
+			bool
+		> = true
+	>
 	explicit mqtt_client(
 		ExecutionContext& context,
 		const std::string& cnf,
@@ -134,8 +139,12 @@ public:
 	 * !std::is_same_v<TlsContext, std::monostate>
 	 * \endcode
 	 */
+	template <
+		typename Ctx = TlsContext,
+		std::enable_if_t<!std::is_same_v<Ctx, std::monostate>, bool> = true
+	>
 	decltype(auto) tls_context()
-	requires (!std::is_same_v<TlsContext, std::monostate>) {
+	{
 		return _svc_ptr->tls_context();
 	}
 
@@ -182,8 +191,10 @@ public:
 	 *
 	 * \see See \__CONNACK_PROPS\__ for all eligible properties.
 	 */
-	template <uint8_t p>
-	decltype(auto) connection_property(std::integral_constant<uint8_t, p> prop) {
+	template <prop::property_type p>
+	decltype(auto) connection_property(
+			std::integral_constant<prop::property_type, p> prop
+	) {
 		return _svc_ptr->connack_prop(prop);
 	}
 
@@ -272,7 +283,10 @@ public:
 	 * before the \ref run function is invoked again.
 	 *
 	 */
-	template <detail::is_authenticator Authenticator>
+	template <
+		typename Authenticator,
+		std::enable_if_t<detail::is_authenticator<Authenticator>, bool> = true
+	>
 	mqtt_client& authenticator(Authenticator&& authenticator) {
 		_svc_ptr->authenticator(std::forward<Authenticator>(authenticator));
 		return *this;

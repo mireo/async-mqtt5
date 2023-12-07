@@ -15,7 +15,7 @@
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
 
 
 namespace async_mqtt5::detail {
@@ -199,6 +199,7 @@ private:
 		bool is_reply = code != control_code_e::publish &&
 				code != control_code_e::auth &&
 				code != control_code_e::disconnect;
+
 		if (is_reply) {
 			auto packet_id = decoders::decode_packet_id(first).value();
 			_svc._replies.dispatch(error_code {}, code, packet_id, first, last);

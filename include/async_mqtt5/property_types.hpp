@@ -123,7 +123,7 @@ public:
 
 	template <
 		typename Func,
-		typename = std::enable_if_t<is_apply_on<Func>::value>
+		std::enable_if_t<is_apply_on<Func>::value, bool> = true
 	>
 	constexpr bool apply_on(uint8_t property_id, Func&& func)
 	noexcept (is_nothrow_apply_on<Func>::value) {
@@ -154,7 +154,7 @@ public:
 
 	template <
 		typename Func,
-		typename = std::enable_if_t<is_visitor<Func>::value>
+		std::enable_if_t<is_visitor<Func>::value, bool> = true
 	>
 	constexpr bool visit(Func&& func)
 	const noexcept (is_nothrow_visitor<Func>::value) {
@@ -173,7 +173,7 @@ public:
 
 	template <
 		typename Func,
-		typename = std::enable_if_t<is_visitor<Func>::value>
+		std::enable_if_t<is_visitor<Func>::value, bool> = true
 	>
 	constexpr bool visit(Func&& func)
 	noexcept (is_nothrow_visitor<Func>::value) {

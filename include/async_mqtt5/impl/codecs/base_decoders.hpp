@@ -3,12 +3,10 @@
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/binary/binary.hpp>
-
 #include <boost/fusion/adapted/std_tuple.hpp>
 
 #include <async_mqtt5/property_types.hpp>
-
-#include <async_mqtt5/impl/internal/codecs/traits.hpp>
+#include <async_mqtt5/impl/codecs/traits.hpp>
 
 namespace async_mqtt5::decoders {
 
@@ -51,7 +49,7 @@ auto type_parse(It& first, const It last, const Parser& p) {
 		rv = std::move(value);
 	return rv;
 }
-	
+
 
 template <typename AttributeType, typename It, typename Parser>
 auto type_parse(It& first, const It last, const Parser& p) {
@@ -72,29 +70,39 @@ constexpr auto to(T& arg) {
 		if constexpr (is_boost_iterator<attr_type>)
 			arg = T { x3::_attr(ctx).begin(), x3::_attr(ctx).end() };
 		else
-			arg = x3::_attr(ctx); 
+			arg = x3::_attr(ctx);
 	};
 }
 
-template <typename LenParser, typename Subject>
+template <typename LenParser, typename Subject, typename Enable = void>
 class scope_limit {};
 
 template <typename LenParser, typename Subject>
-requires (x3::traits::is_parser<LenParser>::value)
-class scope_limit<LenParser, Subject> : 
-	public x3::unary_parser<Subject, scope_limit<LenParser, Subject>> {
-
+class scope_limit<
+	LenParser, Subject,
+	std::enable_if_t<x3::traits::is_parser<LenParser>::value>
+> :
+	public x3::unary_parser<Subject, scope_limit<LenParser, Subject>>
+{
 	using base_type = x3::unary_parser<Subject, scope_limit<LenParser, Subject>>;
 	LenParser _lp;
 public:
-	using ctx_type = decltype(x3::make_context<struct _>(std::declval<Subject&>()));
-	using attribute_type = typename x3::traits::attribute_of<Subject, ctx_type>::type;
+	using ctx_type =
+		decltype(x3::make_context<struct _>(std::declval<Subject&>()));
+	using attribute_type =
+		typename x3::traits::attribute_of<Subject, ctx_type>::type;
+
 	static bool const has_attribute = true;
 
-	scope_limit(const LenParser& lp, const Subject& subject) : base_type(subject), _lp(lp) {}
+	scope_limit(const LenParser& lp, const Subject& subject) :
+		base_type(subject), _lp(lp)
+	{}
 
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
-	bool parse(It& first, const It last, const Ctx& ctx, RCtx& rctx, Attr& attr) const {
+	bool parse(
+		It& first, const It last,
+		const Ctx& ctx, RCtx& rctx, Attr& attr
+	) const {
 
 		It iter = first;
 		typename x3::traits::attribute_of<LenParser, Ctx>::type len;
@@ -112,21 +120,31 @@ public:
 };
 
 template <typename Size, typename Subject>
-requires (std::is_arithmetic_v<Size>)
-class scope_limit<Size, Subject> : 
-	public x3::unary_parser<Subject, scope_limit<Size, Subject>> {
-	
+class scope_limit<
+	Size, Subject,
+	std::enable_if_t<std::is_arithmetic_v<Size>>
+> :
+	public x3::unary_parser<Subject, scope_limit<Size, Subject>>
+{
 	using base_type = x3::unary_parser<Subject, scope_limit<Size, Subject>>;
 	size_t _limit;
 public:
-	using ctx_type = decltype(x3::make_context<struct _>(std::declval<Subject&>()));
-	using attribute_type = typename x3::traits::attribute_of<Subject, ctx_type>::type;
+	using ctx_type =
+		decltype(x3::make_context<struct _>(std::declval<Subject&>()));
+	using attribute_type =
+		typename x3::traits::attribute_of<Subject, ctx_type>::type;
+
 	static bool const has_attribute = true;
 
-	scope_limit(Size limit, const Subject& subject) : base_type(subject), _limit(limit) {}
+	scope_limit(Size limit, const Subject& subject) :
+		base_type(subject), _limit(limit)
+	{}
 
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
-	bool parse(It& first, const It last, const Ctx& ctx, RCtx& rctx, Attr& attr) const {
+	bool parse(
+		It& first, const It last,
+		const Ctx& ctx, RCtx& rctx, Attr& attr
+	) const {
 
 		It iter = first;
 		if (iter + _limit > last)
@@ -140,7 +158,7 @@ public:
 	}
 };
 
-template <typename LenParser>
+template <typename LenParser, typename Enable = void>
 struct scope_limit_gen {
 	template <typename Subject>
 	auto operator[](const Subject& p) const {
@@ -150,8 +168,10 @@ struct scope_limit_gen {
 };
 
 template <typename Size>
-requires (std::is_arithmetic_v<Size>)
-struct scope_limit_gen<Size> {
+struct scope_limit_gen<
+	Size,
+	std::enable_if_t<std::is_arithmetic_v<Size>>
+> {
 	template <typename Subject>
 	auto operator[](const Subject& p) const {
 		return scope_limit<Size, Subject> { limit, x3::as_parser(p) };
@@ -159,18 +179,21 @@ struct scope_limit_gen<Size> {
 	Size limit;
 };
 
-template <typename Parser>
-requires (x3::traits::is_parser<Parser>::value)
+template <
+	typename Parser,
+	std::enable_if_t<x3::traits::is_parser<Parser>::value, bool> = true
+>
 scope_limit_gen<Parser> scope_limit_(const Parser& p) {
 	return { p };
 }
 
-template <typename Size>
-requires (std::is_arithmetic_v<Size>)
+template <
+	typename Size,
+	std::enable_if_t<std::is_arithmetic_v<Size>, bool> = true
+>
 scope_limit_gen<Size> scope_limit_(Size limit) {
 	return { limit };
 }
-
 
 struct verbatim_parser : x3::parser<verbatim_parser> {
 	using attribute_type = std::string;
@@ -191,7 +214,10 @@ struct varint_parser : x3::parser<varint_parser> {
 	static bool const has_attribute = true;
 
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
-	bool parse(It& first, const It last, const Ctx& ctx, RCtx& rctx, Attr& attr) const {
+	bool parse(
+		It& first, const It last,
+		const Ctx& ctx, RCtx& rctx, Attr& attr
+	) const {
 
 		It iter = first;
 		x3::skip_over(iter, last, ctx);
@@ -229,7 +255,10 @@ struct len_prefix_parser : x3::parser<len_prefix_parser> {
 	static bool const has_attribute = true;
 
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
-	bool parse(It& first, const It last, const Ctx& ctx, RCtx& rctx, Attr& attr) const {
+	bool parse(
+		It& first, const It last,
+		const Ctx& ctx, RCtx& rctx, Attr& attr
+	) const {
 		It iter = first;
 		x3::skip_over(iter, last, ctx);
 
@@ -238,7 +267,7 @@ struct len_prefix_parser : x3::parser<len_prefix_parser> {
 			if (std::distance(iter, last) < len)
 				return false;
 		}
-		else 
+		else
 			return false;
 
 		attr = std::string(iter, iter + len);
@@ -251,26 +280,34 @@ constexpr len_prefix_parser utf8_{};
 constexpr len_prefix_parser binary_{};
 
 /*
-	 Boost Spirit incorrectly deduces atribute type for a parser of the form 
+	 Boost Spirit incorrectly deduces atribute type for a parser of the form
 		 (eps(a) | parser1) >> (eps(b) | parser)
-	and we had to create if_ parser to remedy the issue 
+	and we had to create if_ parser to remedy the issue
 */
 
 template <typename Subject>
-class conditional_parser : public x3::unary_parser<Subject, conditional_parser<Subject>> {
+class conditional_parser :
+	public x3::unary_parser<Subject, conditional_parser<Subject>> {
+
 	using base_type = x3::unary_parser<Subject, conditional_parser<Subject>>;
 	bool _condition;
 public:
-	using ctx_type = decltype(x3::make_context<struct _>(std::declval<Subject&>()));
-	using subject_attr_type = typename x3::traits::attribute_of<Subject, ctx_type>::type;
+	using ctx_type =
+		decltype(x3::make_context<struct _>(std::declval<Subject&>()));
+	using subject_attr_type =
+		typename x3::traits::attribute_of<Subject, ctx_type>::type;
 
 	using attribute_type = boost::optional<subject_attr_type>;
 	static bool const has_attribute = true;
 
-	conditional_parser(const Subject& s, bool condition) : base_type(s), _condition(condition) {}
+	conditional_parser(const Subject& s, bool condition) :
+		base_type(s), _condition(condition) {}
 
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
-	bool parse(It& first, const It last, const Ctx& ctx, RCtx& rctx, Attr& attr) const {
+	bool parse(
+		It& first, const It last,
+		const Ctx& ctx, RCtx& rctx, Attr& attr
+	) const {
 		if (!_condition)
 			return true;
 
@@ -308,12 +345,17 @@ namespace basic = async_mqtt5::decoders::basic;
 namespace detail {
 
 template <typename It, typename Ctx, typename RCtx, typename Prop>
-bool parse_to_prop(It& iter, const It last, const Ctx& ctx, RCtx& rctx, Prop& prop) {
+bool parse_to_prop(
+	It& iter, const It last,
+	const Ctx& ctx, RCtx& rctx, Prop& prop
+) {
 	using prop_type = decltype(prop);
 
 	bool rv = false;
 	if constexpr (is_optional<prop_type>) {
-		using value_type = typename std::remove_reference_t<prop_type>::value_type;
+		using value_type =
+			typename std::remove_reference_t<prop_type>::value_type;
+
 		if constexpr (std::is_same_v<value_type, uint8_t>) {
 			uint8_t attr;
 			rv = x3::byte_.parse(iter, last, ctx, rctx, attr);
@@ -363,7 +405,10 @@ public:
 	static bool const has_attribute = true;
 
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
-	bool parse(It& first, const It last, const Ctx& ctx, RCtx& rctx, Attr& attr) const {
+	bool parse(
+		It& first, const It last,
+		const Ctx& ctx, RCtx& rctx, Attr& attr
+	) const {
 
 		It iter = first;
 		x3::skip_over(iter, last, ctx);
@@ -379,13 +424,18 @@ public:
 		// attr = Props{};
 
 		while (iter < scoped_last) {
-			uint8_t prop_id = *iter++; 
+			uint8_t prop_id = *iter++;
 			bool rv = true;
 			It saved = iter;
 
-			attr.apply_on(prop_id, [&rv, &iter, scoped_last, &ctx, &rctx](auto& prop) {
-				rv = detail::parse_to_prop(iter, scoped_last, ctx, rctx, prop);
-			});
+			attr.apply_on(
+				prop_id,
+				[&rv, &iter, scoped_last, &ctx, &rctx](auto& prop) {
+					rv = detail::parse_to_prop(
+						iter, scoped_last, ctx, rctx, prop
+					);
+				}
+			);
 
 			// either rv = false or property with prop_id was not found
 			if (!rv || iter == saved)
@@ -399,7 +449,7 @@ public:
 
 
 template <typename Props>
-constexpr auto props_ = prop_parser<Props>{};
+constexpr auto props_ = prop_parser<Props> {};
 
 } // end namespace prop
 

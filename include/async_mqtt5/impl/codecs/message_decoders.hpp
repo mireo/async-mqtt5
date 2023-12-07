@@ -5,7 +5,7 @@
 #include <string>
 
 #include <async_mqtt5/detail/internal_types.hpp>
-#include <async_mqtt5/impl/internal/codecs/base_decoders.hpp>
+#include <async_mqtt5/impl/codecs/base_decoders.hpp>
 
 namespace async_mqtt5::decoders {
 
@@ -131,9 +131,9 @@ inline std::optional<publish_message> decode_publish(
 	uint8_t flags = control_byte & 0b1111;
 	auto qos = qos_e((flags >> 1) & 0b11);
 
-	auto publish_ =  basic::scope_limit_(remain_length)[
-		basic::utf8_ >> basic::if_(qos != qos_e::at_most_once)[x3::big_word] >> x3::attr(flags) >>
-		prop::props_<publish_props> >> basic::verbatim_
+	auto publish_ = basic::scope_limit_(remain_length)[
+		basic::utf8_ >> basic::if_(qos != qos_e::at_most_once)[x3::big_word] >>
+			x3::attr(flags) >> prop::props_<publish_props> >> basic::verbatim_
 	];
 	return type_parse(it, it + remain_length, publish_);
 }

@@ -12,8 +12,8 @@
 #include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -35,7 +35,8 @@ class unsubscribe_op {
 
 public:
 	unsubscribe_op(
-		const std::shared_ptr<client_service>& svc_ptr, Handler&& handler
+		const std::shared_ptr<client_service>& svc_ptr,
+		Handler&& handler
 	) :
 		_svc_ptr(svc_ptr),
 		_handler(std::move(handler), get_executor())
@@ -128,7 +129,6 @@ public:
 		}
 
 		auto& [props, reason_codes] = *unsuback;
-		// TODO: perhaps do something with the topics we unsubscribed from (one day)
 
 		complete(
 			ec, packet_id,
@@ -151,7 +151,6 @@ private:
 			auto rc = to_reason_code<reason_codes::category::unsuback>(code);
 			if (rc)
 				ret.push_back(*rc);
-			// TODO: on off chance that one of the rcs is invalid, should we push something to mark that?
 		}
 		return ret;
 	}
@@ -169,7 +168,8 @@ private:
 
 	void complete_post(error_code ec, size_t num_topics) {
 		_handler.complete_post(
-			ec, std::vector<reason_code> { num_topics, reason_codes::empty }, unsuback_props {}
+			ec, std::vector<reason_code> { num_topics, reason_codes::empty },
+			unsuback_props {}
 		);
 	}
 

@@ -17,12 +17,19 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename StreamType, typename TlsContext>
+template <
+	typename StreamType, typename TlsContext,
+	typename Enable = void
+>
 class stream_context;
 
-template <typename StreamType, typename TlsContext>
-requires has_tls_layer<StreamType>
-class stream_context<StreamType, TlsContext> {
+template <
+	typename StreamType, typename TlsContext
+>
+class stream_context<
+	StreamType, TlsContext,
+	std::enable_if_t<has_tls_layer<StreamType>>
+> {
 	using tls_context_type = TlsContext;
 
 	mqtt_ctx _mqtt_context;
@@ -76,8 +83,10 @@ public:
 };
 
 template <typename StreamType>
-requires (!has_tls_layer<StreamType>)
-class stream_context<StreamType, std::monostate> {
+class stream_context<
+	StreamType, std::monostate,
+	std::enable_if_t<!has_tls_layer<StreamType>>
+> {
 	mqtt_ctx _mqtt_context;
 public:
 	explicit stream_context(std::monostate) {}
@@ -189,8 +198,11 @@ public:
 		return _stream.get_executor();
 	}
 
-	decltype(auto) tls_context()
-	requires (!std::is_same_v<TlsContext, std::monostate>) {
+	template <
+		typename Ctx = TlsContext,
+		std::enable_if_t<!std::is_same_v<Ctx, std::monostate>, bool> = true
+	>
+	decltype(auto) tls_context() {
 		return _stream_context.tls_context();
 	}
 
@@ -215,7 +227,10 @@ public:
 			_stream.brokers(std::move(hosts), default_port);
 	}
 
-	template <typename Authenticator>
+	template <
+		typename Authenticator,
+		std::enable_if_t<is_authenticator<Authenticator>, bool> = true
+	>
 	void authenticator(Authenticator&& authenticator) {
 		if (!is_open())
 			_stream_context.authenticator(
@@ -339,7 +354,9 @@ public:
 	}
 
 	bool channel_store_error(error_code ec) {
-		return _rec_channel.try_send(ec, std::string {}, std::string {}, publish_props {});
+		return _rec_channel.try_send(
+			ec, std::string {}, std::string {}, publish_props {}
+		);
 	}
 
 	template <typename CompletionToken>

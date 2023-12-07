@@ -1,8 +1,10 @@
+#include <boost/asio/use_awaitable.hpp>
+#ifdef BOOST_ASIO_HAS_CO_AWAIT
+
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/use_awaitable.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 
@@ -171,3 +173,5 @@ int main(int argc, char** argv) {
 
 	ioc.run();
 }
+
+#endif

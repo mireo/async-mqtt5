@@ -19,7 +19,9 @@ public:
 	bounded_deque() = default;
 	bounded_deque(size_t n) : _buffer(n) {}
 
-	size_t size() const { return _buffer.size(); }
+	size_t size() const {
+		return _buffer.size();
+	}
 
 	template <typename E>
 	void push_back(E&& e) {
@@ -28,13 +30,21 @@ public:
 		_buffer.push_back(std::forward<E>(e));
 	}
 
-	void pop_front() { _buffer.pop_front(); }
+	void pop_front() {
+		_buffer.pop_front();
+	}
 
-	void clear() { _buffer.clear(); }
+	void clear() {
+		_buffer.clear();
+	}
 
-	const auto& front() const noexcept { return _buffer.front(); }
+	const auto& front() const noexcept {
+		return _buffer.front();
+	}
 
-	auto& front() noexcept { return _buffer.front(); }
+	auto& front() noexcept {
+		return _buffer.front();
+	}
 };
 
 template <typename... Signatures>
@@ -48,6 +58,7 @@ struct channel_traits {
 template <typename R, typename... Args>
 struct channel_traits<R(error_code, Args...)> {
 	static_assert(sizeof...(Args) > 0);
+
 	template <typename... NewSignatures>
 	struct rebind {
 		using other = channel_traits<NewSignatures...>;

@@ -5,7 +5,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 #include <async_mqtt5.hpp>
 

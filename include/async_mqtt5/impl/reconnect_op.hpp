@@ -149,7 +149,8 @@ public:
 
 	void operator()(
 		on_connect, typename Owner::stream_ptr sptr,
-		auto ord, error_code connect_ec, error_code timer_ec
+		std::array<std::size_t, 2> ord,
+		error_code connect_ec, error_code timer_ec
 	) {
 		// connect_ec may be any of stream.async_connect() error codes
 		// plus access_denied, connection_refused and

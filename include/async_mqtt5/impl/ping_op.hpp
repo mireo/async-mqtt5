@@ -12,7 +12,7 @@
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -30,9 +30,7 @@ class ping_op {
 	std::unique_ptr<asio::steady_timer> _ping_timer;
 
 public:
-	ping_op(
-		const std::shared_ptr<client_service>& svc_ptr
-	) :
+	ping_op(const std::shared_ptr<client_service>& svc_ptr) :
 		_svc_ptr(svc_ptr),
 		_ping_timer(new asio::steady_timer(svc_ptr->get_executor()))
 	{}

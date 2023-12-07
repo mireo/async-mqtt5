@@ -13,8 +13,8 @@
 #include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -75,7 +75,8 @@ class publish_send_op {
 
 public:
 	publish_send_op(
-		const std::shared_ptr<client_service>& svc_ptr, Handler&& handler
+		const std::shared_ptr<client_service>& svc_ptr,
+		Handler&& handler
 	) :
 		_svc_ptr(svc_ptr),
 		_handler(std::move(handler), get_executor())
@@ -178,12 +179,14 @@ public:
 		}
 	}
 
+	template <
+		qos_e q = qos_type,
+		std::enable_if_t<q == qos_e::at_least_once, bool> = true
+	>
 	void operator()(
 		on_puback, control_packet<allocator_type> publish,
 		error_code ec, byte_citer first, byte_citer last
-	)
-	requires (qos_type == qos_e::at_least_once) {
-
+	) {
 		if (ec == asio::error::try_again) // "resend unanswered"
 			return send_publish(std::move(publish.set_dup()));
 
@@ -210,12 +213,14 @@ public:
 		complete(ec, *rc, packet_id, std::move(props));
 	}
 
+	template <
+		qos_e q = qos_type,
+		std::enable_if_t<q == qos_e::exactly_once, bool> = true
+	>
 	void operator()(
 		on_pubrec, control_packet<allocator_type> publish,
 		error_code ec, byte_citer first, byte_citer last
-	)
-	requires (qos_type == qos_e::exactly_once) {
-
+	) {
 		if (ec == asio::error::try_again) // "resend unanswered"
 			return send_publish(std::move(publish.set_dup()));
 
@@ -262,11 +267,13 @@ public:
 		);
 	}
 
+	template <
+		qos_e q = qos_type,
+		std::enable_if_t<q == qos_e::exactly_once, bool> = true
+	>
 	void operator()(
 		on_pubrel, control_packet<allocator_type> pubrel, error_code ec
-	)
-	requires (qos_type == qos_e::exactly_once) {
-
+	) {
 		if (ec == asio::error::try_again)
 			return send_pubrel(std::move(pubrel), true);
 
@@ -283,13 +290,15 @@ public:
 		);
 	}
 
+	template <
+		qos_e q = qos_type,
+		std::enable_if_t<q == qos_e::exactly_once, bool> = true
+	>
 	void operator()(
 		on_pubcomp, control_packet<allocator_type> pubrel,
 		error_code ec,
 		byte_citer first, byte_citer last
-	)
-	requires (qos_type == qos_e::exactly_once) {
-
+	) {
 		if (ec == asio::error::try_again) // "resend unanswered"
 			return send_pubrel(std::move(pubrel), true);
 
@@ -329,16 +338,21 @@ private:
 		if (max_qos && uint8_t(qos_type) > *max_qos)
 			return client::error::qos_not_supported;
 
-		auto retain_available = _svc_ptr->connack_prop(prop::retain_available);
-		if (retain_available && *retain_available == 0 && retain == retain_e::yes)
+		auto retain_avail = _svc_ptr->connack_prop(prop::retain_available);
+		if (retain_avail && *retain_avail == 0 && retain == retain_e::yes)
 			return client::error::retain_not_available;
 
 		auto topic_alias_max = _svc_ptr->connack_prop(prop::topic_alias_maximum);
 		auto topic_alias = props[prop::topic_alias];
-		if ((!topic_alias_max || topic_alias_max && *topic_alias_max == 0) && topic_alias)
+		if (
+			(!topic_alias_max || topic_alias_max && *topic_alias_max == 0) &&
+			topic_alias
+		)
 			return client::error::topic_alias_maximum_reached;
+
 		if (topic_alias_max && topic_alias && *topic_alias > *topic_alias_max)
 			return client::error::topic_alias_maximum_reached;
+
 		return {};
 	}
 
@@ -351,23 +365,30 @@ private:
 		);
 	}
 
-	void complete(error_code ec)
-	requires (qos_type == qos_e::at_most_once)
-	{
+	template <
+		qos_e q = qos_type,
+		std::enable_if_t<q == qos_e::at_most_once, bool> = true
+	>
+	void complete(error_code ec) {
 		_handler.complete(ec);
 	}
 
-	void complete_post(error_code ec)
-	requires (qos_type == qos_e::at_most_once)
-	{
+	template <
+		qos_e q = qos_type,
+		std::enable_if_t<q == qos_e::at_most_once, bool> = true
+	>
+	void complete_post(error_code ec) {
 		_handler.complete_post(ec);
 	}
 
-	template <typename Props = on_publish_props_type<qos_type>>
-	requires (
-		std::is_same_v<Props, puback_props> ||
-		std::is_same_v<Props, pubcomp_props>
-	)
+	template <
+		typename Props = on_publish_props_type<qos_type>,
+		std::enable_if_t<
+			std::is_same_v<Props, puback_props> ||
+			std::is_same_v<Props, pubcomp_props>,
+			bool
+		> = true
+	>
 	void complete(
 		error_code ec, reason_code rc,
 		uint16_t packet_id, Props&& props
@@ -376,11 +397,14 @@ private:
 		_handler.complete(ec, rc, std::forward<Props>(props));
 	}
 
-	template <typename Props = on_publish_props_type<qos_type>>
-	requires (
-		std::is_same_v<Props, puback_props> ||
-		std::is_same_v<Props, pubcomp_props>
-	)
+	template <
+		typename Props = on_publish_props_type<qos_type>,
+		std::enable_if_t<
+			std::is_same_v<Props, puback_props> ||
+			std::is_same_v<Props, pubcomp_props>,
+			bool
+		> = true
+	>
 	void complete_post(error_code ec) {
 		_handler.complete_post(ec, reason_codes::empty, Props {});
 	}

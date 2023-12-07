@@ -15,8 +15,8 @@
 #include <async_mqtt5/detail/internal_types.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 

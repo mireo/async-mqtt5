@@ -13,8 +13,8 @@
 #include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/utf8_mqtt.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 
@@ -38,7 +38,8 @@ class subscribe_op {
 
 public:
 	subscribe_op(
-		const std::shared_ptr<client_service>& svc_ptr, Handler&& handler
+		const std::shared_ptr<client_service>& svc_ptr,
+		Handler&& handler
 	) :
 		_svc_ptr(svc_ptr),
 		_handler(std::move(handler), get_executor())
@@ -138,14 +139,18 @@ public:
 
 private:
 
-	static error_code validate_topics(const std::vector<subscribe_topic>& topics) {
+	static error_code validate_topics(
+		const std::vector<subscribe_topic>& topics
+	) {
 		for (const auto& topic: topics)
 			if (!is_valid_utf8_topic(topic.topic_filter))
 				return client::error::invalid_topic;
 		return error_code {};
 	}
 
-	static std::vector<reason_code> to_reason_codes(std::vector<uint8_t> codes) {
+	static std::vector<reason_code> to_reason_codes(
+		std::vector<uint8_t> codes
+	) {
 		std::vector<reason_code> ret;
 		for (uint8_t code : codes) {
 			auto rc = to_reason_code<reason_codes::category::suback>(code);
@@ -167,7 +172,8 @@ private:
 
 	void complete_post(error_code ec, size_t num_topics) {
 		_handler.complete_post(
-			ec, std::vector<reason_code> { num_topics, reason_codes::empty }, suback_props {}
+			ec, std::vector<reason_code> { num_topics, reason_codes::empty },
+			suback_props {}
 		);
 	}
 

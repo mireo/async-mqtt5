@@ -66,7 +66,9 @@ public:
 	}
 
 private:
-	bool prioritized() const { return _flags & send_flag::prioritized; }
+	bool prioritized() const {
+		return _flags & send_flag::prioritized;
+	}
 };
 
 

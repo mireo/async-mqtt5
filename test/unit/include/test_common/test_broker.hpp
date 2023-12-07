@@ -14,7 +14,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"

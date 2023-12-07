@@ -109,7 +109,7 @@ private:
 	static bool should_reconnect(error_code ec) {
 		using namespace asio::error;
 		return ec == connection_aborted || ec == not_connected ||
-			ec == timed_out || ec == connection_reset || 
+			ec == timed_out || ec == connection_reset ||
 			ec == broken_pipe || ec == asio::error::eof;
 	}
 };

@@ -14,7 +14,7 @@
 #include <async_mqtt5/impl/publish_rec_op.hpp>
 #include <async_mqtt5/impl/re_auth_op.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -84,6 +84,7 @@ private:
 		byte_citer first, byte_citer last
 	) {
 		auto code = control_code_e(control_byte & 0b11110000);
+
 		switch (code) {
 			case control_code_e::publish: {
 				auto msg = decoders::decode_publish(
@@ -123,6 +124,7 @@ private:
 		auto props = disconnect_props {};
 		props[prop::reason_string] = reason;
 		auto svc_ptr = _svc_ptr; // copy before this is moved
+
 		async_disconnect(
 			disconnect_rc_e::malformed_packet, props, false, svc_ptr,
 			asio::prepend(std::move(*this), on_disconnect {})

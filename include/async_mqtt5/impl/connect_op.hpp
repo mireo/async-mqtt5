@@ -18,8 +18,8 @@
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 
-#include <async_mqtt5/impl/internal/codecs/message_decoders.hpp>
-#include <async_mqtt5/impl/internal/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/message_decoders.hpp>
+#include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -108,7 +108,9 @@ public:
 				)
 			);
 		}
-		else if constexpr (has_tls_handshake<typename next_layer_type<Stream>::type>) {
+		else if constexpr (
+			has_tls_handshake<typename next_layer_type<Stream>::type>
+		) {
 			_stream.next_layer().async_handshake(
 				tls_handshake_type<typename next_layer_type<Stream>::type>::client,
 				asio::append(
@@ -252,9 +254,8 @@ public:
 		asio::async_read(
 			_stream, buff,
 			asio::prepend(
-				asio::append(
-					std::move(*this), code, first, last
-				), on_read_packet {}
+				asio::append(std::move(*this), code, first, last),
+				on_read_packet {}
 			)
 		);
 	}
@@ -285,7 +286,6 @@ public:
 		_ctx.ca_props = ca_props;
 		_ctx.state.session_present(session_present);
 
-		// TODO: session_present logic
 		//  Unexpected result handling:
 		//  - If we don't have a Session State, and we get session_present = true,
 		//	  we must close the network connection (and restart with a clean start)
