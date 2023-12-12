@@ -343,7 +343,7 @@ private:
 	error_code validate_publish(
 		const std::string& topic, retain_e retain, const publish_props& props
 	) {
-		if (!is_valid_utf8_topic(topic))
+		if (!is_valid_topic_name(topic))
 			return client::error::invalid_topic;
 
 		const auto& [max_qos, retain_avail, topic_alias_max] =

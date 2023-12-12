@@ -149,7 +149,7 @@ private:
 
 	static error_code validate_topics(const std::vector<std::string>& topics) {
 		for (const auto& topic : topics)
-			if (!is_valid_utf8_topic(topic))
+			if (!is_valid_topic_filter(topic))
 				return client::error::invalid_topic;
 		return error_code {};
 	}

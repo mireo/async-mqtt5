@@ -152,7 +152,7 @@ private:
 		const std::vector<subscribe_topic>& topics
 	) {
 		for (const auto& topic: topics)
-			if (!is_valid_utf8_topic(topic.topic_filter))
+			if (!is_valid_topic_filter(topic.topic_filter))
 				return client::error::invalid_topic;
 		return error_code {};
 	}

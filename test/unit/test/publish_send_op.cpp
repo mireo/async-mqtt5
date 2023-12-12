@@ -14,16 +14,6 @@
 
 using namespace async_mqtt5;
 
-namespace async_mqtt5::client {
-
-inline std::ostream& operator<<(std::ostream& os, const error& err) {
-	os << client_error_to_string(err);
-	return os;
-}
-
-} // end namespace async_mqtt5::client
-
-
 BOOST_AUTO_TEST_SUITE(publish_send_op/*, *boost::unit_test::disabled()*/)
 
 template <
@@ -51,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_pid_overrun) {
 
 	auto handler = [&handlers_called](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
-		BOOST_CHECK_EQUAL(ec, client::error::pid_overrun);
+		BOOST_CHECK(ec == client::error::pid_overrun);
 		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
 	};
 
@@ -66,23 +56,29 @@ BOOST_AUTO_TEST_CASE(test_pid_overrun) {
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
-BOOST_AUTO_TEST_CASE(test_invalid_topic) {
-	constexpr int expected_handlers_called = 1;
+BOOST_AUTO_TEST_CASE(test_invalid_topic_names) {
+	std::vector<std::string> invalid_topics = {
+		"", "+", "#",
+		"invalid+", "invalid#", "invalid/#", "invalid/+"
+	};
+	int expected_handlers_called = invalid_topics.size();
 	int handlers_called = 0;
 
 	asio::io_context ioc;
 	using client_service_type = test::test_service<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
 
-	auto handler = [&handlers_called](error_code ec) {
-		++handlers_called;
-		BOOST_CHECK_EQUAL(ec, client::error::invalid_topic);
-	};
+	for (const auto& topic: invalid_topics) {
+		auto handler = [&handlers_called](error_code ec) {
+			++handlers_called;
+			BOOST_CHECK(ec == client::error::invalid_topic);
+		};
 
-	detail::publish_send_op<
-		client_service_type, decltype(handler), qos_e::at_most_once
-	> { svc_ptr, std::move(handler) }
-	.perform("", "payload", retain_e::no, {});
+		detail::publish_send_op<
+			client_service_type, decltype(handler), qos_e::at_most_once
+		> { svc_ptr, std::move(handler) }
+		.perform(topic, "payload", retain_e::no, {});
+	}
 
 	ioc.run();
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
@@ -99,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_publish_immediate_cancellation) {
 
 	auto h = [&handlers_called](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
-		BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
+		BOOST_CHECK(ec == asio::error::operation_aborted);
 		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
 	};
 
@@ -128,7 +124,7 @@ BOOST_AUTO_TEST_CASE(test_publish_cancellation) {
 
 	auto h = [&handlers_called](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
-		BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
+		BOOST_CHECK(ec == asio::error::operation_aborted);
 		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
 	};
 
