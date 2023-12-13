@@ -10,7 +10,7 @@
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
-#include <async_mqtt5/detail/utf8_mqtt.hpp>
+#include <async_mqtt5/detail/topic_validation.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
@@ -343,7 +343,7 @@ private:
 	error_code validate_publish(
 		const std::string& topic, retain_e retain, const publish_props& props
 	) {
-		if (!is_valid_topic_name(topic))
+		if (validate_topic_name(topic) != validation_result::valid)
 			return client::error::invalid_topic;
 
 		const auto& [max_qos, retain_avail, topic_alias_max] =
@@ -368,7 +368,7 @@ private:
 		if (topic_alias_max && topic_alias && *topic_alias > *topic_alias_max)
 			return client::error::topic_alias_maximum_reached;
 
-		return {};
+		return error_code {};
 	}
 
 	void on_malformed_packet(const std::string& reason) {

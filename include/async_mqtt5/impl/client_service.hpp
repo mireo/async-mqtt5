@@ -1,6 +1,8 @@
 #ifndef ASYNC_MQTT5_CLIENT_SERVICE_HPP
 #define ASYNC_MQTT5_CLIENT_SERVICE_HPP
 
+#include <utility>
+
 #include <boost/asio/experimental/basic_concurrent_channel.hpp>
 
 #include <async_mqtt5/detail/channel_traits.hpp>
@@ -62,14 +64,15 @@ public:
 	template <typename Prop>
 	decltype(auto) connack_prop(Prop p) {
 		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
-		return _mqtt_context.ca_props[p];
+		return std::as_const(_mqtt_context.ca_props[p]);
 	}
 
 	template <typename Prop0, typename ...Props>
 	decltype(auto) connack_props(Prop0 p0, Props ...props) {
 		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
 		return std::make_tuple(
-			_mqtt_context.ca_props[p0], _mqtt_context.ca_props[props]...
+			std::as_const(_mqtt_context.ca_props[p0]),
+			std::as_const(_mqtt_context.ca_props[props])...
 		);
 	}
 
@@ -119,14 +122,15 @@ public:
 	template <typename Prop>
 	decltype(auto) connack_prop(Prop p) {
 		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
-		return _mqtt_context.ca_props[p];
+		return std::as_const(_mqtt_context.ca_props[p]);
 	}
 
 	template <typename Prop0, typename ...Props>
 	decltype(auto) connack_props(Prop0 p0, Props ...props) {
 		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
 		return std::make_tuple(
-			_mqtt_context.ca_props[p0], _mqtt_context.ca_props[props]...
+			std::as_const(_mqtt_context.ca_props[p0]),
+			std::as_const(_mqtt_context.ca_props[props])...
 		);
 	}
 

@@ -71,11 +71,21 @@ enum class error : int {
 	/** The Server does not support the specified \ref qos_e. */
 	qos_not_supported,
 
-	/** The Server dos not support retained messages. */
+	/** The Server does not support retained messages. */
 	retain_not_available,
 
 	/** The Client attempted to send a Topic Alias that is greater than Topic Alias Maximum. */
-	topic_alias_maximum_reached
+	topic_alias_maximum_reached,
+
+	// subscribe
+	/** The Server does not support Wildcard Subscriptions. */
+	wildcard_subscription_not_available,
+
+	/** The Server does not support this Subscription Identifier. */
+	subscription_identifier_not_available,
+
+	/** The Server does not support Shared Subscriptions. */
+	shared_subscription_not_available,
 };
 
 
@@ -97,6 +107,12 @@ inline std::string client_error_to_string(error err) {
 		case error::topic_alias_maximum_reached:
 			return "The Client attempted to send a Topic Alias "
 				"that is greater than Topic Alias Maximum.";
+		case error::wildcard_subscription_not_available:
+			return "The Server does not support Wildcard Subscriptions.";
+		case error::subscription_identifier_not_available:
+			return "The Server does not support this Subscription Identifier.";
+		case error::shared_subscription_not_available:
+			return "The Server does not support Shared Subscriptions.";
 		default:
 			return "Unknown client error";
 	}

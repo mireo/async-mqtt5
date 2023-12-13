@@ -438,6 +438,9 @@ public:
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
+	 *		- \link async_mqtt5::client::error::wildcard_subscription_not_available \endlink
+	 *		- \link async_mqtt5::client::error::subscription_identifier_not_available \endlink
+	 *		- \link async_mqtt5::client::error::shared_subscription_not_available \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */
@@ -505,6 +508,9 @@ public:
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
+	 *		- \link async_mqtt5::client::error::wildcard_subscription_not_available \endlink
+	 *		- \link async_mqtt5::client::error::subscription_identifier_not_available \endlink
+	 *		- \link async_mqtt5::client::error::shared_subscription_not_available \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */

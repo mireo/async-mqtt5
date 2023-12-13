@@ -2,6 +2,7 @@
 #define ASYNC_MQTT5_SUBSCRIBE_OP_HPP
 
 #include <algorithm>
+#include <cstdint>
 
 #include <boost/asio/detached.hpp>
 
@@ -11,7 +12,7 @@
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
-#include <async_mqtt5/detail/utf8_mqtt.hpp>
+#include <async_mqtt5/detail/topic_validation.hpp>
 
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
@@ -62,7 +63,7 @@ public:
 		const std::vector<subscribe_topic>& topics,
 		const subscribe_props& props
 	) {
-		auto ec = validate_topics(topics);
+		auto ec = validate_subscribe(topics, props);
 		if (ec)
 			return complete_post(ec, topics.size());
 
@@ -148,13 +149,78 @@ public:
 
 private:
 
-	static error_code validate_topics(
-		const std::vector<subscribe_topic>& topics
+	static bool is_option_available(std::optional<uint8_t> sub_opt) {
+		return !sub_opt.has_value() || *sub_opt == 1;
+	}
+
+	static error_code validate_props(
+		const subscribe_props& props, bool sub_id_available
 	) {
-		for (const auto& topic: topics)
-			if (!is_valid_topic_filter(topic.topic_filter))
-				return client::error::invalid_topic;
+		auto sub_id = props[prop::subscription_identifier];
+		if (!sub_id.has_value())
+			return error_code {};
+
+		if (!sub_id_available)
+			return client::error::subscription_identifier_not_available;
+
+		constexpr uint32_t min_sub_id = 1;
+		constexpr uint32_t max_sub_id = 268'435'455;
+		return min_sub_id <= *sub_id && *sub_id <= max_sub_id ?
+			error_code {} :
+			client::error::subscription_identifier_not_available;
+	}
+
+	static error_code validate_topic(
+		const subscribe_topic& topic, bool wildcard_available, bool shared_available
+	) {
+		std::string_view topic_filter = topic.topic_filter;
+
+		constexpr std::string_view shared_sub_id = "$share/";
+		validation_result result = validation_result::valid;
+		if (
+			topic_filter.compare(0, shared_sub_id.size(), shared_sub_id) == 0
+		) {
+			if (!shared_available)
+				return client::error::shared_subscription_not_available;
+
+			result = validate_shared_topic_filter(topic_filter, wildcard_available);
+		} else
+			result = wildcard_available ?
+				validate_topic_filter(topic_filter) :
+				validate_topic_name(topic_filter);
+
+		if (result == validation_result::invalid)
+			return client::error::invalid_topic;
+		if (!wildcard_available && result != validation_result::valid)
+			return client::error::wildcard_subscription_not_available;
 		return error_code {};
+	}
+
+	error_code validate_subscribe(
+		const std::vector<subscribe_topic>& topics,
+		const subscribe_props& props
+	) {
+		auto [wildcard_available, shared_available, sub_id_available] =
+			std::apply(
+				[](auto ...opt) {
+					return std::make_tuple(is_option_available(opt)...);
+				},
+				_svc_ptr->connack_props(
+					prop::wildcard_subscription_available,
+					prop::shared_subscription_available,
+					prop::subscription_identifier_available
+				)
+			);
+
+		error_code ec;
+		for (const auto& topic: topics) {
+			ec = validate_topic(topic, wildcard_available, shared_available);
+			if (ec)
+				return ec;
+		}
+
+		ec = validate_props(props, sub_id_available);
+		return ec;
 	}
 
 	static std::vector<reason_code> to_reason_codes(

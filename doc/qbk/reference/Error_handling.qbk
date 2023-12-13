@@ -22,11 +22,11 @@ may complete with, along with the reasons for their occurrence.
 	]]
 	[[`boost::asio::no_recovery`] [
 		An non-recoverable error occurred during the attempt by the [reflink2 mqtt_client `mqtt_client`]
-		to establish a connection with the Broker. The cause of this error may be attributed to the connection 
+		to establish a connection with the Server. The cause of this error may be attributed to the connection 
 		related parameters used during the initialization of the [reflink2 mqtt_client `mqtt_client`].
 	]]
 	[[`async_mqtt5::client::error::session_expired`][
-		The Client has established a successful connection with a Broker, but either the session does not exist or has expired.
+		The Client has established a successful connection with a Server, but either the session does not exist or has expired.
 		In cases where the Client had previously set up subscriptions to Topics, these subscriptions are also expired.
 		Therefore, the Client should re-subscribe.
 		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_receive] calls.
@@ -61,6 +61,22 @@ may complete with, along with the reasons for their occurrence.
 		will arise in instances when the Server does NOT support Topic Aliases, and the 
 		Client has attempted to use them. See __TOPIC_ALIAS_MAX__.
 		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_publish] calls.
+	]]
+	[[`async_mqtt5::client::error::wildcard_subscription_not_available`] [
+		The Client has attempted to subscribe to multiple Topics using Wildcard Character (`+` and/or `#`).
+		However, the Server does not support Wildcard Subscriptions.
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_subscribe] calls.
+	]]
+	[[`async_mqtt5::client::error::subscription_identifier_not_available`] [
+		The Client has attempted to associate a subscription with a Subscription Identifier.
+		However, the Server either does not support Subscription Identifiers or the Subscription Identifier provided
+		is out of range (the Subscription Identifier can have a value of 1 to 268,435,455).
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_subscribe] calls.
+	]]
+	[[`async_mqtt5::client::error::shared_subscription_not_available`] [
+		The Client has attempted to establish a Shared Subscription.
+		However, the Server does not support Shared Subscriptions.
+		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_subscribe] calls.
 	]]
 ]
 

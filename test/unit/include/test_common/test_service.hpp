@@ -6,6 +6,8 @@
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 
+#include <async_mqtt5/types.hpp>
+
 #include <async_mqtt5/impl/client_service.hpp>
 
 namespace async_mqtt5::test {
@@ -21,9 +23,14 @@ class test_service : public detail::client_service<StreamType, TlsContext> {
 	using base = detail::client_service<StreamType, TlsContext>;
 
 	asio::any_io_executor _ex;
+	connack_props _test_props;
 public:
 	test_service(const asio::any_io_executor ex)
 		: base(ex, {}), _ex(ex)
+	{}
+
+	test_service(const asio::any_io_executor ex, connack_props props)
+		: base(ex, {}), _ex(ex), _test_props(std::move(props))
 	{}
 
 	template <typename BufferType, typename CompletionToken>
@@ -42,6 +49,21 @@ public:
 			CompletionToken, void (error_code)
 		> (std::move(initiation), token);
 	}
+
+	template <typename Prop>
+	decltype(auto) connack_prop(Prop p) {
+		return std::as_const(_test_props[p]);
+	}
+
+	template <typename Prop0, typename ...Props>
+	decltype(auto) connack_props(Prop0 p0, Props ...props) {
+		return std::make_tuple(
+			std::as_const(_test_props[p0]),
+			std::as_const(_test_props[props])...
+		);
+	}
+
+
 };
 
 

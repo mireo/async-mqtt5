@@ -9,7 +9,7 @@
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
-#include <async_mqtt5/detail/utf8_mqtt.hpp>
+#include <async_mqtt5/detail/topic_validation.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
@@ -149,7 +149,7 @@ private:
 
 	static error_code validate_topics(const std::vector<std::string>& topics) {
 		for (const auto& topic : topics)
-			if (!is_valid_topic_filter(topic))
+			if (validate_topic_filter(topic) != validation_result::valid)
 				return client::error::invalid_topic;
 		return error_code {};
 	}

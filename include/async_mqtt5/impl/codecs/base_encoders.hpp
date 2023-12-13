@@ -368,7 +368,7 @@ using encoder_types = std::tuple<
 	prop_encoder_type<pp::content_type_t, basic::utf8_def>,
 	prop_encoder_type<pp::response_topic_t, basic::utf8_def>,
 	prop_encoder_type<pp::correlation_data_t, basic::utf8_def>,
-	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<uint32_t>>,
+	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<intptr_t>>, // varint
 	prop_encoder_type<pp::session_expiry_interval_t, basic::int_def<int32_t>>,
 	prop_encoder_type<pp::assigned_client_identifier_t, basic::utf8_def>,
 	prop_encoder_type<pp::server_keep_alive_t, basic::int_def<int16_t>>,

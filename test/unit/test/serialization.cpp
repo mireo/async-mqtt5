@@ -180,7 +180,12 @@ BOOST_AUTO_TEST_CASE(test_puback) {
 }
 
 BOOST_AUTO_TEST_CASE(test_subscribe) {
+	//testing variables
+	uint32_t sub_id = 1'234'567;
+
 	subscribe_props sp;
+	sp[prop::subscription_identifier] = sub_id;
+
 	std::vector<subscribe_topic> filters {
 		{ "subscribe topic", { qos_e::at_least_once } }
 	};
@@ -200,7 +205,8 @@ BOOST_AUTO_TEST_CASE(test_subscribe) {
 	BOOST_CHECK_MESSAGE(rv, "Parsing SUBSCRIBE failed.");
 
 	const auto& [props_, filters_] = *rv;
-	BOOST_CHECK_EQUAL(filters[0].topic_filter, std::get<0>(filters_[0]));
+	BOOST_CHECK_EQUAL(std::get<0>(filters_[0]), filters[0].topic_filter);
+	BOOST_CHECK_EQUAL(*props_[prop::subscription_identifier], sub_id);
 	//TODO: sub options
 }
 

@@ -5,6 +5,12 @@
 
 namespace async_mqtt5::detail {
 
+enum class validation_result : uint8_t {
+	valid = 0,
+	has_wildcard_character,
+	invalid
+};
+
 inline int pop_front_unichar(std::string_view& s) {
 	// assuming that s.length() is > 0
 
@@ -32,20 +38,26 @@ inline int pop_front_unichar(std::string_view& s) {
 	return ch;
 }
 
-inline bool is_valid_mqtt_utf8_char(int c) {
+inline validation_result validate_mqtt_utf8_char(int c) {
 	constexpr int fe_flag = 0xFE;
 	constexpr int ff_flag = 0xFF;
 
-	return c > 0x001F && // U+0000...U+001F control characters
+	constexpr int multi_lvl_wildcard = '#';
+	constexpr int single_lvl_wildcard = '+';
+
+	if (c == multi_lvl_wildcard || c == single_lvl_wildcard)
+		return validation_result::has_wildcard_character;
+
+	if (c > 0x001F && // U+0000...U+001F control characters
 		(c < 0x007F || c > 0x009F) && // U+007F...0+009F control characters
 		(c < 0xD800 || c > 0xDFFF) && // U+D800...U+DFFF surrogates
 		(c < 0xFDD0 || c > 0xFDEF) && // U+FDD0...U+FDEF non-characters
 		(c & fe_flag) != fe_flag && // non-characters
-		(c & ff_flag) != ff_flag;
-}
+		(c & ff_flag) != ff_flag
+	)
+		return validation_result::valid;
 
-inline bool is_valid_mqtt_utf8_non_wildcard_char(int c) {
-	return c != '+' && c != '#' && is_valid_mqtt_utf8_char(c);
+	return validation_result::invalid;
 }
 
 inline bool is_valid_string_size(size_t sz) {
@@ -53,74 +65,33 @@ inline bool is_valid_string_size(size_t sz) {
 	return sz <= max_sz;
 }
 
-inline bool is_valid_topic_size(size_t sz) {
-	constexpr size_t min_sz = 1;
-	return min_sz <= sz && is_valid_string_size(sz);
+inline bool is_utf8(validation_result result) {
+	return result == validation_result::valid ||
+		result == validation_result::has_wildcard_character;
 }
 
-template <typename ValidationFun>
-bool is_valid_impl(
-	std::string_view str, ValidationFun&& validation_fun
+template <typename ValidSizeCondition, typename ValidCondition>
+validation_result validate_impl(
+	std::string_view str,
+	ValidSizeCondition&& size_condition, ValidCondition&& condition
 ) {
-	while (!str.empty()) {
-		int c = pop_front_unichar(str);
-		bool is_valid = validation_fun(c);
+	if (!size_condition(str.size()))
+		return validation_result::invalid;
 
-		if (!is_valid)
-			return false;
-	}
-
-	return true;
-}
-
-inline bool is_valid_mqtt_utf8(std::string_view str) {
-	return is_valid_string_size(str.size()) &&
-		is_valid_impl(str, is_valid_mqtt_utf8_char);
-}
-
-inline bool is_valid_topic_name(std::string_view str) {
-	return is_valid_topic_size(str.size()) &&
-		is_valid_impl(str, is_valid_mqtt_utf8_non_wildcard_char);
-}
-
-inline bool is_valid_topic_filter(std::string_view str) {
-	if (!is_valid_topic_size(str.size()))
-		return false;
-
-	constexpr int multi_lvl_wildcard = '#';
-	constexpr int single_lvl_wildcard = '+';
-
-	// must be the last character preceded by '/' or stand alone
-	// #, .../#
-	if (str.back() == multi_lvl_wildcard) {
-		str.remove_suffix(1);
-
-		if (!str.empty() && str.back() != '/')
-			return false;
-	}
-
-	int last_c = -1;
+	validation_result result;
 	while (!str.empty()) {
 		int c = pop_front_unichar(str);
 
-		// can be used at any level, but must occupy an entire level
-		// +, +/..., .../+/..., .../+
-		bool is_valid_single_lvl = (c == single_lvl_wildcard) &&
-			(str.empty() || str.front() == '/') &&
-			(last_c == -1 || last_c == '/');
-
-		bool is_valid_mqtt_utf_8 = is_valid_mqtt_utf8_non_wildcard_char(c);
-
-
-		if (is_valid_mqtt_utf_8 || is_valid_single_lvl) {
-			last_c = c;
-			continue;
-		}
-
-		return false;
+		result = validate_mqtt_utf8_char(c);
+		if (!condition(result))
+			return result;
 	}
 
-	return true;
+	return validation_result::valid;
+}
+
+inline validation_result is_valid_mqtt_utf8(std::string_view str) {
+	return validate_impl(str, is_valid_string_size, is_utf8);
 }
 
 } // namespace async_mqtt5::detail
