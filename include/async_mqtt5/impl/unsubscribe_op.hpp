@@ -59,7 +59,7 @@ public:
 		const std::vector<std::string>& topics,
 		const unsubscribe_props& props
 	) {
-		auto ec = validate_topics(topics);
+		auto ec = validate_unsubscribe(topics, props);
 		if (ec)
 			return complete_post(ec, topics.size());
 
@@ -147,10 +147,18 @@ public:
 
 private:
 
-	static error_code validate_topics(const std::vector<std::string>& topics) {
+	static error_code validate_unsubscribe(
+		const std::vector<std::string>& topics,
+		const unsubscribe_props& props
+	) {
 		for (const auto& topic : topics)
 			if (validate_topic_filter(topic) != validation_result::valid)
 				return client::error::invalid_topic;
+
+		auto user_properties = props[prop::user_property];
+		for (const auto& user_prop: user_properties)
+			if (validate_mqtt_utf8(user_prop) != validation_result::valid)
+				return client::error::malformed_packet;
 		return error_code {};
 	}
 

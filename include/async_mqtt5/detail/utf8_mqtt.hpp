@@ -90,7 +90,7 @@ validation_result validate_impl(
 	return validation_result::valid;
 }
 
-inline validation_result is_valid_mqtt_utf8(std::string_view str) {
+inline validation_result validate_mqtt_utf8(std::string_view str) {
 	return validate_impl(str, is_valid_string_size, is_utf8);
 }
 

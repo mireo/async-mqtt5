@@ -141,7 +141,6 @@ BOOST_AUTO_TEST_CASE(test_large_subscription_id) {
 BOOST_AUTO_TEST_CASE(test_subscription_ids_not_supported) {
 	connack_props props;
 	props[prop::subscription_identifier_available] = uint8_t(0);
-	BOOST_ASSERT(props[prop::subscription_identifier_available] == 0);
 
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;

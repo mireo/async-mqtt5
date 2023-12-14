@@ -32,24 +32,24 @@ std::string to_str(int utf8ch) {
 BOOST_AUTO_TEST_CASE(utf8_string_validation) {
 	using namespace async_mqtt5::detail;
 
-	BOOST_CHECK(is_valid_mqtt_utf8("stringy") == validation_result::valid);
-	BOOST_CHECK(is_valid_mqtt_utf8("") == validation_result::valid);
-	BOOST_CHECK(is_valid_mqtt_utf8(std::string(75000, 'a')) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8("stringy") == validation_result::valid);
+	BOOST_CHECK(validate_mqtt_utf8("") == validation_result::valid);
+	BOOST_CHECK(validate_mqtt_utf8(std::string(75000, 'a')) == validation_result::invalid);
 
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x1)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x1F)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x20)) == validation_result::valid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x7E)) == validation_result::valid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x7F)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x9F)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0xA0)) == validation_result::valid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0xD800)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0xDFFF)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0xFDD0)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0xFDEF)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0xFDF0)) == validation_result::valid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x1FFFE)) == validation_result::invalid);
-	BOOST_CHECK(is_valid_mqtt_utf8(to_str(0x1FFFF)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x1)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x1F)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x20)) == validation_result::valid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x7E)) == validation_result::valid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x7F)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x9F)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0xA0)) == validation_result::valid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0xD800)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0xDFFF)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0xFDD0)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0xFDEF)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0xFDF0)) == validation_result::valid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x1FFFE)) == validation_result::invalid);
+	BOOST_CHECK(validate_mqtt_utf8(to_str(0x1FFFF)) == validation_result::invalid);
 }
 
 BOOST_AUTO_TEST_CASE(topic_filter_validation) {

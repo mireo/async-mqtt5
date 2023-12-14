@@ -53,10 +53,8 @@ namespace client {
  * \details Represents error that occur on the client side.
  */
 enum class error : int {
-	/// \cond INTERNAL
-	/** Malformed packet has been detected. */
+	/** The packet is malformed. */
 	malformed_packet = 100,
-	/// \endcond
 
 	/** The Client's session does not exist or it has expired. */
 	session_expired,
@@ -92,16 +90,16 @@ enum class error : int {
 inline std::string client_error_to_string(error err) {
 	switch (err) {
 		case error::malformed_packet:
-			return "Malformed packet has been detected";
+			return "The packet is malformed.";
 		case error::session_expired:
-			return "The Client's session does not exist or it has expired. ";
+			return "The Client's session does not exist or it has expired.";
 		case error::pid_overrun:
 			return "There are no more available Packet Identifiers to use.";
 		case error::invalid_topic:
 			return "The Topic is invalid and "
 				"does not conform to the specification.";
 		case error::qos_not_supported:
-			return "The Server does not support the specified QoS";
+			return "The Server does not support the specified QoS.";
 		case error::retain_not_available:
 			return "The Server does not support retained messages.";
 		case error::topic_alias_maximum_reached:
@@ -114,7 +112,7 @@ inline std::string client_error_to_string(error err) {
 		case error::shared_subscription_not_available:
 			return "The Server does not support Shared Subscriptions.";
 		default:
-			return "Unknown client error";
+			return "Unknown client error.";
 	}
 }
 

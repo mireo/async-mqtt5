@@ -31,6 +31,11 @@ may complete with, along with the reasons for their occurrence.
 		Therefore, the Client should re-subscribe.
 		This error code is exclusive to completion handlers associated with [refmem mqtt_client async_receive] calls.
 	]]
+	[[`async_mqtt5::client::error::malformed_packet`][
+		The Client has attempted to send a packet that does not conform to the specification.
+		This issue can arise from improperly formed UTF-8 encoded strings.
+		Additionally, this error can be caused by providing out-of-range values.
+	]]
 	[[`async_mqtt5::client::error::pid_overrun`] [
 		This error code signifies that the Client was unable to allocate a Packet Identifier for
 		the current operation due to the exhaustion of the available identifiers.

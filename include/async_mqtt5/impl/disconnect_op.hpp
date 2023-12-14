@@ -7,9 +7,10 @@
 
 #include <async_mqtt5/types.hpp>
 
+#include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
-#include <async_mqtt5/detail/cancellable_handler.hpp>
+#include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
@@ -60,6 +61,10 @@ public:
 	}
 
 	void perform() {
+		error_code ec = validate_disconnect(_context.props);
+		if (ec)
+			return complete_post(ec);
+
 		auto disconnect = control_packet<allocator_type>::of(
 			no_pid, get_allocator(),
 			encoders::encode_disconnect,
@@ -108,8 +113,27 @@ public:
 	}
 
 private:
+	static error_code validate_disconnect(const disconnect_props& props) {
+		auto reason_string = props[prop::reason_string];
+		if (
+			reason_string &&
+			validate_mqtt_utf8(*reason_string) != validation_result::valid
+		)
+			return client::error::malformed_packet;
+
+		auto user_properties = props[prop::user_property];
+		for (const auto& user_prop: user_properties)
+			if (validate_mqtt_utf8(user_prop) != validation_result::valid)
+				return client::error::malformed_packet;
+		return error_code {};
+	}
+
 	void complete(error_code ec) {
 		_handler.complete(ec);
+	}
+
+	void complete_post(error_code ec) {
+		_handler.complete_post(ec);
 	}
 };
 

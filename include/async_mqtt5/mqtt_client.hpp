@@ -361,6 +361,7 @@ public:
 	 *		- `boost::system::errc::errc_t::success` \n
 	 *		- `boost::asio::error::operation_aborted` \n
 	 *		- `boost::asio::error::no_recovery` \n
+	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::qos_not_supported \endlink
 	 *		- \link async_mqtt5::client::error::retain_not_available \endlink
@@ -436,6 +437,7 @@ public:
 	 *		- `boost::system::errc::errc_t::success` \n
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
+	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *		- \link async_mqtt5::client::error::wildcard_subscription_not_available \endlink
@@ -506,6 +508,7 @@ public:
 	 *		- `boost::system::errc::errc_t::success` \n
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
+	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *		- \link async_mqtt5::client::error::wildcard_subscription_not_available \endlink
@@ -564,6 +567,7 @@ public:
 	 *		- `boost::system::errc::errc_t::success` \n
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
+	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
@@ -630,6 +634,7 @@ public:
 	 *		- `boost::system::errc::errc_t::success` \n
 	 *		- `boost::asio::error::no_recovery` \n
 	 *		- `boost::asio::error::operation_aborted` \n
+	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *		- \link async_mqtt5::client::error::pid_overrun \endlink
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
@@ -737,6 +742,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted`\n
+	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
 	 */

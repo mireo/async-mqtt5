@@ -11,6 +11,7 @@
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/detail/topic_validation.hpp>
+#include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/disconnect_op.hpp>
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
@@ -99,7 +100,7 @@ public:
 		std::string topic, std::string payload,
 		retain_e retain, const publish_props& props
 	) {
-		auto ec = validate_publish(topic, retain, props);
+		auto ec = validate_publish(topic, payload, retain, props);
 		if (ec)
 			return complete_post(ec);
 
@@ -340,35 +341,78 @@ public:
 
 
 private:
+	error_code validate_props(
+		const publish_props& props,
+		prop::value_type_t<prop::topic_alias_maximum> topic_alias_max_opt
+	) {
+		auto topic_alias = props[prop::topic_alias];
+		if (topic_alias) {
+			auto topic_alias_max = topic_alias_max_opt.value_or(0);
+
+			if (topic_alias_max == 0 || *topic_alias > topic_alias_max)
+				return client::error::topic_alias_maximum_reached;
+			if (*topic_alias == 0 )
+				return client::error::malformed_packet;
+		}
+
+		auto response_topic = props[prop::response_topic];
+		if (
+			response_topic &&
+			validate_topic_name(*response_topic) != validation_result::valid
+		)
+			return client::error::malformed_packet;
+
+		auto user_properties = props[prop::user_property];
+		for (const auto& user_prop: user_properties)
+			if (validate_mqtt_utf8(user_prop) != validation_result::valid)
+				return client::error::malformed_packet;
+
+		auto subscription_identifier = props[prop::subscription_identifier];
+		if (
+			subscription_identifier &&
+			(*subscription_identifier < 1 || *subscription_identifier > 268'435'455)
+		)
+			return client::error::malformed_packet;
+
+		auto content_type = props[prop::content_type];
+		if (
+			content_type &&
+			validate_mqtt_utf8(*content_type) != validation_result::valid
+		)
+			return client::error::malformed_packet;
+
+		return error_code {};
+	}
+
 	error_code validate_publish(
-		const std::string& topic, retain_e retain, const publish_props& props
+		const std::string& topic, const std::string& payload,
+		retain_e retain, const publish_props& props
 	) {
 		if (validate_topic_name(topic) != validation_result::valid)
 			return client::error::invalid_topic;
 
-		const auto& [max_qos, retain_avail, topic_alias_max] =
+		const auto& [max_qos_opt, retain_available_opt, topic_alias_max_opt] =
 			_svc_ptr->connack_props(
 				prop::maximum_qos, prop::retain_available,
 				prop::topic_alias_maximum
 			);
+		auto max_qos = max_qos_opt.value_or(2);
+		auto retain_available = retain_available_opt.value_or(1);
 
-		if (max_qos && uint8_t(qos_type) > *max_qos)
+		if (uint8_t(qos_type) > max_qos)
 			return client::error::qos_not_supported;
 
-		if (retain_avail && *retain_avail == 0 && retain == retain_e::yes)
+		if (retain_available == 0 && retain == retain_e::yes)
 			return client::error::retain_not_available;
 
-		auto topic_alias = props[prop::topic_alias];
+		auto payload_format = props[prop::payload_format_indicator].value_or(0);
 		if (
-			(!topic_alias_max || topic_alias_max && *topic_alias_max == 0) &&
-			topic_alias
+			payload_format == 1 &&
+			validate_mqtt_utf8(payload) != validation_result::valid
 		)
-			return client::error::topic_alias_maximum_reached;
+			return client::error::malformed_packet;
 
-		if (topic_alias_max && topic_alias && *topic_alias > *topic_alias_max)
-			return client::error::topic_alias_maximum_reached;
-
-		return error_code {};
+		return validate_props(props, topic_alias_max_opt);
 	}
 
 	void on_malformed_packet(const std::string& reason) {

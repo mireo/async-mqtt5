@@ -156,6 +156,11 @@ private:
 	static error_code validate_props(
 		const subscribe_props& props, bool sub_id_available
 	) {
+		auto user_properties = props[prop::user_property];
+		for (const auto& user_prop: user_properties)
+			if (validate_mqtt_utf8(user_prop) != validation_result::valid)
+				return client::error::malformed_packet;
+
 		auto sub_id = props[prop::subscription_identifier];
 		if (!sub_id.has_value())
 			return error_code {};
