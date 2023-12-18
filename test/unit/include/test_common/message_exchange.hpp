@@ -81,7 +81,6 @@ public:
 
 	template <typename ...Args>
 	client_message& reply_with(Args&& ...args) {
-		// just to allow duration to be the last parameter
 		return reply_with_dur(std::make_tuple(std::forward<Args>(args)...));
 	}
 
@@ -107,14 +106,20 @@ public:
 		return ret;
 	}
 
+	decltype(auto) expected_packets() {
+		return _expected_packets;
+	}
+
 private:
 
-	template<typename Tuple, size_t ...I>
+	template <typename Tuple>
 	client_message& reply_with_dur(const Tuple& t) {
-		constexpr auto indices = std::make_index_sequence<
-				std::tuple_size_v<Tuple> - 1
-		> {};
+		using indices = std::make_index_sequence<std::tuple_size_v<Tuple> - 1>;
+		return reply_with_dur(t, indices {});
+	}
 
+	template<typename Tuple, size_t ...I>
+	client_message& reply_with_dur(const Tuple& t, std::index_sequence<I...>) {
 		return reply_with_impl(
 			std::get<std::tuple_size_v<Tuple> - 1>(t),
 			std::get<I>(t)...
@@ -188,7 +193,6 @@ public:
 
 	template <typename ...Args>
 	broker_message& send(Args&& ...args) {
-		// just to allow duration to be the last parameter
 		return send_with_dur(std::make_tuple(std::forward<Args>(args)...));
 	}
 
@@ -214,12 +218,14 @@ public:
 
 private:
 
-	template<typename Tuple, size_t ...I>
+	template <typename Tuple>
 	broker_message& send_with_dur(const Tuple& t) {
-		constexpr auto indices = std::make_index_sequence<
-				std::tuple_size_v<Tuple> - 1
-		> {};
+		using indices = std::make_index_sequence<std::tuple_size_v<Tuple> - 1>;
+		return send_with_dur(t, indices {});
+	}
 
+	template<typename Tuple, size_t ...I>
+	broker_message& send_with_dur(const Tuple& t, std::index_sequence<I...>) {
 		return send_impl(
 			std::get<std::tuple_size_v<Tuple> - 1>(t),
 			std::get<I>(t)...

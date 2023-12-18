@@ -116,6 +116,9 @@ public:
 		_broker_data.clear();
 	}
 
+	bool received_all_expected() {
+		return !_broker_side.pop_reply_action().has_value();
+	}
 
 	template <typename ConstBufferSequence, typename WriteToken>
 	decltype(auto) write_to_network(
@@ -133,7 +136,23 @@ public:
 			);
 
 			executor_type ex = get_executor();
-			// TODO: validate
+
+			if (reply_action) {
+				const auto& expected = reply_action->expected_packets();
+
+				size_t buffers_size = std::distance(
+					buffers.begin(), buffers.end()
+				);
+				BOOST_CHECK_EQUAL(buffers_size, expected.size());
+
+				size_t num_packets = std::min(buffers_size, expected.size());
+				auto it = buffers.begin();
+				for (size_t i = 0; i < num_packets; ++i, ++it) {
+					BOOST_CHECK_EQUAL(it->size(), expected[i].size());
+					size_t len = std::min(it->size(), expected[i].size());
+					BOOST_CHECK(!memcmp(it->data(), expected[i].data(), len));
+				}
+			}
 
 			auto complete_op = reply_action ?
 				reply_action->write_completion(ex) :

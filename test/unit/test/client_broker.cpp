@@ -14,7 +14,7 @@
 
 using namespace async_mqtt5;
 
-BOOST_AUTO_TEST_SUITE(framework, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_SUITE(framework/*, *boost::unit_test::disabled()*/)
 
 BOOST_AUTO_TEST_CASE(publish_qos_0) {
 	using test::after;
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(publish_qos_0) {
 		false, reason_codes::success.value(), {}
 	);
 	auto publish_1 = encoders::encode_publish(
-		65535, "t", "p_1", qos_e::at_most_once, retain_e::no, dup_e::no, {}
+		1, "t", "p_1", qos_e::at_most_once, retain_e::no, dup_e::no, {}
 	);
 
 	test::msg_exchange broker_side;
@@ -45,7 +45,9 @@ BOOST_AUTO_TEST_CASE(publish_qos_0) {
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
-	asio::make_service<test::test_broker>(ioc, executor, std::move(broker_side));
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
 
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
@@ -67,6 +69,7 @@ BOOST_AUTO_TEST_CASE(publish_qos_0) {
 
 	ioc.run();
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_CHECK(broker.received_all_expected());
 }
 
 
@@ -105,7 +108,7 @@ BOOST_AUTO_TEST_CASE(two_publishes_qos_1_with_fail_on_write) {
 		.expect(connect)
 			.complete_with(success, after(10ms))
 			.reply_with(connack, after(10ms))
-		.expect(publish_1)
+		.expect(publish_1, publish_2)
 			.complete_with(fail, after(10ms))
 		.expect(connect)
 			.complete_with(success, after(10ms))
@@ -116,7 +119,9 @@ BOOST_AUTO_TEST_CASE(two_publishes_qos_1_with_fail_on_write) {
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
-	asio::make_service<test::test_broker>(ioc, executor, std::move(broker_side));
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
 
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
@@ -147,6 +152,7 @@ BOOST_AUTO_TEST_CASE(two_publishes_qos_1_with_fail_on_write) {
 
 	ioc.run();
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_CHECK(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_CASE(receive_publish_qos_2) {
@@ -166,16 +172,16 @@ BOOST_AUTO_TEST_CASE(receive_publish_qos_2) {
 		false, reason_codes::success.value(), {}
 	);
 	auto publish = encoders::encode_publish(
-		65535, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::no, {}
+		1, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::no, {}
 	);
 	auto pubrec = encoders::encode_pubrec(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 	auto pubrel = encoders::encode_pubrel(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 	auto pubcomp = encoders::encode_pubcomp(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 
 	test::msg_exchange broker_side;
@@ -195,7 +201,9 @@ BOOST_AUTO_TEST_CASE(receive_publish_qos_2) {
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
-	asio::make_service<test::test_broker>(ioc, executor, std::move(broker_side));
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
 
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
@@ -203,8 +211,11 @@ BOOST_AUTO_TEST_CASE(receive_publish_qos_2) {
 		.run();
 
 	c.async_receive(
-		[&](error_code ec, std::string rec_topic, std::string rec_payload, publish_props)
-		{
+		[&](
+			error_code ec,
+			std::string rec_topic, std::string rec_payload,
+			publish_props
+		) {
 			BOOST_CHECK_MESSAGE(!ec, ec.message());
 			BOOST_CHECK_EQUAL(topic, rec_topic);
 			BOOST_CHECK_EQUAL(payload,  rec_payload);
@@ -218,6 +229,7 @@ BOOST_AUTO_TEST_CASE(receive_publish_qos_2) {
 
 	ioc.run();
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_CHECK(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_CASE(send_publish_qos_2_with_fail_on_read) {
@@ -235,16 +247,16 @@ BOOST_AUTO_TEST_CASE(send_publish_qos_2_with_fail_on_read) {
 		false, reason_codes::success.value(), {}
 	);
 	auto publish = encoders::encode_publish(
-		65535, "t_1", "p_1", qos_e::exactly_once, retain_e::no, dup_e::no, {}
+		1, "t_1", "p_1", qos_e::exactly_once, retain_e::no, dup_e::no, {}
 	);
 	auto pubrec = encoders::encode_pubrec(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 	auto pubrel = encoders::encode_pubrel(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 	auto pubcomp = encoders::encode_pubcomp(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 
 	test::msg_exchange broker_side;
@@ -270,7 +282,9 @@ BOOST_AUTO_TEST_CASE(send_publish_qos_2_with_fail_on_read) {
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
-	asio::make_service<test::test_broker>(ioc, executor, std::move(broker_side));
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
 
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
@@ -293,6 +307,7 @@ BOOST_AUTO_TEST_CASE(send_publish_qos_2_with_fail_on_read) {
 
 	ioc.run();
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_CHECK(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_CASE(test_ordering_after_reconnect) {
@@ -310,25 +325,25 @@ BOOST_AUTO_TEST_CASE(test_ordering_after_reconnect) {
 		false, reason_codes::success.value(), {}
 	);
 	auto publish_1 = encoders::encode_publish(
-		65535, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
+		1, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
 	auto publish_1_dup = encoders::encode_publish(
-		65535, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::yes, {}
+		1, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::yes, {}
 	);
 	auto puback = encoders::encode_puback(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 	auto publish_2 = encoders::encode_publish(
-		65534, "t_2", "p_2", qos_e::exactly_once, retain_e::no, dup_e::no, {}
+		2, "t_2", "p_2", qos_e::exactly_once, retain_e::no, dup_e::no, {}
 	);
 	auto pubrec = encoders::encode_pubrec(
-		65534, reason_codes::success.value(), {}
+		2, reason_codes::success.value(), {}
 	);
 	auto pubrel = encoders::encode_pubrel(
-		65534, reason_codes::success.value(), {}
+		2, reason_codes::success.value(), {}
 	);
 	auto pubcomp = encoders::encode_pubcomp(
-		65534, reason_codes::success.value(), {}
+		2, reason_codes::success.value(), {}
 	);
 
 	test::msg_exchange broker_side;
@@ -354,7 +369,9 @@ BOOST_AUTO_TEST_CASE(test_ordering_after_reconnect) {
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
-	asio::make_service<test::test_broker>(ioc, executor, std::move(broker_side));
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
 
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
@@ -385,6 +402,7 @@ BOOST_AUTO_TEST_CASE(test_ordering_after_reconnect) {
 
 	ioc.run();
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_CHECK(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_CASE(throttling) {
@@ -405,22 +423,22 @@ BOOST_AUTO_TEST_CASE(throttling) {
 		false, reason_codes::success.value(), props
 	);
 	auto publish_1 = encoders::encode_publish(
-		65535, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
+		1, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
 	auto publish_2 = encoders::encode_publish(
-		65534, "t_1", "p_2", qos_e::at_least_once, retain_e::no, dup_e::no, {}
+		2, "t_1", "p_2", qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
 	auto publish_3 = encoders::encode_publish(
-		65533, "t_1", "p_3", qos_e::at_least_once, retain_e::no, dup_e::no, {}
+		3, "t_1", "p_3", qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
 	auto puback_1 = encoders::encode_puback(
-		65535, reason_codes::success.value(), {}
+		1, reason_codes::success.value(), {}
 	);
 	auto puback_2 = encoders::encode_puback(
-		65534, reason_codes::success.value(), {}
+		2, reason_codes::success.value(), {}
 	);
 	auto puback_3 = encoders::encode_puback(
-		65533, reason_codes::success.value(), {}
+		3, reason_codes::success.value(), {}
 	);
 
 	test::msg_exchange broker_side;
@@ -443,7 +461,9 @@ BOOST_AUTO_TEST_CASE(throttling) {
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
-	asio::make_service<test::test_broker>(ioc, executor, std::move(broker_side));
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
 
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
@@ -487,6 +507,7 @@ BOOST_AUTO_TEST_CASE(throttling) {
 
 	ioc.run();
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_CHECK(broker.received_all_expected());
 }
 
 
@@ -507,10 +528,20 @@ BOOST_AUTO_TEST_CASE(cancel_multiple_ops) {
 		false, reason_codes::success.value(), {}
 	);
 	auto publish_1 = encoders::encode_publish(
-		65535, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
+		1, "t_1", "p_1", qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
-	auto puback = encoders::encode_puback(
-		65535, reason_codes::success.value(), {}
+	auto puback_1 = encoders::encode_puback(
+		1, reason_codes::success.value(), {}
+	);
+
+	auto publish_2 = encoders::encode_publish(
+		1, "t_2", "p_2", qos_e::exactly_once, retain_e::no, dup_e::no, {}
+	);
+	auto pubrec_2 = encoders::encode_pubrec(
+		1, reason_codes::success.value(), {}
+	);
+	auto pubrel_2 = encoders::encode_pubrel(
+		1, reason_codes::success.value(), {}
 	);
 
 	test::msg_exchange broker_side;
@@ -522,13 +553,18 @@ BOOST_AUTO_TEST_CASE(cancel_multiple_ops) {
 			.complete_with(success, after(10ms))
 			.reply_with(connack, after(20ms))
 		.expect(publish_1)
-			.complete_with(success, after(10s))
-			.reply_with(puback, after(10s));
-		//.send(publish_1, after(10s));
+			.complete_with(success, after(10ms))
+			.reply_with(puback_1, after(10s))
+		.send(publish_2, after(200ms))
+		.expect(pubrec_2)
+			.complete_with(success, after(10ms))
+			.reply_with(pubrel_2, after(10s));
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
-	asio::make_service<test::test_broker>(ioc, executor, std::move(broker_side));
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
 
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
@@ -558,6 +594,7 @@ BOOST_AUTO_TEST_CASE(cancel_multiple_ops) {
 	);
 
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_CHECK(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
