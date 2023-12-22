@@ -59,27 +59,28 @@ public:
 		const std::vector<std::string>& topics,
 		const unsubscribe_props& props
 	) {
-		auto ec = validate_unsubscribe(topics, props);
-		if (ec)
-			return complete_post(ec, topics.size());
-
-		asio::dispatch(
-			asio::prepend(std::move(*this), topics, props)
-		);
-	}
-
-	void operator()(
-		const std::vector<std::string>& topics,
-		const unsubscribe_props& props
-	) {
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
-			return complete_post(client::error::pid_overrun, topics.size());
+			return complete_post(
+				client::error::pid_overrun, packet_id, topics.size()
+			);
+
+		auto ec = validate_unsubscribe(topics, props);
+		if (ec)
+			return complete_post(ec, packet_id, topics.size());
 
 		auto unsubscribe = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
 			encoders::encode_unsubscribe, packet_id,
 			topics, props
+		);
+
+		auto max_packet_size = _svc_ptr->connack_prop(
+			prop::maximum_packet_size
+		).value_or(default_max_packet_size);
+		if (unsubscribe.size() > max_packet_size)
+			return complete_post(
+			client::error::packet_too_large, packet_id, topics.size()
 		);
 
 		send_unsubscribe(std::move(unsubscribe));
@@ -94,7 +95,7 @@ public:
 			wire_data,
 			no_serial, send_flag::none,
 			asio::prepend(
-				std::move(*this), on_unsubscribe{}, std::move(unsubscribe)
+				std::move(*this), on_unsubscribe {}, std::move(unsubscribe)
 			)
 		);
 	}
@@ -183,7 +184,9 @@ private:
 		);
 	}
 
-	void complete_post(error_code ec, size_t num_topics) {
+	void complete_post(error_code ec, uint16_t packet_id, size_t num_topics) {
+		if (packet_id != 0)
+			_svc_ptr->free_pid(packet_id);
 		_handler.complete_post(
 			ec, std::vector<reason_code> { num_topics, reason_codes::empty },
 			unsuback_props {}

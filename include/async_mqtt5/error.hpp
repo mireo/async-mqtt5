@@ -56,6 +56,9 @@ enum class error : int {
 	/** The packet is malformed. */
 	malformed_packet = 100,
 
+	/** The packet has exceeded the Maximum Packet Size the Server is willing to accept. */
+	packet_too_large,
+
 	/** The Client's session does not exist or it has expired. */
 	session_expired,
 
@@ -91,6 +94,9 @@ inline std::string client_error_to_string(error err) {
 	switch (err) {
 		case error::malformed_packet:
 			return "The packet is malformed.";
+		case error::packet_too_large:
+			return "The packet has exceeded the Maximum Packet Size "
+				"the Server is willing to accept.";
 		case error::session_expired:
 			return "The Client's session does not exist or it has expired.";
 		case error::pid_overrun:

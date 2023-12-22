@@ -71,7 +71,6 @@ struct mqtt_ctx {
 	credentials creds;
 	std::optional<will> will_msg;
 	connect_props co_props;
-	std::shared_mutex ca_mtx;
 	connack_props ca_props;
 	session_state state;
 	any_authenticator authenticator;

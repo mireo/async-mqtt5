@@ -92,7 +92,10 @@ BOOST_AUTO_TEST_CASE(client_functions) {
 
 	mqtt_client<tcp_layer> tcp_client(ioc, "");
 	tcp_client.authenticator(good_authenticator());
-	auto data = tcp_client.connection_property(prop::authentication_data);
+
+	std::optional<std::string> data = tcp_client.connection_property(
+		prop::authentication_data
+	);
 
 	asio::ssl::context ctx(asio::ssl::context::tls_client);
 	mqtt_client<

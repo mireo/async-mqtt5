@@ -52,7 +52,7 @@ class assemble_op {
 
 	struct on_read {};
 
-	static constexpr size_t max_packet_size = 65536;
+	static constexpr size_t max_packet_size = default_max_packet_size;
 
 	client_service& _svc;
 	handler_type _handler;

@@ -62,18 +62,12 @@ public:
 	}
 
 	template <typename Prop>
-	decltype(auto) connack_prop(Prop p) {
-		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
-		return std::as_const(_mqtt_context.ca_props[p]);
+	const auto& connack_prop(Prop p) const {
+		return _mqtt_context.ca_props[p];
 	}
 
-	template <typename Prop0, typename ...Props>
-	decltype(auto) connack_props(Prop0 p0, Props ...props) {
-		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
-		return std::make_tuple(
-			std::as_const(_mqtt_context.ca_props[p0]),
-			std::as_const(_mqtt_context.ca_props[props])...
-		);
+	const auto& connack_props() const {
+		return _mqtt_context.ca_props;
 	}
 
 	void credentials(
@@ -120,18 +114,12 @@ public:
 	}
 
 	template <typename Prop>
-	decltype(auto) connack_prop(Prop p) {
-		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
-		return std::as_const(_mqtt_context.ca_props[p]);
+	const auto& connack_prop(Prop p) const {
+		return _mqtt_context.ca_props[p];
 	}
 
-	template <typename Prop0, typename ...Props>
-	decltype(auto) connack_props(Prop0 p0, Props ...props) {
-		std::shared_lock reader_lock(_mqtt_context.ca_mtx);
-		return std::make_tuple(
-			std::as_const(_mqtt_context.ca_props[p0]),
-			std::as_const(_mqtt_context.ca_props[props])...
-		);
+	const auto& connack_props() const {
+		return _mqtt_context.ca_props;
 	}
 
 	void credentials(
@@ -260,14 +248,14 @@ public:
 			);
 	}
 
+
 	template <typename Prop>
-	decltype(auto) connack_prop(Prop p) {
+	const auto& connack_prop(Prop p) const {
 		return _stream_context.connack_prop(p);
 	}
 
-	template <typename Prop0, typename ...Props>
-	decltype(auto) connack_props(Prop0 p0, Props ...props) {
-		return _stream_context.connack_props(p0, props...);
+	const auto& connack_props() const {
+		return _stream_context.connack_props();
 	}
 
 	void run() {

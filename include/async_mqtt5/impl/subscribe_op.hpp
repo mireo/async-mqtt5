@@ -26,6 +26,7 @@ namespace asio = boost::asio;
 template <typename ClientService, typename Handler>
 class subscribe_op {
 	using client_service = ClientService;
+
 	struct on_subscribe {};
 	struct on_suback {};
 
@@ -63,28 +64,28 @@ public:
 		const std::vector<subscribe_topic>& topics,
 		const subscribe_props& props
 	) {
-		auto ec = validate_subscribe(topics, props);
-		if (ec)
-			return complete_post(ec, topics.size());
-
-		asio::dispatch(
-			asio::prepend(std::move(*this), topics, props)
-		);
-	}
-
-	void operator()(
-		const std::vector<subscribe_topic>& topics,
-		const subscribe_props& props
-	) {
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
-			return complete_post(client::error::pid_overrun, topics.size());
+			return complete_post(
+				client::error::pid_overrun, packet_id, topics.size()
+			);
+
+		auto ec = validate_subscribe(topics, props);
+		if (ec)
+			return complete_post(ec, packet_id, topics.size());
 
 		auto subscribe = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
 			encoders::encode_subscribe, packet_id,
 			topics, props
 		);
+
+		auto max_packet_size = _svc_ptr->connack_prop(prop::maximum_packet_size)
+			.value_or(default_max_packet_size);
+		if (subscribe.size() > max_packet_size)
+			return complete_post(
+				client::error::packet_too_large, packet_id, topics.size()
+			);
 
 		send_subscribe(std::move(subscribe));
 	}
@@ -149,38 +150,30 @@ public:
 
 private:
 
-	static bool is_option_available(std::optional<uint8_t> sub_opt) {
-		return !sub_opt.has_value() || *sub_opt == 1;
+	error_code validate_subscribe(
+		const std::vector<subscribe_topic>& topics, const subscribe_props& props
+	) const {
+		error_code ec;
+		for (const auto& topic: topics) {
+			ec = validate_topic(topic);
+			if (ec)
+				return ec;
+		}
+
+		ec = validate_props(props);
+		return ec;
 	}
 
-	static error_code validate_props(
-		const subscribe_props& props, bool sub_id_available
-	) {
-		auto user_properties = props[prop::user_property];
-		for (const auto& user_prop: user_properties)
-			if (validate_mqtt_utf8(user_prop) != validation_result::valid)
-				return client::error::malformed_packet;
+	error_code validate_topic(const subscribe_topic& topic) const {
+		auto wildcard_available = _svc_ptr->connack_prop(
+			prop::wildcard_subscription_available
+		).value_or(1);
+		auto shared_available = _svc_ptr->connack_prop(
+			prop::shared_subscription_available
+		).value_or(1);
 
-		auto sub_id = props[prop::subscription_identifier];
-		if (!sub_id.has_value())
-			return error_code {};
-
-		if (!sub_id_available)
-			return client::error::subscription_identifier_not_available;
-
-		constexpr uint32_t min_sub_id = 1;
-		constexpr uint32_t max_sub_id = 268'435'455;
-		return min_sub_id <= *sub_id && *sub_id <= max_sub_id ?
-			error_code {} :
-			client::error::subscription_identifier_not_available;
-	}
-
-	static error_code validate_topic(
-		const subscribe_topic& topic, bool wildcard_available, bool shared_available
-	) {
 		std::string_view topic_filter = topic.topic_filter;
 
-		constexpr std::string_view shared_sub_id = "$share/";
 		validation_result result = validation_result::valid;
 		if (
 			topic_filter.compare(0, shared_sub_id.size(), shared_sub_id) == 0
@@ -201,31 +194,27 @@ private:
 		return error_code {};
 	}
 
-	error_code validate_subscribe(
-		const std::vector<subscribe_topic>& topics,
-		const subscribe_props& props
-	) {
-		auto [wildcard_available, shared_available, sub_id_available] =
-			std::apply(
-				[](auto ...opt) {
-					return std::make_tuple(is_option_available(opt)...);
-				},
-				_svc_ptr->connack_props(
-					prop::wildcard_subscription_available,
-					prop::shared_subscription_available,
-					prop::subscription_identifier_available
-				)
-			);
+	error_code validate_props(const subscribe_props& props) const {
+		auto user_properties = props[prop::user_property];
+		for (const auto& user_prop: user_properties)
+			if (validate_mqtt_utf8(user_prop) != validation_result::valid)
+				return client::error::malformed_packet;
 
-		error_code ec;
-		for (const auto& topic: topics) {
-			ec = validate_topic(topic, wildcard_available, shared_available);
-			if (ec)
-				return ec;
-		}
+		auto sub_id = props[prop::subscription_identifier];
+		if (!sub_id.has_value())
+			return error_code {};
 
-		ec = validate_props(props, sub_id_available);
-		return ec;
+		auto sub_id_available = _svc_ptr->connack_prop(
+			prop::subscription_identifier_available
+		).value_or(1);
+
+		if (!sub_id_available)
+			return client::error::subscription_identifier_not_available;
+
+		return (min_subscription_identifier <= *sub_id &&
+			*sub_id <= max_subscription_identifier) ?
+				error_code {} :
+				client::error::subscription_identifier_not_available;
 	}
 
 	static std::vector<reason_code> to_reason_codes(
@@ -250,7 +239,9 @@ private:
 	}
 
 
-	void complete_post(error_code ec, size_t num_topics) {
+	void complete_post(error_code ec, uint16_t packet_id, size_t num_topics) {
+		if (packet_id != 0)
+			_svc_ptr->free_pid(packet_id);
 		_handler.complete_post(
 			ec, std::vector<reason_code> { num_topics, reason_codes::empty },
 			suback_props {}

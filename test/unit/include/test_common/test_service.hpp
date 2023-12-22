@@ -63,6 +63,9 @@ public:
 		);
 	}
 
+	const auto& connack_props() {
+		return _test_props;
+	}
 
 };
 

@@ -100,28 +100,16 @@ public:
 		std::string topic, std::string payload,
 		retain_e retain, const publish_props& props
 	) {
-		auto ec = validate_publish(topic, payload, retain, props);
-		if (ec)
-			return complete_post(ec);
-
-		asio::dispatch(
-			asio::prepend(
-				std::move(*this), std::move(topic),
-				std::move(payload), retain, props
-			)
-		);
-	}
-
-	void operator()(
-		std::string topic, std::string payload,
-		retain_e retain, const publish_props& props
-	) {
 		uint16_t packet_id = 0;
 		if constexpr (qos_type != qos_e::at_most_once) {
 			packet_id = _svc_ptr->allocate_pid();
 			if (packet_id == 0)
-				return complete_post(client::error::pid_overrun);
+				return complete_post(client::error::pid_overrun, packet_id);
 		}
+
+		auto ec = validate_publish(topic, payload, retain, props);
+		if (ec)
+			return complete_post(ec, packet_id);
 
 		_serial_num = _svc_ptr->next_serial_num();
 
@@ -132,8 +120,14 @@ public:
 			qos_type, retain, dup_e::no, props
 		);
 
+		auto max_packet_size = _svc_ptr->connack_prop(prop::maximum_packet_size)
+			.value_or(default_max_packet_size);
+		if (publish.size() > max_packet_size)
+			return complete_post(client::error::packet_too_large, packet_id);
+
 		send_publish(std::move(publish));
 	}
+
 
 	void send_publish(control_packet<allocator_type> publish) {
 		if (_handler.empty()) { // already cancelled
@@ -191,6 +185,7 @@ public:
 			}
 		}
 	}
+
 
 	template <
 		qos_e q = qos_type,
@@ -336,18 +331,51 @@ public:
 			return send_pubrel(std::move(pubrel), true);
 		}
 
-		return complete(ec, *rc, pubrel.packet_id(), pubcomp_props{});
+		return complete(ec, *rc, pubrel.packet_id(), pubcomp_props {});
 	}
 
-
 private:
-	error_code validate_props(
-		const publish_props& props,
-		prop::value_type_t<prop::topic_alias_maximum> topic_alias_max_opt
-	) {
+
+	error_code validate_publish(
+		const std::string& topic, const std::string& payload,
+		retain_e retain, const publish_props& props
+	) const {
+		constexpr uint8_t default_retain_available = 1;
+		constexpr uint8_t default_maximum_qos = 2;
+		constexpr uint8_t default_payload_format_ind = 0;
+
+		if (validate_topic_name(topic) != validation_result::valid)
+			return client::error::invalid_topic;
+
+		auto max_qos = _svc_ptr->connack_prop(prop::maximum_qos)
+			.value_or(default_maximum_qos);
+		auto retain_available = _svc_ptr->connack_prop(prop::retain_available)
+			.value_or(default_retain_available);
+
+		if (uint8_t(qos_type) > max_qos)
+			return client::error::qos_not_supported;
+
+		if (retain_available == 0 && retain == retain_e::yes)
+			return client::error::retain_not_available;
+
+		auto payload_format_ind = props[prop::payload_format_indicator]
+			.value_or(default_payload_format_ind);
+		if (
+			payload_format_ind == 1 &&
+			validate_mqtt_utf8(payload) != validation_result::valid
+		)
+			return client::error::malformed_packet;
+
+		return validate_props(props);
+	}
+
+	error_code validate_props(const publish_props& props) const {
+		constexpr uint16_t default_topic_alias_max = 0;
+
 		auto topic_alias = props[prop::topic_alias];
 		if (topic_alias) {
-			auto topic_alias_max = topic_alias_max_opt.value_or(0);
+			auto topic_alias_max = _svc_ptr->connack_prop(prop::topic_alias_maximum)
+				.value_or(default_topic_alias_max);
 
 			if (topic_alias_max == 0 || *topic_alias > topic_alias_max)
 				return client::error::topic_alias_maximum_reached;
@@ -370,7 +398,8 @@ private:
 		auto subscription_identifier = props[prop::subscription_identifier];
 		if (
 			subscription_identifier &&
-			(*subscription_identifier < 1 || *subscription_identifier > 268'435'455)
+			(*subscription_identifier < min_subscription_identifier ||
+			*subscription_identifier > max_subscription_identifier)
 		)
 			return client::error::malformed_packet;
 
@@ -382,37 +411,6 @@ private:
 			return client::error::malformed_packet;
 
 		return error_code {};
-	}
-
-	error_code validate_publish(
-		const std::string& topic, const std::string& payload,
-		retain_e retain, const publish_props& props
-	) {
-		if (validate_topic_name(topic) != validation_result::valid)
-			return client::error::invalid_topic;
-
-		const auto& [max_qos_opt, retain_available_opt, topic_alias_max_opt] =
-			_svc_ptr->connack_props(
-				prop::maximum_qos, prop::retain_available,
-				prop::topic_alias_maximum
-			);
-		auto max_qos = max_qos_opt.value_or(2);
-		auto retain_available = retain_available_opt.value_or(1);
-
-		if (uint8_t(qos_type) > max_qos)
-			return client::error::qos_not_supported;
-
-		if (retain_available == 0 && retain == retain_e::yes)
-			return client::error::retain_not_available;
-
-		auto payload_format = props[prop::payload_format_indicator].value_or(0);
-		if (
-			payload_format == 1 &&
-			validate_mqtt_utf8(payload) != validation_result::valid
-		)
-			return client::error::malformed_packet;
-
-		return validate_props(props, topic_alias_max_opt);
 	}
 
 	void on_malformed_packet(const std::string& reason) {
@@ -436,7 +434,7 @@ private:
 		qos_e q = qos_type,
 		std::enable_if_t<q == qos_e::at_most_once, bool> = true
 	>
-	void complete_post(error_code ec) {
+	void complete_post(error_code ec, uint16_t) {
 		_handler.complete_post(ec);
 	}
 
@@ -464,7 +462,9 @@ private:
 			bool
 		> = true
 	>
-	void complete_post(error_code ec) {
+	void complete_post(error_code ec, uint16_t packet_id) {
+		if (packet_id != 0)
+			_svc_ptr->free_pid(packet_id, false);
 		_handler.complete_post(ec, reason_codes::empty, Props {});
 	}
 };

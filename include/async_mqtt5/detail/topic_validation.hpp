@@ -7,6 +7,11 @@
 
 namespace async_mqtt5::detail {
 
+static constexpr uint32_t min_subscription_identifier = 1;
+static constexpr uint32_t max_subscription_identifier = 268'435'455;
+
+static constexpr std::string_view shared_sub_id = "$share/";
+
 inline bool is_utf8_no_wildcard(validation_result result) {
 	return result == validation_result::valid;
 }
@@ -72,8 +77,6 @@ inline validation_result validate_topic_filter(std::string_view str) {
 inline validation_result validate_shared_topic_filter(
 	std::string_view str, bool wildcard_allowed = true
 ) {
-	constexpr std::string_view shared_sub_id = "$share/";
-
 	if (!is_valid_topic_size(str.size()))
 		return validation_result::invalid;
 

@@ -2,7 +2,6 @@
 #define ASYNC_MQTT5_DISCONNECT_OP_HPP
 
 #include <boost/asio/consign.hpp>
-#include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/types.hpp>
@@ -10,6 +9,7 @@
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/detail/topic_validation.hpp>
 #include <async_mqtt5/detail/utf8_mqtt.hpp>
 
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
@@ -71,12 +71,22 @@ public:
 			static_cast<uint8_t>(_context.reason_code), _context.props
 		);
 
-		asio::dispatch(asio::prepend(std::move(*this), std::move(disconnect)));
+		auto max_packet_size = _svc_ptr->connack_prop(
+			prop::maximum_packet_size
+		).value_or(default_max_packet_size);
+		if (disconnect.size() > max_packet_size)
+			// drop properties
+			return send_disconnect(control_packet<allocator_type>::of(
+				no_pid, get_allocator(),
+				encoders::encode_disconnect,
+				static_cast<uint8_t>(_context.reason_code), disconnect_props {}
+			));
+
+		send_disconnect(std::move(disconnect));
 	}
 
-	void operator()(control_packet<allocator_type> disconnect) {
+	void send_disconnect(control_packet<allocator_type> disconnect) {
 		const auto& wire_data = disconnect.wire_data();
-
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::terminal,

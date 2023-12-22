@@ -131,6 +131,36 @@ BOOST_AUTO_TEST_CASE(test_malformed_packet) {
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
+BOOST_AUTO_TEST_CASE(test_packet_too_large) {
+	connack_props props;
+	props[prop::maximum_packet_size] = 10;
+
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	asio::io_context ioc;
+	using client_service_type = test::test_service<asio::ip::tcp::socket>;
+	auto svc_ptr = std::make_shared<client_service_type>(
+		ioc.get_executor(), std::move(props)
+	);
+
+	auto handler = [&handlers_called](error_code ec, reason_code rc, puback_props) {
+		++handlers_called;
+		BOOST_CHECK(ec == client::error::packet_too_large);
+		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
+	};
+
+	detail::publish_send_op<
+		client_service_type, decltype(handler), qos_e::at_least_once
+	> { svc_ptr, std::move(handler) }
+	.perform(
+		"test", "payload", retain_e::no, {}
+	);
+
+	ioc.run();
+	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+}
+
 BOOST_AUTO_TEST_CASE(test_qos_not_supported) {
 	connack_props props;
 	props[prop::maximum_qos] = uint8_t(0);

@@ -285,11 +285,7 @@ public:
 			return complete(client::error::malformed_packet);
 		const auto& [session_present, reason_code, ca_props] = *rv;
 
-		{
-			std::unique_lock writer_lock(_ctx.ca_mtx);
-			_ctx.ca_props = ca_props;
-		}
-
+		_ctx.ca_props = ca_props;
 		_ctx.state.session_present(session_present);
 
 		//  Unexpected result handling:
@@ -355,7 +351,7 @@ public:
 
 		const auto& wire_data = packet.wire_data();
 
-		async_mqtt5::detail::async_write(
+		detail::async_write(
 			_stream, asio::buffer(wire_data),
 			asio::consign(
 				asio::prepend(std::move(*this), on_send_auth{}),
