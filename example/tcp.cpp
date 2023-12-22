@@ -17,9 +17,13 @@ void publish_qos0_tcp() {
 	using client_type = mqtt_client<stream_type>;
 	client_type c(ioc, "");
 
+	connect_props props;
+	props[prop::maximum_packet_size] = 1024;
+
 	c.credentials("test-qos0-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!",qos_e::at_least_once })
+		.connect_properties(std::move(props))
 		.run();
 
 	c.async_publish<qos_e::at_most_once>(

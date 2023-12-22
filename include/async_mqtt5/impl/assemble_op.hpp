@@ -52,7 +52,7 @@ class assemble_op {
 
 	struct on_read {};
 
-	static constexpr size_t max_packet_size = default_max_packet_size;
+	static constexpr size_t max_recv_size = 65'536;
 
 	client_service& _svc;
 	handler_type _handler;
@@ -88,8 +88,9 @@ public:
 		_read_buff.erase(
 			_read_buff.cbegin(), _data_span.first()
 		);
-		// TODO: respect max packet size from CONNACK
-		_read_buff.resize(max_packet_size);
+		_read_buff.resize(
+			_svc.connect_prop(prop::maximum_packet_size).value_or(max_recv_size)
+		);
 		_data_span = {
 			_read_buff.cbegin(),
 			_read_buff.cbegin() + _data_span.size()
@@ -155,8 +156,8 @@ public:
 			return complete(client::error::malformed_packet, 0, {}, {});
 		}
 
-		// TODO: respect max packet size which could be dinamically set by the broker
-		if (*varlen > max_packet_size - std::distance(_data_span.first(), first))
+		auto recv_size = _svc.connect_prop(prop::maximum_packet_size).value_or(max_recv_size);
+		if (*varlen > recv_size - std::distance(_data_span.first(), first))
 			return complete(client::error::malformed_packet, 0, {}, {});
 
 		if (std::distance(first, _data_span.last()) < *varlen)

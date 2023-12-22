@@ -9,7 +9,8 @@
 
 namespace async_mqtt5 {
 
-static constexpr int32_t default_max_packet_size = 65'536;
+/* max varint number (268'435'455) + fixed header size (1 + 4) */
+static constexpr int32_t default_max_send_size = 268'435'460;
 
 enum class control_code_e : std::uint8_t {
 	no_packet = 0b00000000, // 0

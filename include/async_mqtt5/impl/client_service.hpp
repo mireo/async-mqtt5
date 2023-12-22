@@ -70,6 +70,15 @@ public:
 		return _mqtt_context.ca_props;
 	}
 
+	template <typename Prop>
+	const auto& connect_prop(Prop p) const {
+		return _mqtt_context.co_props[p];
+	}
+
+	void connect_props(connect_props props) {
+		_mqtt_context.co_props = std::move(props);
+	}
+
 	void credentials(
 		std::string client_id,
 		std::string username = "", std::string password = ""
@@ -120,6 +129,15 @@ public:
 
 	const auto& connack_props() const {
 		return _mqtt_context.ca_props;
+	}
+
+	template <typename Prop>
+	const auto& connect_prop(Prop p) const {
+		return _mqtt_context.co_props[p];
+	}
+
+	void connect_props(connect_props props) {
+		_mqtt_context.co_props = std::move(props);
 	}
 
 	void credentials(
@@ -248,6 +266,15 @@ public:
 			);
 	}
 
+	template <typename Prop>
+	const auto& connect_prop(Prop p) const {
+		return _stream_context.connect_prop(p);
+	}
+
+	void connect_props(connect_props props) {
+		if (!is_open())
+			_stream_context.connect_props(std::move(props));
+	}
 
 	template <typename Prop>
 	const auto& connack_prop(Prop p) const {

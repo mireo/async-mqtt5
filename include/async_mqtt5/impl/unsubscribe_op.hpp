@@ -77,10 +77,10 @@ public:
 
 		auto max_packet_size = _svc_ptr->connack_prop(
 			prop::maximum_packet_size
-		).value_or(default_max_packet_size);
+		).value_or(default_max_send_size);
 		if (unsubscribe.size() > max_packet_size)
 			return complete_post(
-			client::error::packet_too_large, packet_id, topics.size()
+				client::error::packet_too_large, packet_id, topics.size()
 		);
 
 		send_unsubscribe(std::move(unsubscribe));

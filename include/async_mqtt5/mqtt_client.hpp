@@ -274,6 +274,11 @@ public:
 		return *this;
 	}
 
+	mqtt_client& connect_properties(connect_props props) {
+		_svc_ptr->connect_props(std::move(props));
+		return *this;
+	}
+
 	/**
 	 * \brief Initiates [mqttlink 3901257 Re-authentication]
 	 * using the authenticator given in the \ref authenticator method.
