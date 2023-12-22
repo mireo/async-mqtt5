@@ -105,7 +105,7 @@ public:
 		return *this;
 	}
 
-	const std::string& wire_data() const {
+	std::string_view wire_data() const {
 		return *_packet;
 	}
 };

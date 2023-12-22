@@ -70,7 +70,7 @@ public:
 			no_pid, get_allocator(), encoders::encode_pingreq
 		);
 
-		const auto& wire_data = pingreq.wire_data();
+		auto wire_data = pingreq.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::none,

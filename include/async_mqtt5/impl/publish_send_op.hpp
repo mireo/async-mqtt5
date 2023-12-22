@@ -136,7 +136,7 @@ public:
 			return;
 		}
 
-		const auto& wire_data = publish.wire_data();
+		auto wire_data = publish.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			_serial_num,
@@ -266,7 +266,7 @@ public:
 	}
 
 	void send_pubrel(control_packet<allocator_type> pubrel, bool throttled) {
-		const auto& wire_data = pubrel.wire_data();
+		auto wire_data = pubrel.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			_serial_num,

@@ -90,7 +90,7 @@ public:
 		if (_handler.empty()) // already cancelled
 			return _svc_ptr->free_pid(unsubscribe.packet_id());
 
-		const auto& wire_data = unsubscribe.wire_data();
+		auto wire_data = unsubscribe.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::none,

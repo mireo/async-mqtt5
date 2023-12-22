@@ -86,7 +86,7 @@ public:
 	}
 
 	void send_disconnect(control_packet<allocator_type> disconnect) {
-		const auto& wire_data = disconnect.wire_data();
+		auto wire_data = disconnect.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::terminal,

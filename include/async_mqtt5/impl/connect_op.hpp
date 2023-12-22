@@ -199,7 +199,7 @@ public:
 			10u, false, _ctx.co_props, _ctx.will_msg
 		);
 
-		const auto& wire_data = packet.wire_data();
+		auto wire_data = packet.wire_data();
 
 		detail::async_write(
 			_stream, asio::buffer(wire_data),
@@ -349,7 +349,7 @@ public:
 			reason_codes::continue_authentication.value(), props
 		);
 
-		const auto& wire_data = packet.wire_data();
+		auto wire_data = packet.wire_data();
 
 		detail::async_write(
 			_stream, asio::buffer(wire_data),

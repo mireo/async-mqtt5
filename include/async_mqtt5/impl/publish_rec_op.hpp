@@ -87,7 +87,7 @@ public:
 	}
 
 	void send_puback(control_packet<allocator_type> puback) {
-		const auto& wire_data = puback.wire_data();
+		auto wire_data = puback.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::none,
@@ -106,7 +106,7 @@ public:
 	}
 
 	void send_pubrec(control_packet<allocator_type> pubrec) {
-		const auto& wire_data = pubrec.wire_data();
+		auto wire_data = pubrec.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::none,
@@ -163,7 +163,7 @@ public:
 	}
 
 	void send_pubcomp(control_packet<allocator_type> pubcomp) {
-		const auto& wire_data = pubcomp.wire_data();
+		auto wire_data = pubcomp.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::none,

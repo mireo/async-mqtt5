@@ -108,7 +108,7 @@ public:
 			rc.value(), props
 		);
 
-		const auto& wire_data = packet.wire_data();
+		auto wire_data = packet.wire_data();
 
 		_svc_ptr->async_send(
 			wire_data,
