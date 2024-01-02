@@ -196,7 +196,7 @@ public:
 			encoders::encode_connect,
 			_ctx.creds.client_id,
 			_ctx.creds.username, _ctx.creds.password,
-			10u, false, _ctx.co_props, _ctx.will_msg
+			uint16_t(10), false, _ctx.co_props, _ctx.will_msg
 		);
 
 		auto wire_data = packet.wire_data();
@@ -204,7 +204,7 @@ public:
 		detail::async_write(
 			_stream, asio::buffer(wire_data),
 			asio::consign(
-				asio::prepend(std::move(*this), on_send_connect{}),
+				asio::prepend(std::move(*this), on_send_connect {}),
 				std::move(packet)
 			)
 		);

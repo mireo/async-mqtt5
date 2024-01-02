@@ -71,9 +71,10 @@ public:
 			static_cast<uint8_t>(_context.reason_code), _context.props
 		);
 
-		auto max_packet_size = _svc_ptr->connack_prop(
-			prop::maximum_packet_size
-		).value_or(default_max_send_size);
+		auto max_packet_size = static_cast<size_t>(
+			_svc_ptr->connack_prop(prop::maximum_packet_size)
+				.value_or(default_max_send_size)
+		);
 		if (disconnect.size() > max_packet_size)
 			// drop properties
 			return send_disconnect(control_packet<allocator_type>::of(

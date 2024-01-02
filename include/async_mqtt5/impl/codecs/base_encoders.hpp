@@ -16,6 +16,8 @@ namespace async_mqtt5::encoders {
 
 namespace basic {
 
+using varint_t = int*;
+
 inline void to_variable_bytes(std::string& s, int32_t val) {
 	if (val > 0xfffffff) return;
 	while (val > 127) {
@@ -132,7 +134,7 @@ public:
 private:
 	template <typename U>
 	static size_t val_length(U&& val) {
-		if constexpr (std::is_same_v<Repr, intptr_t>)
+		if constexpr (std::is_same_v<Repr, varint_t>)
 			return variable_length(int32_t(val));
 		else
 			return sizeof(Repr);
@@ -141,7 +143,7 @@ private:
 	template <typename U>
 	static std::string& encode_val(std::string& s, U&& val) {
 		using namespace boost::endian;
-		if constexpr (std::is_same_v<Repr, intptr_t>) {
+		if constexpr (std::is_same_v<Repr, varint_t>) {
 			to_variable_bytes(s, int32_t(val));
 			return s;
 		}
@@ -179,10 +181,10 @@ public:
 	}
 };
 
-constexpr auto byte_ = int_def<uint8_t>{};
-constexpr auto int16_ = int_def<uint16_t>{};
-constexpr auto int32_ = int_def<uint32_t>{};
-constexpr auto varlen_ = int_def<intptr_t>{};
+constexpr auto byte_ = int_def<uint8_t> {};
+constexpr auto int16_ = int_def<uint16_t> {};
+constexpr auto int32_ = int_def<uint32_t> {};
+constexpr auto varlen_ = int_def<varint_t> {};
 
 
 template <typename T>
@@ -273,9 +275,9 @@ public:
 
 using utf8_def = array_def<true>;
 
-constexpr auto utf8_ = utf8_def{};
-constexpr auto binary_ = array_def<true>{}; // for now
-constexpr auto verbatim_ = array_def<false>{};
+constexpr auto utf8_ = utf8_def {};
+constexpr auto binary_ = array_def<true> {}; // for now
+constexpr auto verbatim_ = array_def<false> {};
 
 
 template <typename T, typename U>
@@ -368,7 +370,7 @@ using encoder_types = std::tuple<
 	prop_encoder_type<pp::content_type_t, basic::utf8_def>,
 	prop_encoder_type<pp::response_topic_t, basic::utf8_def>,
 	prop_encoder_type<pp::correlation_data_t, basic::utf8_def>,
-	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<intptr_t>>, // varint
+	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<basic::varint_t>>, // varint
 	prop_encoder_type<pp::session_expiry_interval_t, basic::int_def<int32_t>>,
 	prop_encoder_type<pp::assigned_client_identifier_t, basic::utf8_def>,
 	prop_encoder_type<pp::server_keep_alive_t, basic::int_def<int16_t>>,
@@ -488,7 +490,7 @@ class props_val : public basic::encoder {
 	static auto to_prop_vals(const pp::properties<Ps...>& props) {
 		return std::make_tuple(
 			to_prop_val<Ps>(
-				props[std::integral_constant<pp::property_type, Ps>{}]
+				props[std::integral_constant<pp::property_type, Ps> {}]
 			)...
 		);
 	}
@@ -554,8 +556,8 @@ public:
 	}
 };
 
-constexpr auto props_ = props_def<false>{};
-constexpr auto props_may_omit_ = props_def<true>{};
+constexpr auto props_ = props_def<false> {};
+constexpr auto props_may_omit_ = props_def<true> {};
 
 } // end namespace prop
 

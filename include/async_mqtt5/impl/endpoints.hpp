@@ -60,7 +60,7 @@ public:
 
 		_owner._current_host++;
 
-		if (_owner._current_host + 1 > _owner._servers.size()) {
+		if (_owner._current_host + 1 > static_cast<int>(_owner._servers.size())) {
 			_owner._current_host = -1;
 			return complete_post(asio::error::try_again, {}, {});
 		}

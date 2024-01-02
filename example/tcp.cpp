@@ -18,7 +18,7 @@ void publish_qos0_tcp() {
 	client_type c(ioc, "");
 
 	connect_props props;
-	props[prop::maximum_packet_size] = int16_t(1024);
+	props[prop::maximum_packet_size] = 1024;
 
 	c.credentials("test-qos0-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)

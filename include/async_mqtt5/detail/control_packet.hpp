@@ -77,7 +77,7 @@ public:
 		EncodeFun&& encode, Args&&... args
 	) {
 		return control_packet {
-			alloc, 0, encode(std::forward<Args>(args)...)
+			alloc, uint16_t(0), encode(std::forward<Args>(args)...)
 		};
 	}
 

@@ -120,8 +120,10 @@ public:
 			qos_type, retain, dup_e::no, props
 		);
 
-		auto max_packet_size = _svc_ptr->connack_prop(prop::maximum_packet_size)
-			.value_or(default_max_send_size);
+		auto max_packet_size = static_cast<size_t>(
+			_svc_ptr->connack_prop(prop::maximum_packet_size)
+				.value_or(default_max_send_size)
+		);
 		if (publish.size() > max_packet_size)
 			return complete_post(client::error::packet_too_large, packet_id);
 
