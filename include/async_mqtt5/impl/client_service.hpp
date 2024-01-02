@@ -212,7 +212,7 @@ public:
 
 	client_service(
 		const executor_type& ex,
-		const std::string& cnf,
+		const std::string& /* cnf */,
 		tls_context_type tls_context = {}
 	) :
 		_stream_context(std::move(tls_context)),

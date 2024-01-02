@@ -86,6 +86,7 @@ void cancel_async_publish() {
 		"topic", "payload", retain_e::yes, {},
 		[&handlers_called](error_code ec, reason_code rc, puback_props) {
 			BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
+			BOOST_CHECK_EQUAL(rc, reason_codes::empty);
 			handlers_called++;
 		}
 	);
@@ -95,6 +96,7 @@ void cancel_async_publish() {
 		"topic", "payload", retain_e::yes, {},
 		[&handlers_called](error_code ec, reason_code rc, pubcomp_props) {
 			BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
+			BOOST_CHECK_EQUAL(rc, reason_codes::empty);
 			handlers_called++;
 		}
 	);

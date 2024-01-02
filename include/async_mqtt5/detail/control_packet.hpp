@@ -125,7 +125,7 @@ class packet_id_allocator {
 
 public:
 	packet_id_allocator() {
-		_free_ids.emplace_back(MAX_PACKET_ID, 0);
+		_free_ids.emplace_back(MAX_PACKET_ID, uint16_t(0));
 	}
 
 	uint16_t allocate() {

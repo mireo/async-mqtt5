@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(clear_waiting_on_pubrel) {
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
 
 	decoders::publish_message pub_msg = std::make_tuple(
-		"topic", 1, 0b0100, publish_props {}, "payload"
+		"topic", int16_t(1), uint8_t(0b0100), publish_props {}, "payload"
 	);
 
 	detail::publish_rec_op<client_service_type> { svc_ptr }.perform(pub_msg);

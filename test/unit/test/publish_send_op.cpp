@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(test_invalid_topic_names) {
 		"", "+", "#",
 		"invalid+", "invalid#", "invalid/#", "invalid/+"
 	};
-	int expected_handlers_called = invalid_topics.size();
+	int expected_handlers_called = static_cast<int>(invalid_topics.size());
 	int handlers_called = 0;
 
 	asio::io_context ioc;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_malformed_packet) {
 		out_of_range_subid_props
 	};
 
-	int expected_handlers_called = testing_props.size();
+	int expected_handlers_called = static_cast<int>(testing_props.size());
 	int handlers_called = 0;
 
 	asio::io_context ioc;
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(test_topic_alias_maximum) {
 		ta_allowed_props, connack_props {} /* not allowed */
 	};
 
-	int expected_handlers_called = test_props.size();
+	int expected_handlers_called = static_cast<int>(test_props.size());
 	int handlers_called = 0;
 
 	asio::io_context ioc;

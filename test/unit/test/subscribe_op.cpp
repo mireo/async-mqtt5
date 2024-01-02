@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(test_invalid_topic_filters) {
 		"", "+topic", "#topic", "some/#/topic", "topic+",
 		"$share//topic"
 	};
-	const int expected_handlers_called = invalid_topics.size();
+	const int expected_handlers_called = static_cast<int>(invalid_topics.size());
 	int handlers_called = 0;
 
 	asio::io_context ioc;
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(test_wildcard_subscriptions_not_supported) {
 	connack_props props;
 	props[prop::wildcard_subscription_available] = uint8_t(0);
 
-	int expected_handlers_called = wildcard_topics.size();
+	int expected_handlers_called = static_cast<int>(wildcard_topics.size());
 	int handlers_called = 0;
 
 	asio::io_context ioc;

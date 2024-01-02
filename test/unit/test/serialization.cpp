@@ -58,9 +58,9 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 
 BOOST_AUTO_TEST_CASE(test_connack) {
 	// testing variables
-	bool session_present = true;
+	uint8_t session_present = 1;
 	uint8_t reason_code = 0x89;
-	bool wildcard_sub = true;
+	uint8_t wildcard_sub = 1;
 
 	connack_props cap;
 	cap[prop::wildcard_subscription_available] = wildcard_sub;

@@ -88,7 +88,7 @@ private:
 		switch (code) {
 			case control_code_e::publish: {
 				auto msg = decoders::decode_publish(
-					control_byte, std::distance(first, last), first
+					control_byte, static_cast<uint32_t>(std::distance(first, last)), first
 				);
 				if (!msg.has_value())
 					return on_malformed_packet(
@@ -105,7 +105,7 @@ private:
 			break;
 			case control_code_e::auth: {
 				auto rv = decoders::decode_auth(
-					std::distance(first, last), first
+					static_cast<uint32_t>(std::distance(first, last)), first
 				);
 				if (!rv.has_value())
 					return on_malformed_packet(

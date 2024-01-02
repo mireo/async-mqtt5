@@ -131,7 +131,7 @@ public:
 			return complete(ec, packet_id, {}, {});
 
 		auto unsuback = decoders::decode_unsuback(
-			std::distance(first, last), first
+			static_cast<uint32_t>(std::distance(first, last)), first
 		);
 		if (!unsuback.has_value()) {
 			on_malformed_packet("Malformed UNSUBACK: cannot decode");

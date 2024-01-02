@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE(throttling) {
 	int handlers_called = 0;
 
 	connack_props props;
-	props[prop::receive_maximum] = 1;
+	props[prop::receive_maximum] = int16_t(1);
 
 	//packets
 	auto connect = encoders::encode_connect(

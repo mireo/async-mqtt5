@@ -205,7 +205,9 @@ public:
 				ec, reason_codes::empty, packet_id, puback_props {}
 			);
 
-		auto puback = decoders::decode_puback(std::distance(first, last), first);
+		auto puback = decoders::decode_puback(
+			static_cast<uint32_t>(std::distance(first, last)), first
+		);
 		if (!puback.has_value()) {
 			on_malformed_packet("Malformed PUBACK: cannot decode");
 			return send_publish(std::move(publish.set_dup()));
@@ -239,7 +241,9 @@ public:
 				ec, reason_codes::empty, packet_id, pubcomp_props {}
 			);
 
-		auto pubrec = decoders::decode_pubrec(std::distance(first, last), first);
+		auto pubrec = decoders::decode_pubrec(
+			static_cast<uint32_t>(std::distance(first, last)), first
+		);
 		if (!pubrec.has_value()) {
 			on_malformed_packet("Malformed PUBREC: cannot decode");
 			return send_publish(std::move(publish.set_dup()));
@@ -317,7 +321,9 @@ public:
 				ec, reason_codes::empty, packet_id, pubcomp_props {}
 			);
 
-		auto pubcomp = decoders::decode_pubcomp(std::distance(first, last), first);
+		auto pubcomp = decoders::decode_pubcomp(
+			static_cast<uint32_t>(std::distance(first, last)), first
+		);
 		if (!pubcomp.has_value()) {
 			on_malformed_packet("Malformed PUBCOMP: cannot decode");
 			return send_pubrel(std::move(pubrel), true);

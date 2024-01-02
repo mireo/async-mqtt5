@@ -141,7 +141,7 @@ public:
 		if (ec)
 			return;
 
-		auto pubrel = decoders::decode_pubrel(std::distance(first, last), first);
+		auto pubrel = decoders::decode_pubrel(static_cast<uint32_t>(std::distance(first, last)), first);
 		if (!pubrel.has_value()) {
 			on_malformed_packet("Malformed PUBREL received: cannot decode");
 			return wait_pubrel(packet_id);

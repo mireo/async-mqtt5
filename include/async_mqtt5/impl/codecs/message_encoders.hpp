@@ -351,7 +351,7 @@ inline std::string encode_pingreq() {
 		basic::flag<4>(0);
 
 	auto remaining_len_ =
-		basic::byte_(0);
+		basic::byte_(uint8_t(0));
 
 	auto ping_req_ = packet_type_ & remaining_len_;
 
@@ -364,7 +364,7 @@ inline std::string encode_pingresp() {
 		basic::flag<4>(0);
 
 	auto remaining_len_ =
-		basic::byte_(0);
+		basic::byte_(uint8_t(0));
 
 	auto ping_resp_ = packet_type_ & remaining_len_;
 

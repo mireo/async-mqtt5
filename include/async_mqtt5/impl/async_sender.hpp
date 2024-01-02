@@ -223,7 +223,7 @@ private:
 				_write_queue.begin(), _write_queue.end(),
 				[](const auto& op) { return !op.throttled(); }
 			);
-			uint16_t dist = std::distance(throttled_ptr, _write_queue.end());
+			uint16_t dist = static_cast<uint16_t>(std::distance(throttled_ptr, _write_queue.end()));
 			uint16_t throttled_num = std::min(dist, _quota);
 			_quota -= throttled_num;
 			throttled_ptr += throttled_num;

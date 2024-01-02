@@ -279,7 +279,7 @@ public:
 	}
 
 	void on_connack(byte_citer first, byte_citer last) {
-		auto packet_length = std::distance(first, last);
+		auto packet_length = static_cast<uint32_t>(std::distance(first, last));
 		auto rv = decoders::decode_connack(packet_length, first);
 		if (!rv.has_value())
 			return complete(client::error::malformed_packet);
@@ -313,7 +313,7 @@ public:
 	}
 
 	void on_auth(byte_citer first, byte_citer last) {
-		auto packet_length = std::distance(first, last);
+		auto packet_length = static_cast<uint32_t>(std::distance(first, last));
 		auto rv = decoders::decode_auth(packet_length, first);
 		if (!rv.has_value())
 			return complete(client::error::malformed_packet);

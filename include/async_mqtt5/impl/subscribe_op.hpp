@@ -134,7 +134,9 @@ public:
 		if (ec)
 			return complete(ec, packet_id, {}, {});
 
-		auto suback = decoders::decode_suback(std::distance(first, last), first);
+		auto suback = decoders::decode_suback(
+			static_cast<uint32_t>(std::distance(first, last)), first
+		);
 		if (!suback.has_value()) {
 			on_malformed_packet("Malformed SUBACK: cannot decode");
 			return send_subscribe(std::move(packet));
