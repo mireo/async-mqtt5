@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(async-mqtt5 VERSION 0.0.1 LANGUAGES NONE)
+project(async-mqtt5 VERSION 0.0.1 LANGUAGES CXX)
 
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
@@ -19,10 +19,13 @@ target_include_directories(
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
-target_compile_features(async_mqtt5 INTERFACE cxx_std_20)
+target_compile_features(async_mqtt5 INTERFACE cxx_std_17)
 
 find_package(Boost 1.82 REQUIRED)
-target_link_libraries(async_mqtt5 INTERFACE Boost::headers)
+target_link_libraries(async_mqtt5
+    INTERFACE
+    Boost::headers
+)
 
 if(NOT CMAKE_SKIP_INSTALL_RULES)
   include(cmake/install-rules.cmake)
