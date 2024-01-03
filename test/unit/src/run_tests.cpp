@@ -1,30 +1,17 @@
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include <test_common/protocol_logging.hpp>
 
-namespace {
-
-void setup_mqtt() {
+boost::unit_test::test_suite* init_tests(
+	int /*argc*/, char* /*argv*/[]
+) {
 	async_mqtt5::test::logging_enabled() = true;
-}
-
-}
-
-#ifdef BOOST_TEST_DYN_LINK
-static bool init_tests() {
-	setup_mqtt();
-	return true;
+	return nullptr;
 }
 
 int main(int argc, char* argv[]) {
 	return boost::unit_test::unit_test_main(&init_tests, argc, argv);
 }
-#else
-boost::unit_test::test_suite* init_unit_test_suite(int, char** const) {
-	setup_mqtt();
-	return nullptr;
-}
-#endif
 
 /*
 * usage: ./mqtt-test [boost test --arg=val]*
