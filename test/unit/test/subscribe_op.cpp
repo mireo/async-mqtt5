@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(test_wildcard_subscriptions_not_supported) {
 	auto svc_ptr = std::make_shared<client_service_type>(
 		ioc.get_executor(), std::move(props)
 	);
-	BOOST_ASSERT(svc_ptr->connack_prop(prop::wildcard_subscription_available) == 0);
+	BOOST_ASSERT(svc_ptr->connack_property(prop::wildcard_subscription_available) == 0);
 
 	for (const auto& topic: wildcard_topics) {
 		auto handler = [&handlers_called](error_code ec, auto, auto) {
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_shared_subscriptions_not_supported) {
 	auto svc_ptr = std::make_shared<client_service_type>(
 		ioc.get_executor(), std::move(props)
 	);
-	BOOST_ASSERT(svc_ptr->connack_prop(prop::shared_subscription_available) == 0);
+	BOOST_ASSERT(svc_ptr->connack_property(prop::shared_subscription_available) == 0);
 
 	auto handler = [&handlers_called](error_code ec, auto, auto) {
 		++handlers_called;
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(test_large_subscription_id) {
 	auto svc_ptr = std::make_shared<client_service_type>(
 		ioc.get_executor(), std::move(props)
 	);
-	BOOST_ASSERT(svc_ptr->connack_prop(prop::subscription_identifier_available) == 1);
+	BOOST_ASSERT(svc_ptr->connack_property(prop::subscription_identifier_available) == 1);
 
 	auto handler = [&handlers_called](error_code ec, auto, auto) {
 		++handlers_called;
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(test_subscription_ids_not_supported) {
 	auto svc_ptr = std::make_shared<client_service_type>(
 		ioc.get_executor(), std::move(props)
 	);
-	BOOST_ASSERT(svc_ptr->connack_prop(prop::subscription_identifier_available) == 0);
+	BOOST_ASSERT(svc_ptr->connack_property(prop::subscription_identifier_available) == 0);
 
 	auto handler = [&handlers_called](error_code ec, auto, auto) {
 		++handlers_called;

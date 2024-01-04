@@ -89,7 +89,7 @@ public:
 			_read_buff.cbegin(), _data_span.first()
 		);
 		_read_buff.resize(
-			_svc.connect_prop(prop::maximum_packet_size).value_or(max_recv_size)
+			_svc.connect_property(prop::maximum_packet_size).value_or(max_recv_size)
 		);
 		_data_span = {
 			_read_buff.cbegin(),
@@ -157,7 +157,7 @@ public:
 		}
 
 		auto recv_size = static_cast<size_t>(
-			_svc.connect_prop(prop::maximum_packet_size).value_or(max_recv_size)
+			_svc.connect_property(prop::maximum_packet_size).value_or(max_recv_size)
 		);
 		if (*varlen > recv_size - std::distance(_data_span.first(), first))
 			return complete(client::error::malformed_packet, 0, {}, {});

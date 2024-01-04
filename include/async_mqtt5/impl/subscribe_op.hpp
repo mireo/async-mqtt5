@@ -81,7 +81,7 @@ public:
 		);
 
 		auto max_packet_size = static_cast<size_t>(
-			_svc_ptr->connack_prop(prop::maximum_packet_size)
+			_svc_ptr->connack_property(prop::maximum_packet_size)
 				.value_or(default_max_send_size)
 		);
 		if (subscribe.size() > max_packet_size)
@@ -169,10 +169,10 @@ private:
 	}
 
 	error_code validate_topic(const subscribe_topic& topic) const {
-		auto wildcard_available = _svc_ptr->connack_prop(
+		auto wildcard_available = _svc_ptr->connack_property(
 			prop::wildcard_subscription_available
 		).value_or(1);
-		auto shared_available = _svc_ptr->connack_prop(
+		auto shared_available = _svc_ptr->connack_property(
 			prop::shared_subscription_available
 		).value_or(1);
 
@@ -208,7 +208,7 @@ private:
 		if (!sub_id.has_value())
 			return error_code {};
 
-		auto sub_id_available = _svc_ptr->connack_prop(
+		auto sub_id_available = _svc_ptr->connack_property(
 			prop::subscription_identifier_available
 		).value_or(1);
 

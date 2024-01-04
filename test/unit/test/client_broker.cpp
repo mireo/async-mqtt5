@@ -443,7 +443,6 @@ BOOST_AUTO_TEST_CASE(throttling) {
 
 	test::msg_exchange broker_side;
 	error_code success {};
-	error_code fail = asio::error::not_connected;
 
 	broker_side
 		.expect(connect)
@@ -546,7 +545,6 @@ BOOST_AUTO_TEST_CASE(cancel_multiple_ops) {
 
 	test::msg_exchange broker_side;
 	error_code success{};
-	error_code fail = asio::error::not_connected;
 
 	broker_side
 		.expect(connect)

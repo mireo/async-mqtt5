@@ -1,10 +1,15 @@
 #include <boost/test/unit_test.hpp>
 
+#include <string>
+#include <vector>
+
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/io_context.hpp>
 
 #include <boost/beast/websocket/stream.hpp>
+
+#include <boost/type_traits/remove_cv_ref.hpp>
 
 #include <async_mqtt5/detail/any_authenticator.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>
@@ -43,7 +48,7 @@ class bad_authenticator {
 public:
 	bad_authenticator() = default;
 
-	void async_auth(std::string data) {}
+	void async_auth(std::string /* data */) {}
 
 	std::string_view method() const {
 		return "method";
@@ -93,9 +98,28 @@ BOOST_AUTO_TEST_CASE(client_functions) {
 	mqtt_client<tcp_layer> tcp_client(ioc, "");
 	tcp_client.authenticator(good_authenticator());
 
-	std::optional<std::string> data = tcp_client.connection_property(
-		prop::authentication_data
-	);
+	connack_props ca_props;
+	ca_props.visit([&tcp_client](const auto& p, auto&) -> bool {
+		using ptype = boost::remove_cv_ref_t<decltype(p)>;
+		prop::value_type_t<ptype::value> value = tcp_client.connack_property(p);
+		return true;
+	});
+
+	connack_props ret_ca_props = tcp_client.connack_properties();
+
+	connect_props co_props;
+	co_props[prop::maximum_packet_size] = 1234;
+	tcp_client.connect_properties(std::move(co_props));
+
+	tcp_client.connect_property(prop::session_expiry_interval, 40);
+	tcp_client.connect_property(prop::receive_maximum, int16_t(10123));
+	tcp_client.connect_property(prop::maximum_packet_size, 103);
+	tcp_client.connect_property(prop::topic_alias_maximum, uint16_t(12345));
+	tcp_client.connect_property(prop::request_response_information, uint8_t(1));
+	tcp_client.connect_property(prop::request_problem_information, uint8_t(0));
+	tcp_client.connect_property(prop::user_property, std::vector<std::string> { "prop", "prop" });
+	tcp_client.connect_property(prop::authentication_method, "method");
+	tcp_client.connect_property(prop::authentication_data, "data");
 
 	asio::ssl::context ctx(asio::ssl::context::tls_client);
 	mqtt_client<

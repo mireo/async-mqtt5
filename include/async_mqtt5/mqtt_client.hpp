@@ -274,8 +274,35 @@ public:
 		return *this;
 	}
 
+	/**
+	 * \brief Assign \__CONNECT_PROPS\__ that will be sent in a \__CONNECT\__ packet.
+	 * \param props \__CONNECT_PROPS\__ sent in a \__CONNECT\__ packet.
+	 * \see See \__CONNECT_PROPS\__ for all eligible properties.
+	 */
 	mqtt_client& connect_properties(connect_props props) {
-		_svc_ptr->connect_props(std::move(props));
+		_svc_ptr->connect_properties(std::move(props));
+		return *this;
+	}
+
+	/**
+	 * \brief Assign a property that will be sent in a \__CONNECT\__ packet.
+	 * \param prop The \__CONNECT_PROPS\__ property to set.
+	 * \param value Value that will be assigned to the property.
+	 *
+	 * \par Example
+	 * \code
+	 * client.connect_property(prop::session_expiry_interval, 40); // ok
+	 * client.connect_property(prop::reason_string, "reason"); // does not compile, not a CONNECT prop!
+	 * \endcode
+	 *
+	 * \see See \__CONNECT_PROPS\__ for all eligible properties.
+	 */
+	template <prop::property_type p>
+	mqtt_client& connect_property(
+		std::integral_constant<prop::property_type, p> prop,
+		prop::value_type_t<p> value
+	) {
+		_svc_ptr->connect_property(prop) = value;
 		return *this;
 	}
 
@@ -296,21 +323,30 @@ public:
 	 * For all properties, the return type will be `std::optional` of their respective value type.
 	 * For `async_mqtt5::prop::user_property`, the return type is `std::vector<std::string>`.
 	 *
-	 * \param prop The \__CONNACK\__ property value to retrieve.
+	 * \param prop The \__CONNACK_PROPS\__ property value to retrieve.
 	 *
 	 * \par Example
 	 * \code
-	 *	std::optional<std::string> auth_method = client.connection_property(async_mqtt5::prop::authentication_method); // ok
-	 *	std::optional<std::string> c_type = client.connection_property(async_mqtt5::prop::content_type); // does not compile!
+	 *	std::optional<std::string> auth_method = client.connack_property(async_mqtt5::prop::authentication_method); // ok
+	 *	std::optional<std::string> c_type = client.connack_property(async_mqtt5::prop::content_type); // does not compile, not a CONNAK prop!
 	 * \endcode
 	 *
 	 * \see See \__CONNACK_PROPS\__ for all eligible properties.
 	 */
 	template <prop::property_type p>
-	const auto& connection_property(
-			std::integral_constant<prop::property_type, p> prop
+	const auto& connack_property(
+		std::integral_constant<prop::property_type, p> prop
 	) const {
-		return _svc_ptr->connack_prop(prop);
+		return _svc_ptr->connack_property(prop);
+	}
+
+	/**
+	 * \brief Retrieves the \__CONNACK_PROPS\__ from the last \__CONNACK\__ packet received.
+	 *
+	 * \see See \__CONNACK_PROPS\__ for all eligible properties.
+	 */
+	const connack_props& connack_properties() const {
+		return _svc_ptr->connack_properties();
 	}
 
 	/**

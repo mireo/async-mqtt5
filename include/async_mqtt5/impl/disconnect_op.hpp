@@ -72,7 +72,7 @@ public:
 		);
 
 		auto max_packet_size = static_cast<size_t>(
-			_svc_ptr->connack_prop(prop::maximum_packet_size)
+			_svc_ptr->connack_property(prop::maximum_packet_size)
 				.value_or(default_max_send_size)
 		);
 		if (disconnect.size() > max_packet_size)

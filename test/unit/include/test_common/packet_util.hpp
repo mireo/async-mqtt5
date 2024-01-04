@@ -56,6 +56,7 @@ inline std::string_view code_to_str(control_code_e code) {
 		case control_code_e::disconnect: return "DISCONNECT";
 		case control_code_e::pingreq: return "PINGREQ";
 		case control_code_e::pingresp: return "PINGRESP";
+		default: return "NO PACKET";
 	}
 	return "UNKNOWN";
 }

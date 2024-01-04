@@ -147,7 +147,7 @@ public:
 		// all the packets that require resending.
 		_write_in_progress = true;
 
-		auto new_limit = _svc._stream_context.connack_prop(prop::receive_maximum);
+		auto new_limit = _svc._stream_context.connack_property(prop::receive_maximum);
 		_limit = new_limit.value_or(MAX_LIMIT);
 		_quota = _limit;
 

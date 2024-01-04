@@ -62,20 +62,25 @@ public:
 	}
 
 	template <typename Prop>
-	const auto& connack_prop(Prop p) const {
+	const auto& connack_property(Prop p) const {
 		return _mqtt_context.ca_props[p];
 	}
 
-	const auto& connack_props() const {
+	const auto& connack_properties() const {
 		return _mqtt_context.ca_props;
 	}
 
 	template <typename Prop>
-	const auto& connect_prop(Prop p) const {
+	const auto& connect_property(Prop p) const {
 		return _mqtt_context.co_props[p];
 	}
 
-	void connect_props(connect_props props) {
+	template <typename Prop>
+	auto& connect_property(Prop p) {
+		return _mqtt_context.co_props[p];
+	}
+
+	void connect_propertiess(connect_props props) {
 		_mqtt_context.co_props = std::move(props);
 	}
 
@@ -123,20 +128,25 @@ public:
 	}
 
 	template <typename Prop>
-	const auto& connack_prop(Prop p) const {
+	const auto& connack_property(Prop p) const {
 		return _mqtt_context.ca_props[p];
 	}
 
-	const auto& connack_props() const {
+	const auto& connack_properties() const {
 		return _mqtt_context.ca_props;
 	}
 
 	template <typename Prop>
-	const auto& connect_prop(Prop p) const {
+	const auto& connect_property(Prop p) const {
 		return _mqtt_context.co_props[p];
 	}
 
-	void connect_props(connect_props props) {
+	template <typename Prop>
+	auto& connect_property(Prop p) {
+		return _mqtt_context.co_props[p];
+	}
+
+	void connect_properties(connect_props props) {
 		_mqtt_context.co_props = std::move(props);
 	}
 
@@ -267,22 +277,27 @@ public:
 	}
 
 	template <typename Prop>
-	const auto& connect_prop(Prop p) const {
-		return _stream_context.connect_prop(p);
-	}
-
-	void connect_props(connect_props props) {
-		if (!is_open())
-			_stream_context.connect_props(std::move(props));
+	const auto& connect_property(Prop p) const {
+		return _stream_context.connect_property(p);
 	}
 
 	template <typename Prop>
-	const auto& connack_prop(Prop p) const {
-		return _stream_context.connack_prop(p);
+	auto& connect_property(Prop p) {
+		return _stream_context.connect_property(p);
 	}
 
-	const auto& connack_props() const {
-		return _stream_context.connack_props();
+	void connect_properties(connect_props props) {
+		if (!is_open())
+			_stream_context.connect_properties(std::move(props));
+	}
+
+	template <typename Prop>
+	const auto& connack_property(Prop p) const {
+		return _stream_context.connack_property(p);
+	}
+
+	const auto& connack_properties() const {
+		return _stream_context.connack_properties();
 	}
 
 	void run() {

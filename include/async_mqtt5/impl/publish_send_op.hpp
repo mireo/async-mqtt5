@@ -121,7 +121,7 @@ public:
 		);
 
 		auto max_packet_size = static_cast<size_t>(
-			_svc_ptr->connack_prop(prop::maximum_packet_size)
+			_svc_ptr->connack_property(prop::maximum_packet_size)
 				.value_or(default_max_send_size)
 		);
 		if (publish.size() > max_packet_size)
@@ -355,9 +355,9 @@ private:
 		if (validate_topic_name(topic) != validation_result::valid)
 			return client::error::invalid_topic;
 
-		auto max_qos = _svc_ptr->connack_prop(prop::maximum_qos)
+		auto max_qos = _svc_ptr->connack_property(prop::maximum_qos)
 			.value_or(default_maximum_qos);
-		auto retain_available = _svc_ptr->connack_prop(prop::retain_available)
+		auto retain_available = _svc_ptr->connack_property(prop::retain_available)
 			.value_or(default_retain_available);
 
 		if (uint8_t(qos_type) > max_qos)
@@ -382,7 +382,7 @@ private:
 
 		auto topic_alias = props[prop::topic_alias];
 		if (topic_alias) {
-			auto topic_alias_max = _svc_ptr->connack_prop(prop::topic_alias_maximum)
+			auto topic_alias_max = _svc_ptr->connack_property(prop::topic_alias_maximum)
 				.value_or(default_topic_alias_max);
 
 			if (topic_alias_max == 0 || *topic_alias > topic_alias_max)
