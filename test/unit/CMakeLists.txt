@@ -27,7 +27,7 @@ target_include_directories(mqtt-test PRIVATE include)
 target_compile_features(mqtt-test PRIVATE cxx_std_17)
 target_compile_definitions(mqtt-test PRIVATE BOOST_TEST_NO_MAIN=1)
 
-find_package(OpenSSL)
+find_package(OpenSSL REQUIRED)
 target_link_libraries(mqtt-test PRIVATE Async::MQTT5 OpenSSL::SSL)
 
 add_test(NAME mqtt-test COMMAND mqtt-test)

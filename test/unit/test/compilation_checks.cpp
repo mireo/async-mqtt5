@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(client_functions) {
 	connack_props ca_props;
 	ca_props.visit([&tcp_client](const auto& p, auto&) -> bool {
 		using ptype = boost::remove_cv_ref_t<decltype(p)>;
-		prop::value_type_t<ptype::value> value = tcp_client.connack_property(p);
+		[[maybe_unused]] prop::value_type_t<ptype::value> value = tcp_client.connack_property(p);
 		return true;
 	});
 
