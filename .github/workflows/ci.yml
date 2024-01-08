@@ -9,6 +9,7 @@ env:
 jobs:
   posix:
     name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
+
     defaults:
       run:
         shell: bash
@@ -17,14 +18,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - toolset: g++-11
-            compiler: g++-11
-            install: g++-11
+          - toolset: g++-10
+            compiler: g++-10
+            install: g++-10
             os: ubuntu-latest
             container: ubuntu:22.04
-            cxxstd: '17'
             build-type: 'Release'
-            cxxflags: '-Wall -Wextra'
+            cxxstd: 17
+            cxxflags: ''
             ldflags: ''
 
           - toolset: g++-12
@@ -32,9 +33,9 @@ jobs:
             install: g++-12
             os: ubuntu-latest
             container: ubuntu:22.04
-            cxxstd: '20'
             build-type: 'Release'
-            cxxflags: '-Wall -Wextra'
+            cxxstd: 17
+            cxxflags: ''
             ldflags: ''
 
           - toolset: clang++-12
@@ -42,9 +43,9 @@ jobs:
             install: clang++-12
             os: ubuntu-latest
             container: ubuntu:22.04
-            cxxstd: '17'
             build-type: 'Release'
-            cxxflags: '-Wall -Wextra -fdeclspec'
+            cxxstd: 17
+            cxxflags: '-fdeclspec'
             ldflags: ''
 
           - toolset: clang++-14-libc++-14
@@ -52,19 +53,9 @@ jobs:
             install: 'clang++-14 libc++-14-dev libc++abi-14-dev'
             os: ubuntu-latest
             container: ubuntu:22.04
-            cxxstd: '17'
             build-type: 'Release'
-            cxxflags: '-Wall -Wextra -stdlib=libc++'
-            ldflags: '-lc++'
-
-          - toolset: clang++-14-libc++-14
-            compiler: clang++-14
-            install: 'clang++-14 libc++-14-dev libc++abi-14-dev'
-            os: ubuntu-latest
-            container: ubuntu:22.04
-            cxxstd: '20'
-            build-type: 'Release'
-            cxxflags: '-Wall -Wextra -stdlib=libc++'
+            cxxstd: 17
+            cxxflags: '-stdlib=libc++'
             ldflags: '-lc++'
 
           - toolset: clang++-15
@@ -72,16 +63,16 @@ jobs:
             install: clang++-15
             os: ubuntu-latest
             container: ubuntu:22.04
-            cxxstd: '20'
             build-type: 'Release'
-            cxxflags: '-Wall -Wextra -fdeclspec'
+            cxxstd: 17
+            cxxflags: '-fdeclspec'
             ldflags: ''
 
     runs-on: ${{ matrix.os }}
-    container: ${{matrix.container}}
+    container: ${{ matrix.container }}
     env:
-      CXXFLAGS: ${{matrix.cxxflags}} -Wall -Wextra
-      LDFLAGS:  ${{matrix.ldflags}}
+      CXXFLAGS: ${{ matrix.cxxflags }} -Wall -Wextra -std=c++17
+      LDFLAGS:  ${{ matrix.ldflags }}
       CMAKE_BUILD_PARALLEL_LEVEL: 4
 
     steps:
@@ -98,36 +89,27 @@ jobs:
         run: sudo apt-get install -y ${{ matrix.install }}
 
       - name: Install Boost
-        uses: MarkusJx/install-boost@v2.4.1
+        uses: MarkusJx/install-boost@v2.4.4
         id: install-boost
         with:
           boost_version: 1.82.0
           platform_version: 22.04
 
-      # try header only instead of using prebuilt binaries
-      # - name: Download Boost
-      #   run: |
-      #     wget https://boostorg.jfrog.io/artifactory/main/release/${{env.BOOST_VERSION}}/source/boost_${{env.BOOST_DIR_VER_NAME}}.tar.gz
-      #     tar xzf boost_${{env.BOOST_DIR_VER_NAME}}.tar.gz
-      #     mkdir boost
-      #     mv boost_${{env.BOOST_DIR_VER_NAME}}/boost boost
-      #     rm -rf boost_${{env.BOOST_DIR_VER_NAME}} boost_${{env.BOOST_DIR_VER_NAME}}.tar.gz
-
-      - name: Run CMake
+      - name: Setup library
         run: |
-          cmake -S . -B build/${{matrix.compiler}} \
-          -DCMAKE_CXX_COMPILER="${{matrix.compiler}}" -DCMAKE_CXX_FLAGS="${{env.CXXFLAGS}}" -DCMAKE_PREFIX_PATH="build/${{matrix.compiler}}"
-          sudo cmake --install build/${{matrix.compiler}}
+          cmake -S . -B build/${{ matrix.compiler }} -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}"
+          sudo cmake --install build/${{ matrix.compiler }}
         env:
-          BOOST_ROOT: ${{steps.install-boost.outputs.BOOST_ROOT}}
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
       - name: Build tests
         run: |
-          cmake -S test/unit -B test/unit/build/${{matrix.compiler}} \
-          -DCMAKE_CXX_COMPILER="${{matrix.compiler}}" -DCMAKE_CXX_FLAGS="${{env.CXXFLAGS}}" -DCMAKE_PREFIX_PATH="test/unit/build/${{matrix.compiler}}"
-          cmake --build test/unit/build/${{matrix.compiler}}
+          cmake -S test/unit -B test/unit/build/${{ matrix.compiler }} \
+          -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" \
+          -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}"
+          cmake --build test/unit/build/${{ matrix.compiler }}
         env:
-          BOOST_ROOT: ${{steps.install-boost.outputs.BOOST_ROOT}}
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
       - name: Run tests
-        run: ctest --test-dir test/unit/build/${{matrix.compiler}} --output-on-failure --no-tests=error
+        run: ./test/unit/build/${{ matrix.compiler }}/mqtt-test --log_level=test_suite
