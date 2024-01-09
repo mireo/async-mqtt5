@@ -27,6 +27,7 @@ BOOST_AUTO_TEST_CASE(clear_waiting_on_pubrel) {
 	asio::io_context ioc;
 	using client_service_type = test::test_service<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
+	svc_ptr->open_stream();
 
 	decoders::publish_message pub_msg = std::make_tuple(
 		"topic", int16_t(1), uint8_t(0b0100), publish_props {}, "payload"

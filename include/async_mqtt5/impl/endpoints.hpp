@@ -36,9 +36,9 @@ public:
 	resolve_op(resolve_op&&) noexcept = default;
 	resolve_op(const resolve_op&) = delete;
 
-	using executor_type = typename Owner::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _owner.get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
@@ -104,20 +104,14 @@ private:
 	void complete(error_code ec, epoints eps, authority_path ap) {
 		get_cancellation_slot().clear();
 
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(
-				std::move(_handler), ec,
-				std::move(eps), std::move(ap)
-			)
-		);
+		std::move(_handler)(ec, std::move(eps), std::move(ap));
 	}
 
 	void complete_post(error_code ec, epoints eps, authority_path ap) {
 		get_cancellation_slot().clear();
 
 		asio::post(
-			get_executor(),
+			_owner.get_executor(),
 			asio::prepend(
 				std::move(_handler), ec,
 				std::move(eps), std::move(ap)

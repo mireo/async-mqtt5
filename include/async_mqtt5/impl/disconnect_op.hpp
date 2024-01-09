@@ -44,15 +44,15 @@ public:
 	) :
 		_svc_ptr(svc_ptr),
 		_context(std::move(context)),
-		_handler(std::move(handler), get_executor())
+		_handler(std::move(handler), _svc_ptr->get_executor())
 	{}
 
 	disconnect_op(disconnect_op&&) noexcept = default;
 	disconnect_op(const disconnect_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;

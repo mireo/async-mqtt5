@@ -39,8 +39,7 @@ public:
 		CompletionToken&& token
 	) {
 		auto initiation = [this](auto handler) {
-			auto ex = asio::get_associated_executor(handler, _ex);
-			asio::post(ex,
+			asio::post(_ex,
 				asio::prepend(std::move(handler), error_code {})
 			);
 		};

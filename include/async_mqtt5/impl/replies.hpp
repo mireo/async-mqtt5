@@ -2,10 +2,12 @@
 #define ASYNC_MQTT5_REPLIES_HPP
 
 #include <boost/asio/any_completion_handler.hpp>
+#include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/consign.hpp>
-#include <boost/asio/append.hpp>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
@@ -15,33 +17,39 @@ namespace async_mqtt5::detail {
 namespace asio = boost::asio;
 
 class replies {
+public:
+	using executor_type = asio::any_io_executor;
+private:
 	using Signature = void (error_code, byte_citer, byte_citer);
 
 	static constexpr auto max_reply_time = std::chrono::seconds(20);
 
-	class handler_type : public asio::any_completion_handler<Signature> {
-		using base = asio::any_completion_handler<Signature>;
+	class reply_handler {
+		asio::any_completion_handler<Signature> _handler;
 		control_code_e _code;
 		uint16_t _packet_id;
 		std::chrono::time_point<std::chrono::system_clock> _ts;
 	public:
 		template <typename H>
-		handler_type(control_code_e code, uint16_t pid, H&& handler) :
-			base(std::forward<H>(handler)), _code(code), _packet_id(pid),
+		reply_handler(control_code_e code, uint16_t pid, H&& handler) :
+			_handler(std::forward<H>(handler)), _code(code), _packet_id(pid),
 			_ts(std::chrono::system_clock::now())
 		{}
 
-		handler_type(handler_type&& other) noexcept :
-			base(static_cast<base&&>(other)),
-			_code(other._code), _packet_id(other._packet_id), _ts(other._ts)
-		{}
+		void complete(
+			error_code ec,
+			byte_citer first = byte_citer {}, byte_citer last = byte_citer {}
+		) {
+			asio::dispatch(asio::prepend(std::move(_handler), ec, first, last));
+		}
 
-		handler_type& operator=(handler_type&& other) noexcept {
-			base::operator=(static_cast<base&&>(other));
-			_code = other._code;
-			_packet_id = other._packet_id;
-			_ts = other._ts;
-			return *this;
+		void complete_post(const executor_type& ex, error_code ec) {
+			asio::post(
+				ex,
+				asio::prepend(
+					std::move(_handler), ec, byte_citer {}, byte_citer {}
+				)
+			);
 		}
 
 		uint16_t packet_id() const noexcept {
@@ -57,7 +65,9 @@ class replies {
 		}
 	};
 
-	using handlers = std::vector<handler_type>;
+	executor_type _ex;
+
+	using handlers = std::vector<reply_handler>;
 	handlers _handlers;
 
 	struct fast_reply {
@@ -69,15 +79,16 @@ class replies {
 	fast_replies _fast_replies;
 
 public:
+	template <typename Executor>
+	replies(const Executor& ex) : _ex(ex) {}
+
 	template <typename CompletionToken>
 	decltype(auto) async_wait_reply(
 		control_code_e code, uint16_t packet_id, CompletionToken&& token
 	) {
 		auto dup_handler_ptr = find_handler(code, packet_id);
 		if (dup_handler_ptr != _handlers.end()) {
-			std::move(*dup_handler_ptr)(
-				asio::error::operation_aborted, byte_citer {}, byte_citer {}
-			);
+			dup_handler_ptr->complete_post(_ex, asio::error::operation_aborted);
 			_handlers.erase(dup_handler_ptr);
 		}
 
@@ -101,23 +112,25 @@ public:
 		_fast_replies.erase(freply);
 
 		auto initiation = [](
-			auto handler, std::unique_ptr<std::string> packet
+			auto handler, std::unique_ptr<std::string> packet,
+			const executor_type& ex
 		) {
-			auto ex = asio::get_associated_executor(handler);
 			byte_citer first = packet->cbegin();
 			byte_citer last = packet->cend();
 
 			asio::post(
 				ex,
 				asio::consign(
-					asio::append(std::move(handler), error_code{}, first, last),
+					asio::prepend(
+						std::move(handler), error_code {}, first, last
+					),
 					std::move(packet)
 				)
 			);
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			initiation, token, std::move(fdata.packet)
+			initiation, token, std::move(fdata.packet), _ex
 		);
 	}
 
@@ -137,22 +150,19 @@ public:
 
 		auto handler = std::move(*handler_ptr);
 		_handlers.erase(handler_ptr);
-		std::move(handler)(ec, first, last);
+		handler.complete(ec, first, last);
 	}
 
 	void resend_unanswered() {
 		auto ua = std::move(_handlers);
 		for (auto& h : ua)
-			std::move(h)(asio::error::try_again, byte_citer {}, byte_citer {});
+			h.complete(asio::error::try_again);
 	}
 
 	void cancel_unanswered() {
 		auto ua = std::move(_handlers);
 		for (auto& h : ua)
-			std::move(h)(
-				asio::error::operation_aborted,
-				byte_citer {}, byte_citer {}
-			);
+			h.complete(asio::error::operation_aborted);
 	}
 
 	bool any_expired() {
@@ -172,10 +182,7 @@ public:
 	void clear_pending_pubrels() {
 		for (auto it = _handlers.begin(); it != _handlers.end();) {
 			if (it->code() == control_code_e::pubrel) {
-				std::move(*it)(
-					asio::error::operation_aborted,
-					byte_citer {}, byte_citer {}
-				);
+				it->complete(asio::error::operation_aborted);
 				it = _handlers.erase(it);
 			}
 			else

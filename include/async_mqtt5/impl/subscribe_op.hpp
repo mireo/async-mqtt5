@@ -32,11 +32,11 @@ class subscribe_op {
 
 	std::shared_ptr<client_service> _svc_ptr;
 
-	cancellable_handler<
+	using handler_type = cancellable_handler<
 		Handler,
-		typename client_service::executor_type,
-		std::tuple<std::vector<reason_code>, suback_props>
-	> _handler;
+		typename client_service::executor_type
+	>;
+	handler_type _handler;
 
 public:
 	subscribe_op(
@@ -44,18 +44,24 @@ public:
 		Handler&& handler
 	) :
 		_svc_ptr(svc_ptr),
-		_handler(std::move(handler), get_executor())
-	{}
+		_handler(std::move(handler), _svc_ptr->get_executor())
+	{
+		auto slot = asio::get_associated_cancellation_slot(_handler);
+		if (slot.is_connected())
+			slot.assign([&svc = *_svc_ptr](asio::cancellation_type_t) {
+				svc.cancel();
+			});
+	}
 
 	subscribe_op(subscribe_op&&) noexcept = default;
 	subscribe_op(const subscribe_op&) noexcept = delete;
 
-	using executor_type = typename client_service::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
@@ -93,9 +99,6 @@ public:
 	}
 
 	void send_subscribe(control_packet<allocator_type> subscribe) {
-		if (_handler.empty()) // already cancelled
-			return _svc_ptr->free_pid(subscribe.packet_id());
-
 		auto wire_data = subscribe.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
@@ -106,17 +109,25 @@ public:
 		);
 	}
 
+	void resend_subscribe(control_packet<allocator_type> subscribe) {
+		if (_handler.cancelled() != asio::cancellation_type_t::none)
+			return complete(
+				asio::error::operation_aborted, subscribe.packet_id()
+			);
+		send_subscribe(std::move(subscribe));
+	}
+
 	void operator()(
 		on_subscribe, control_packet<allocator_type> packet,
 		error_code ec
 	) {
 		if (ec == asio::error::try_again)
-			return send_subscribe(std::move(packet));
+			return resend_subscribe(std::move(packet));
 
 		auto packet_id = packet.packet_id();
 
 		if (ec)
-			return complete(ec, packet_id, {}, {});
+			return complete(ec, packet_id);
 
 		_svc_ptr->async_wait_reply(
 			control_code_e::suback, packet_id,
@@ -129,19 +140,19 @@ public:
 		error_code ec, byte_citer first, byte_citer last
 	) {
 		if (ec == asio::error::try_again) // "resend unanswered"
-			return send_subscribe(std::move(packet));
+			return resend_subscribe(std::move(packet));
 
 		uint16_t packet_id = packet.packet_id();
 
 		if (ec)
-			return complete(ec, packet_id, {}, {});
+			return complete(ec, packet_id);
 
 		auto suback = decoders::decode_suback(
 			static_cast<uint32_t>(std::distance(first, last)), first
 		);
 		if (!suback.has_value()) {
 			on_malformed_packet("Malformed SUBACK: cannot decode");
-			return send_subscribe(std::move(packet));
+			return resend_subscribe(std::move(packet));
 		}
 
 		auto& [props, reason_codes] = *suback;
@@ -247,14 +258,14 @@ private:
 		if (packet_id != 0)
 			_svc_ptr->free_pid(packet_id);
 		_handler.complete_post(
-			ec, std::vector<reason_code> { num_topics, reason_codes::empty },
+			ec, std::vector<reason_code>(num_topics, reason_codes::empty),
 			suback_props {}
 		);
 	}
 
 	void complete(
 		error_code ec, uint16_t packet_id,
-		std::vector<reason_code> reason_codes, suback_props props
+		std::vector<reason_code> reason_codes = {}, suback_props props = {}
 	) {
 		if (!_svc_ptr->subscriptions_present()) {
 			bool has_success_rc = std::any_of(

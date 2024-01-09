@@ -97,9 +97,6 @@ public:
 		};
 
 		if (cc(error_code {}, 0) == 0 && _data_span.size()) {
-			/* TODO clear read buffer on reconnect
-			* OR use dispatch instead of post here
-			*/
 			return asio::post(
 				asio::prepend(
 					std::move(*this), on_read {}, error_code {},
@@ -216,10 +213,7 @@ private:
 		error_code ec, uint8_t control_code,
 		byte_citer first, byte_citer last
 	) {
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec, control_code, first, last)
-		);
+		std::move(_handler)(ec, control_code, first, last);
 	}
 };
 

@@ -3,6 +3,7 @@
 
 #include <utility>
 
+#include <boost/asio/prepend.hpp>
 #include <boost/asio/experimental/basic_concurrent_channel.hpp>
 
 #include <async_mqtt5/detail/channel_traits.hpp>
@@ -227,6 +228,7 @@ public:
 	) :
 		_stream_context(std::move(tls_context)),
 		_stream(ex, _stream_context),
+		_replies(ex),
 		_async_sender(*this),
 		_active_span(_read_buff.cend(), _read_buff.cend()),
 		_rec_channel(ex, std::numeric_limits<size_t>::max())

@@ -2,6 +2,8 @@
 #define ASYNC_MQTT5_ASYNC_SENDER_HPP
 
 #include <boost/asio/any_completion_handler.hpp>
+#include <boost/asio/bind_allocator.hpp>
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -42,6 +44,14 @@ public:
 
 	void complete(error_code ec) {
 		std::move(_handler)(ec);
+	}
+
+	auto get_executor() {
+		return asio::get_associated_executor(_handler);
+	}
+
+	auto get_allocator() {
+		return asio::get_associated_allocator(_handler);
 	}
 
 	bool throttled() const {
@@ -93,11 +103,6 @@ class async_sender {
 
 public:
 	explicit async_sender(ClientService& svc) : _svc(svc) {}
-
-	using executor_type = typename client_service::executor_type;
-	executor_type get_executor() const noexcept {
-		return _svc.get_executor();
-	}
 
 	using allocator_type = queue_allocator_type;
 	allocator_type get_allocator() const noexcept {
@@ -223,7 +228,9 @@ private:
 				_write_queue.begin(), _write_queue.end(),
 				[](const auto& op) { return !op.throttled(); }
 			);
-			uint16_t dist = static_cast<uint16_t>(std::distance(throttled_ptr, _write_queue.end()));
+			uint16_t dist = static_cast<uint16_t>(
+				std::distance(throttled_ptr, _write_queue.end())
+			);
 			uint16_t throttled_num = std::min(dist, _quota);
 			_quota -= throttled_num;
 			throttled_ptr += throttled_num;
@@ -249,8 +256,17 @@ private:
 
 		_svc._replies.clear_fast_replies();
 
+		auto ex = write_queue.front().get_executor();
+		auto alloc = write_queue.front().get_allocator();
 		_svc._stream.async_write(
-			buffers, asio::prepend(std::ref(*this), std::move(write_queue))
+			buffers,
+			asio::bind_executor(
+				ex,
+				asio::bind_allocator(
+					alloc,
+					asio::prepend(std::ref(*this), std::move(write_queue))
+				)
+			)
 		);
 	}
 

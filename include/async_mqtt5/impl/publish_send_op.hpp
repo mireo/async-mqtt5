@@ -43,17 +43,6 @@ using on_publish_props_type = std::conditional_t<
 		>
 >;
 
-template <qos_e qos_type>
-using cancel_args = std::conditional_t<
-	qos_type == qos_e::at_most_once,
-		std::tuple<>,
-		std::conditional_t<
-			qos_type == qos_e::at_least_once,
-				std::tuple<reason_code, puback_props>,
-				std::tuple<reason_code, pubcomp_props>
-		>
->;
-
 template <typename ClientService, typename Handler, qos_e qos_type>
 class publish_send_op {
 	using client_service = ClientService;
@@ -66,11 +55,11 @@ class publish_send_op {
 
 	std::shared_ptr<client_service> _svc_ptr;
 
-	cancellable_handler<
+	using handler_type = cancellable_handler<
 		Handler,
-		typename client_service::executor_type,
-		cancel_args<qos_type>
-	> _handler;
+		typename client_service::executor_type
+	>;
+	handler_type _handler;
 
 	serial_num_t _serial_num;
 
@@ -80,18 +69,24 @@ public:
 		Handler&& handler
 	) :
 		_svc_ptr(svc_ptr),
-		_handler(std::move(handler), get_executor())
-	{}
+		_handler(std::move(handler), _svc_ptr->get_executor())
+	{
+		auto slot = asio::get_associated_cancellation_slot(_handler);
+		if (slot.is_connected())
+			slot.assign([&svc = *_svc_ptr](asio::cancellation_type_t) {
+				svc.cancel();
+			});
+	}
 
 	publish_send_op(publish_send_op&&) noexcept = default;
 	publish_send_op(const publish_send_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
-	using allocator_type = asio::associated_allocator_t<Handler>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
@@ -130,14 +125,7 @@ public:
 		send_publish(std::move(publish));
 	}
 
-
 	void send_publish(control_packet<allocator_type> publish) {
-		if (_handler.empty()) { // already cancelled
-			if constexpr (qos_type != qos_e::at_most_once)
-				_svc_ptr->free_pid(publish.packet_id());
-			return;
-		}
-
 		auto wire_data = publish.wire_data();
 		_svc_ptr->async_send(
 			wire_data,
@@ -147,12 +135,20 @@ public:
 		);
 	}
 
+	void resend_publish(control_packet<allocator_type> publish) {
+		if (_handler.cancelled() != asio::cancellation_type_t::none)
+			return complete(
+				asio::error::operation_aborted, publish.packet_id()
+			);
+		send_publish(std::move(publish));
+	}
+
 	void operator()(
 		on_publish, control_packet<allocator_type> publish,
 		error_code ec
 	) {
 		if (ec == asio::error::try_again)
-			return send_publish(std::move(publish));
+			return resend_publish(std::move(publish));
 
 		if constexpr (qos_type == qos_e::at_most_once)
 			return complete(ec);
@@ -160,31 +156,24 @@ public:
 		else {
 			auto packet_id = publish.packet_id();
 
-			if constexpr (qos_type == qos_e::at_least_once) {
-				if (ec)
-					return complete(
-						ec, reason_codes::empty, packet_id, puback_props {}
-					);
+			if (ec)
+				return complete(ec, packet_id);
+
+			if constexpr (qos_type == qos_e::at_least_once)
 				_svc_ptr->async_wait_reply(
 					control_code_e::puback, packet_id,
 					asio::prepend(
 						std::move(*this), on_puback {}, std::move(publish)
 					)
 				);
-			}
 
-			else if constexpr (qos_type == qos_e::exactly_once) {
-				if (ec)
-					return complete(
-						ec, reason_codes::empty, packet_id, pubcomp_props {}
-					);
+			else if constexpr (qos_type == qos_e::exactly_once)
 				_svc_ptr->async_wait_reply(
 					control_code_e::pubrec, packet_id,
 					asio::prepend(
 						std::move(*this), on_pubrec {}, std::move(publish)
 					)
 				);
-			}
 		}
 	}
 
@@ -198,31 +187,29 @@ public:
 		error_code ec, byte_citer first, byte_citer last
 	) {
 		if (ec == asio::error::try_again) // "resend unanswered"
-			return send_publish(std::move(publish.set_dup()));
+			return resend_publish(std::move(publish.set_dup()));
 
 		uint16_t packet_id = publish.packet_id();
 
 		if (ec)
-			return complete(
-				ec, reason_codes::empty, packet_id, puback_props {}
-			);
+			return complete(ec, packet_id);
 
 		auto puback = decoders::decode_puback(
 			static_cast<uint32_t>(std::distance(first, last)), first
 		);
 		if (!puback.has_value()) {
 			on_malformed_packet("Malformed PUBACK: cannot decode");
-			return send_publish(std::move(publish.set_dup()));
+			return resend_publish(std::move(publish.set_dup()));
 		}
 
 		auto& [reason_code, props] = *puback;
 		auto rc = to_reason_code<reason_codes::category::puback>(reason_code);
 		if (!rc) {
 			on_malformed_packet("Malformed PUBACK: invalid Reason Code");
-			return send_publish(std::move(publish.set_dup()));
+			return resend_publish(std::move(publish.set_dup()));
 		}
 
-		complete(ec, *rc, packet_id, std::move(props));
+		complete(ec, packet_id, *rc, std::move(props));
 	}
 
 	template <
@@ -234,21 +221,19 @@ public:
 		error_code ec, byte_citer first, byte_citer last
 	) {
 		if (ec == asio::error::try_again) // "resend unanswered"
-			return send_publish(std::move(publish.set_dup()));
+			return resend_publish(std::move(publish.set_dup()));
 
 		uint16_t packet_id = publish.packet_id();
 
 		if (ec)
-			return complete(
-				ec, reason_codes::empty, packet_id, pubcomp_props {}
-			);
+			return complete(ec, packet_id);
 
 		auto pubrec = decoders::decode_pubrec(
 			static_cast<uint32_t>(std::distance(first, last)), first
 		);
 		if (!pubrec.has_value()) {
 			on_malformed_packet("Malformed PUBREC: cannot decode");
-			return send_publish(std::move(publish.set_dup()));
+			return resend_publish(std::move(publish.set_dup()));
 		}
 
 		auto& [reason_code, props] = *pubrec;
@@ -256,11 +241,11 @@ public:
 		auto rc = to_reason_code<reason_codes::category::pubrec>(reason_code);
 		if (!rc) {
 			on_malformed_packet("Malformed PUBREC: invalid Reason Code");
-			return send_publish(std::move(publish.set_dup()));
+			return resend_publish(std::move(publish.set_dup()));
 		}
 
 		if (*rc)
-			return complete(ec, *rc, packet_id, pubcomp_props {});
+			return complete(ec, packet_id, *rc);
 
 		auto pubrel = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
@@ -294,9 +279,7 @@ public:
 		uint16_t packet_id = pubrel.packet_id();
 
 		if (ec)
-			return complete(
-				ec, reason_codes::empty, packet_id, pubcomp_props {}
-			);
+			return complete(ec, packet_id);
 
 		_svc_ptr->async_wait_reply(
 			control_code_e::pubcomp, packet_id,
@@ -319,9 +302,7 @@ public:
 		uint16_t packet_id = pubrel.packet_id();
 
 		if (ec)
-			return complete(
-				ec, reason_codes::empty, packet_id, pubcomp_props {}
-			);
+			return complete(ec, packet_id);
 
 		auto pubcomp = decoders::decode_pubcomp(
 			static_cast<uint32_t>(std::distance(first, last)), first
@@ -339,7 +320,7 @@ public:
 			return send_pubrel(std::move(pubrel), true);
 		}
 
-		return complete(ec, *rc, pubrel.packet_id(), pubcomp_props {});
+		return complete(ec, pubrel.packet_id(), *rc);
 	}
 
 private:
@@ -434,7 +415,7 @@ private:
 		qos_e q = qos_type,
 		std::enable_if_t<q == qos_e::at_most_once, bool> = true
 	>
-	void complete(error_code ec) {
+	void complete(error_code ec, uint16_t = 0) {
 		_handler.complete(ec);
 	}
 
@@ -455,8 +436,8 @@ private:
 		> = true
 	>
 	void complete(
-		error_code ec, reason_code rc,
-		uint16_t packet_id, Props&& props
+		error_code ec, uint16_t packet_id,
+		reason_code rc = reason_codes::empty, Props&& props = Props {}
 	) {
 		_svc_ptr->free_pid(packet_id, true);
 		_handler.complete(ec, rc, std::forward<Props>(props));

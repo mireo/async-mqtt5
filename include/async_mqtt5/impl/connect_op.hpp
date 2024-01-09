@@ -63,9 +63,9 @@ public:
 	connect_op(connect_op&&) noexcept = default;
 	connect_op(const connect_op&) = delete;
 
-	using executor_type = typename Stream::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _stream.get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
@@ -382,10 +382,7 @@ private:
 	void complete(error_code ec) {
 		get_cancellation_slot().clear();
 
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec)
-		);
+		std::move(_handler)(ec);
 	}
 
 	static error_code to_asio_error(reason_code rc) {

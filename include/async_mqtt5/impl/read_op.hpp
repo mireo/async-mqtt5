@@ -2,6 +2,7 @@
 #define ASYNC_MQTT5_READ_OP_HPP
 
 #include <boost/asio/deferred.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 
 #include <boost/asio/experimental/parallel_group.hpp>
@@ -32,9 +33,9 @@ public:
 	read_op(read_op&&) noexcept = default;
 	read_op(const read_op&) = delete;
 
-	using executor_type = typename Owner::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _owner.get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
@@ -62,9 +63,13 @@ public:
 			);
 		}
 		else
-			(*this)(
-				on_read {}, stream_ptr,
-				{ 0, 1 }, asio::error::not_connected, 0, {}
+			asio::post(
+				_owner.get_executor(),
+				asio::prepend(
+					std::move(*this), on_read {}, stream_ptr,
+					std::array<size_t, 2> { 0, 1 },
+					asio::error::not_connected, 0, error_code {}
+				)
 			);
 	}
 
@@ -100,10 +105,7 @@ public:
 
 private:
 	void complete(error_code ec, size_t bytes_read) {
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec, bytes_read)
-		);
+		std::move(_handler)(ec, bytes_read);
 	}
 
 	static bool should_reconnect(error_code ec) {

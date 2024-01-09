@@ -44,9 +44,9 @@ public:
 	reconnect_op(reconnect_op&&) noexcept = default;
 	reconnect_op(const reconnect_op&) = delete;
 
-	using executor_type = typename Owner::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _owner.get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
@@ -183,10 +183,7 @@ private:
 		get_cancellation_slot().clear();
 		_owner._conn_mtx.unlock();
 
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec)
-		);
+		std::move(_handler)(ec);
 	}
 };
 

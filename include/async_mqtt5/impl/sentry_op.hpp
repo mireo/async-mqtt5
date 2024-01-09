@@ -67,7 +67,7 @@ public:
 			return;
 
 		if (_svc_ptr->_replies.any_expired()) {
-			auto props = disconnect_props{};
+			auto props = disconnect_props {};
 			// TODO add what packet was expected?
 			props[prop::reason_string] = "No reply received within 20 seconds";
 			auto svc_ptr = _svc_ptr;

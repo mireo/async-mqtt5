@@ -127,7 +127,7 @@ struct subscribe_options {
 		new_subscription_only = 0b01,
 
 		/** Do not send retained messages at the time of subscribe. */
-		not_send = 0b100
+		not_send = 0b10
 	};
 
 

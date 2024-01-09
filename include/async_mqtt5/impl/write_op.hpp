@@ -2,6 +2,7 @@
 #define ASYNC_MQTT5_WRITE_OP_HPP
 
 #include <boost/asio/dispatch.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/write.hpp>
 
@@ -28,9 +29,9 @@ public:
 	write_op(write_op&&) noexcept = default;
 	write_op(const write_op&) = delete;
 
-	using executor_type = typename Owner::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _owner.get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
@@ -48,7 +49,13 @@ public:
 				asio::prepend(std::move(*this), on_write {}, stream_ptr)
 			);
 		else
-			(*this)(on_write {}, stream_ptr, asio::error::not_connected, 0);
+			asio::post(
+				_owner.get_executor(),
+				asio::prepend(
+					std::move(*this), on_write {},
+					stream_ptr, asio::error::not_connected, 0
+				)
+			);
 	}
 
 	void operator()(
@@ -79,10 +86,7 @@ public:
 
 private:
 	void complete(error_code ec, size_t bytes_written) {
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec, bytes_written)
-		);
+		std::move(_handler)(ec, bytes_written);
 	}
 
 	static bool should_reconnect(error_code ec) {
