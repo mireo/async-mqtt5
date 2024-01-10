@@ -24,7 +24,6 @@ add_executable(
 )
 
 target_include_directories(mqtt-test PRIVATE include)
-target_compile_features(mqtt-test PRIVATE cxx_std_17)
 target_compile_definitions(mqtt-test PRIVATE BOOST_TEST_NO_MAIN=1)
 
 find_package(OpenSSL REQUIRED)

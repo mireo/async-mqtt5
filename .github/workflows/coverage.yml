@@ -1,4 +1,4 @@
-name: CI
+name: coverage
 
 on: [push, pull_request]
 
@@ -8,8 +8,7 @@ env:
 
 jobs:
   posix:
-    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
-
+    name: "coverage ${{matrix.compiler}} -std=c++${{matrix.cxxstd}}"
     defaults:
       run:
         shell: bash
@@ -18,51 +17,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - toolset: g++-10
-            compiler: g++-10
-            install: g++-10
+          - toolset: coverage
+            compiler: g++-11
+            install: g++-11
             os: ubuntu-latest
             container: ubuntu:22.04
-            build-type: 'Release'
-            cxxstd: 17
-            cxxflags: ''
-            ldflags: ''
-
-          - toolset: clang++-12
-            compiler: clang++-12
-            install: clang++-12
-            os: ubuntu-latest
-            container: ubuntu:22.04
-            build-type: 'Release'
-            cxxstd: 17
-            cxxflags: '-fdeclspec'
-            ldflags: ''
-
-          - toolset: clang++-14-libc++-14
-            compiler: clang++-14
-            install: 'clang++-14 libc++-14-dev libc++abi-14-dev'
-            os: ubuntu-latest
-            container: ubuntu:22.04
-            build-type: 'Release'
-            cxxstd: 17
-            cxxflags: '-stdlib=libc++'
-            ldflags: '-lc++'
-
-          - toolset: clang++-15
-            compiler: clang++-15
-            install: clang++-15
-            os: ubuntu-latest
-            container: ubuntu:22.04
-            build-type: 'Release'
             cxxstd: 20
-            cxxflags: ''
-            ldflags: ''
-
+            cxxflags: '-g -O0 -std=c++20 --coverage -fkeep-inline-functions -fkeep-static-functions'
+            ldflags: '--coverage'
+  
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
     env:
-      CXXFLAGS: ${{ matrix.cxxflags }} -Wall -Wextra
-      LDFLAGS:  ${{ matrix.ldflags }}
       CMAKE_BUILD_PARALLEL_LEVEL: 4
 
     steps:
@@ -73,11 +39,11 @@ jobs:
         if: matrix.container
         run: |
           apt-get update
-          apt-get -y install sudo wget tar cmake openssl libssl-dev pkg-config
+          apt-get -y install sudo wget tar cmake openssl libssl-dev pkg-config lcov
 
       - name: Install compiler
         run: sudo apt-get install -y ${{ matrix.install }}
-
+      
       - name: Setup Boost
         run: |
           wget https://archives.boost.io/release/${{ env.BOOST_VERSION }}/source/boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
@@ -94,11 +60,25 @@ jobs:
 
       - name: Build tests
         run: |
-          cmake -S test/unit -B test/unit/build \
-          -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" \
-          -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" \
+          cmake -S test/unit -B test/unit/build -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" \
+          -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.ldflags }}" -DCMAKE_BUILD_TYPE="Coverage" \
           -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
           cmake --build test/unit/build -j 4
 
       - name: Run tests
         run: ./test/unit/build/mqtt-test --log_level=test_suite
+
+      - name: Generate Coverage Report
+        run: |
+          lcov --capture --output-file coverage.info --directory test/unit/build
+          lcov --remove coverage.info '/usr/include/*' --output-file coverage.info
+          lcov --remove coverage.info '**/test/*' --output-file coverage.info
+          lcov --remove coverage.info '**/boost/*' --output-file coverage.info
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.info
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

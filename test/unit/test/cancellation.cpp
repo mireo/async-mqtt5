@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(rerunning_the_client) {
 			using client_type = mqtt_client<stream_type>;
 			client_type c(ioc, "");
 
-			c.brokers("mqtt.mireo.local", 1883)
+			c.brokers("broker.hivemq.com", 1883)
 				.credentials("test-cli", "", "")
 				.run();
 
