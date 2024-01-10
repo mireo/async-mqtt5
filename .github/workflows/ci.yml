@@ -7,6 +7,105 @@ env:
   BOOST_DIR_VER_NAME: 1_82_0
 
 jobs:
+  windows:
+    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
+    defaults:
+      run:
+        shell: cmd
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # internal compiler error
+          # - toolset: msvc-14.2 win64
+          #   os: windows-2019
+          #   architecture: x64
+          #   generator: "Visual Studio 16 2019"
+          #   cxxstd: 17
+          #   build-type: 'Debug'
+          #   cxxflags: ''
+          #   ldflags: '/machine:x64'
+
+          - toolset: msvc-14.3 win32
+            os: windows-2022
+            architecture: Win32
+            generator: Visual Studio 17 2022
+            cxxstd: 20
+            build-type: 'Debug'
+            cxxflags: ''
+            ldflags: ''
+
+          - toolset: msvc-14.3 win64
+            os: windows-2022
+            architecture: x64
+            generator: Visual Studio 17 2022
+            cxxstd: 20
+            build-type: 'Debug'
+            cxxflags: ''
+            ldflags: ''
+
+    runs-on: ${{ matrix.os }}
+    env:
+      CXXFLAGS: ${{ matrix.cxxflags }} /D_WIN32_WINNT=0x0601 /DWIN32_LEAN_AND_MEAN=1 /DNOMINMAX=1 /D_FILE_OFFSET_BITS=64 /DBOOST_ALL_NO_LIB /EHsc /bigobj
+      LDFLAGS: ${{ matrix.ldflags }}
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+        
+    - name: Setup OpenSSL
+      env:
+        OPENSSL_ROOT: "C:\\OpenSSL"
+      run: |
+        if "${{ matrix.architecture }}" == "x64" (
+          choco install --no-progress -y openssl --x64
+        )
+        if "${{ matrix.architecture }}" == "Win32" (
+          set openssl_install_dir="C:\\Program Files (x86)\\OpenSSL-Win32"
+          choco install --no-progress -y openssl --forcex86 --version 1.1.1.2100
+        )
+        if "${{ matrix.architecture }}" == "x64" (
+          if exist "C:\Program Files\OpenSSL\" (
+            set openssl_install_dir="C:\\Program Files\\OpenSSL"
+          ) else (
+            set openssl_install_dir="C:\\Program Files\\OpenSSL-Win64"
+          )
+        )
+        mklink /D %OPENSSL_ROOT% %openssl_install_dir%
+        refreshenv
+        set
+
+    - name: Setup Cmake
+      run: |
+        choco install cmake
+
+    - name: Setup Boost
+      run: |
+        curl -o boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz https://archives.boost.io/release/${{ env.BOOST_VERSION }}/source/boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
+        tar -xf boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
+        mkdir ${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}
+        move boost_${{ env.BOOST_DIR_VER_NAME }}\\boost ${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}
+        del boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
+
+    - name: Setup library
+      run: |
+        cmake -S . -B build -DBoost_INCLUDE_DIR="${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}"
+        cmake --install build
+
+    - name: Build tests
+      run: |
+        cmake -S test\\unit -B test\\unit\\build -A ${{ matrix.architecture }} ^
+        -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" ^
+        -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" ^
+        -DBoost_INCLUDE_DIR="${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}"
+        cmake --build test\\unit\\build -j 4
+
+    - name: Run tests
+      run: |
+        .\\test\\unit\\build\\${{ matrix.build-type }}\\mqtt-test.exe --log_level=test_suite
+
   posix:
     name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
 
