@@ -18,9 +18,9 @@ template <
 	typename StreamType,
 	typename TlsContext = std::monostate
 >
-class test_service : public detail::client_service<StreamType, TlsContext> {
+class test_service : public async_mqtt5::detail::client_service<StreamType, TlsContext> {
 	using error_code = boost::system::error_code;
-	using base = detail::client_service<StreamType, TlsContext>;
+	using base = async_mqtt5::detail::client_service<StreamType, TlsContext>;
 
 	asio::any_io_executor _ex;
 	connack_props _test_props;

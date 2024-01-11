@@ -58,12 +58,9 @@ inline std::string_view code_to_str(control_code_e code) {
 		case control_code_e::pingresp: return "PINGRESP";
 		default: return "NO PACKET";
 	}
-	return "UNKNOWN";
 }
 
-inline std::string to_readable_packet(
-	std::string packet, error_code ec = {}, bool incoming = false
-) {
+inline std::string to_readable_packet(std::string packet) {
 	auto control_byte = uint8_t(*packet.data());
 	auto code = extract_code(control_byte);
 
@@ -72,14 +69,11 @@ inline std::string to_readable_packet(
 
 	std::ostringstream stream;
 
-	if (incoming)
-		stream << "-> ";
-
 	if (
 		code == control_code_e::connect || code == control_code_e::connack ||
 		code == control_code_e::disconnect
 	) {
-		stream << code_to_str(code) << (ec ? " ec: " + ec.message() : "");
+		stream << code_to_str(code);
 		return stream.str();
 	}
 
@@ -95,6 +89,7 @@ inline std::string to_readable_packet(
 		auto& [topic, packet_id, flags, props, payload] = *publish;
 		stream << code_to_str(code);
 		stream << (packet_id ? " " + std::to_string(*packet_id) : "");
+		stream << "flags: " << flags;
 		return stream.str();
 	}
 

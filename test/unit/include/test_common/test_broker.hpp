@@ -150,7 +150,14 @@ public:
 				for (size_t i = 0; i < num_packets; ++i, ++it) {
 					BOOST_CHECK_EQUAL(it->size(), expected[i].size());
 					size_t len = std::min(it->size(), expected[i].size());
-					BOOST_CHECK(!memcmp(it->data(), expected[i].data(), len));
+					if (memcmp(it->data(), expected[i].data(), len)) {
+						std::ostringstream stream;
+						stream << "Packet mismatch! Expected: "
+							<< to_readable_packet(expected[i])
+							<< " Received: "
+							<< to_readable_packet(std::string((const char*)it->data(), len));
+						log(stream.str());
+					}
 				}
 			}
 
