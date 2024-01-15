@@ -16,11 +16,14 @@ add_executable(
     test/client_broker.cpp
     test/compilation_checks.cpp
     test/coroutine.cpp
+    test/disconnect_op.cpp
+    test/publish_rec_op.cpp
     test/publish_send_op.cpp
     test/serialization.cpp
     test/session.cpp
     test/string_validation.cpp
     test/subscribe_op.cpp
+    test/unsubscribe_op.cpp
 )
 
 target_include_directories(mqtt-test PRIVATE include)

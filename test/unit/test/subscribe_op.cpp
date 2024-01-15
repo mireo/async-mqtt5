@@ -14,27 +14,12 @@ using namespace async_mqtt5;
 
 BOOST_AUTO_TEST_SUITE(subscribe_op/*, *boost::unit_test::disabled()*/)
 
-template <
-	typename StreamType,
-	typename TlsContext = std::monostate
->
-class overrun_client : public detail::client_service<StreamType, TlsContext> {
-public:
-	overrun_client(const asio::any_io_executor& ex, const std::string& cnf) :
-		detail::client_service<StreamType, TlsContext>(ex, cnf)
-	{}
-
-	uint16_t allocate_pid() {
-		return 0;
-	}
-};
-
 BOOST_AUTO_TEST_CASE(test_pid_overrun) {
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
 
 	asio::io_context ioc;
-	using client_service_type = overrun_client<asio::ip::tcp::socket>;
+	using client_service_type = test::overrun_client<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor(), "");
 
 	auto handler = [&handlers_called](error_code ec, std::vector<reason_code> rcs, auto) {
@@ -51,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_pid_overrun) {
 		{ { "topic", { qos_e::exactly_once } } }, subscribe_props {}
 	);
 
-	ioc.run();
+	ioc.run_for(std::chrono::milliseconds(500));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 

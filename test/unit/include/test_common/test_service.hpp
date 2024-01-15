@@ -61,6 +61,22 @@ public:
 };
 
 
+template <
+	typename StreamType,
+	typename TlsContext = std::monostate
+>
+class overrun_client : public async_mqtt5::detail::client_service<StreamType, TlsContext> {
+public:
+	overrun_client(const asio::any_io_executor& ex, const std::string& cnf) :
+		async_mqtt5::detail::client_service<StreamType, TlsContext>(ex, cnf)
+	{}
+
+	uint16_t allocate_pid() {
+		return 0;
+	}
+};
+
+
 } // end namespace async_mqtt5::test
 
 #endif // ASYNC_MQTT5_TEST_TEST_SERVICE_HPP

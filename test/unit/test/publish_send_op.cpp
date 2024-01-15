@@ -18,27 +18,13 @@ using namespace async_mqtt5;
 
 BOOST_AUTO_TEST_SUITE(publish_send_op/*, *boost::unit_test::disabled()*/)
 
-template <
-	typename StreamType,
-	typename TlsContext = std::monostate
->
-class overrun_client : public detail::client_service<StreamType, TlsContext> {
-public:
-	overrun_client(const asio::any_io_executor& ex, const std::string& cnf) :
-		detail::client_service<StreamType, TlsContext>(ex, cnf)
-	{}
-
-	uint16_t allocate_pid() {
-		return 0;
-	}
-};
 
 BOOST_AUTO_TEST_CASE(test_pid_overrun) {
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
 
 	asio::io_context ioc;
-	using client_service_type = overrun_client<asio::ip::tcp::socket>;
+	using client_service_type = test::overrun_client<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor(), "");
 
 	auto handler = [&handlers_called](error_code ec, reason_code rc, puback_props) {
@@ -146,7 +132,7 @@ BOOST_AUTO_TEST_CASE(test_packet_too_large) {
 	int max_packet_sz = 10;
 
 	connack_props props;
-	props[prop::maximum_packet_size] = 10;
+	props[prop::maximum_packet_size] = max_packet_sz;
 
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
@@ -359,7 +345,6 @@ BOOST_AUTO_TEST_CASE(test_malformed_puback) {
 			.reply_with(malformed_puback, after(0ms))
 		.expect(disconnect)
 			.complete_with(success, after(0ms))
-			.reply_with(std::string {}, after(0ms))
 		.expect(connect)
 			.complete_with(success, after(0ms))
 			.reply_with(connack, after(0ms))
@@ -446,7 +431,6 @@ BOOST_AUTO_TEST_CASE(test_malformed_pubrec_pubcomp) {
 			.reply_with(malformed_pubrec, after(0ms))
 		.expect(disconnect_on_pubrec)
 			.complete_with(success, after(0ms))
-			.reply_with(std::string {}, after(0ms))
 		.expect(connect)
 			.complete_with(success, after(0ms))
 			.reply_with(connack, after(0ms))
@@ -458,7 +442,6 @@ BOOST_AUTO_TEST_CASE(test_malformed_pubrec_pubcomp) {
 			.reply_with(malformed_pubcomp, after(0ms))
 		.expect(disconnect_on_pubcomp)
 			.complete_with(success, after(0ms))
-			.reply_with(std::string {}, after(0ms))
 		.expect(connect)
 			.complete_with(success, after(0ms))
 			.reply_with(connack, after(0ms))

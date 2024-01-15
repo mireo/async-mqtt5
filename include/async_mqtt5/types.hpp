@@ -156,57 +156,6 @@ struct subscribe_topic {
 	subscribe_options sub_opts;
 };
 
-/*
-
-reason codes:
-
-	0x00 success
-	0x01 success_qos_1
-	0x02 success_qos_2
-	0x04 disconnect_with_will_message
-	0x10 no_matching_subscribers
-	0x11 no_subscription_existed
-	0x18 continue_authentication
-	0x19 re_authenticate
-	0x80 failure
-	0x81 malformed_packet
-	0x82 protocol_error
-	0x83 implementation_specific_error
-	0x84 unsupported_protocol_version
-	0x85 client_identifier_not_valid
-	0x86 bad_user_name_or_password
-	0x87 not_authorized
-	0x88 server_unavailable
-	0x89 server_busy
-	0x8a banned
-	0x8b server_shutting_down
-	0x8c bad_authentication_method
-	0x8d keep_alive_timeout
-	0x8e session_taken_over
-	0x8f topic_filter_invalid
-	0x90 topic_name_invalid
-	0x91 packet_identifier_in_use
-	0x92 packet_identifier_not_found
-	0x93 receive_maximum_exceeded
-	0x94 topic_alias_invalid
-	0x95 packet_too_large
-	0x95 packet_too_large
-	0x96 message_rate_too_high
-	0x97 quota_exceeded
-	0x98 administrative_action
-	0x99 payload_format_invalid
-	0x9a retain_not_supported
-	0x9b qos_not_supported
-	0x9c use_another_server
-	0x9d server_moved
-	0x9e shared_subscriptions_not_supported
-	0x9f connection_rate_exceeded
-	0xa0 maximum_connect_time
-	0xa1 subscription_identifiers_not_supported
-	0xa2 wildcard_subscriptions_not_supported
-
-*/
-
 /// \cond
 
 class connect_props : public prop::properties<
