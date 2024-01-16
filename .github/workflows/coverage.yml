@@ -60,17 +60,17 @@ jobs:
 
       - name: Build tests
         run: |
-          cmake -S test/unit -B test/unit/build -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" \
+          cmake -S test -B test/build -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" \
           -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.ldflags }}" -DCMAKE_BUILD_TYPE="Coverage" \
           -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
-          cmake --build test/unit/build -j 4
+          cmake --build test/build -j 4
 
       - name: Run tests
-        run: ./test/unit/build/mqtt-test --log_level=test_suite
+        run: ./test/build/mqtt-test --log_level=test_suite
 
       - name: Generate Coverage Report
         run: |
-          lcov --capture --output-file coverage.info --directory test/unit/build
+          lcov --capture --output-file coverage.info --directory test/build
           lcov --remove coverage.info '/usr/include/*' --output-file coverage.info
           lcov --remove coverage.info '**/test/*' --output-file coverage.info
           lcov --remove coverage.info '**/boost/*' --output-file coverage.info

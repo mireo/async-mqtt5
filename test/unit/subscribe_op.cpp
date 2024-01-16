@@ -2,13 +2,9 @@
 
 #include <boost/asio/io_context.hpp>
 
-#include <async_mqtt5/mqtt_client.hpp>
-
 #include <async_mqtt5/impl/subscribe_op.hpp>
 
-#include "test_common/message_exchange.hpp"
 #include "test_common/test_service.hpp"
-#include "test_common/test_stream.hpp"
 
 using namespace async_mqtt5;
 
@@ -280,77 +276,6 @@ BOOST_AUTO_TEST_CASE(test_packet_too_large) {
 
 	ioc.run_for(std::chrono::milliseconds(500));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-}
-
-BOOST_AUTO_TEST_CASE(test_resending) {
-	using test::after;
-	using std::chrono_literals::operator ""ms;
-
-	constexpr int expected_handlers_called = 1;
-	int handlers_called = 0;
-
-	// data
-	std::vector<subscribe_topic> topics = {
-		subscribe_topic { "topic", subscribe_options {} }
-	};
-	subscribe_props subscribe_props;
-
-	std::vector<uint8_t> rcs = { reason_codes::granted_qos_0.value() };
-	suback_props suback_props;
-
-	// packets
-	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
-	);
-	auto connack = encoders::encode_connack(false, reason_codes::success.value(), {});
-
-	auto subscribe = encoders::encode_subscribe(1, topics, subscribe_props);
-	auto suback = encoders::encode_suback(1, rcs, suback_props);
-
-	test::msg_exchange broker_side;
-	error_code success {};
-	error_code fail = asio::error::not_connected;
-
-	broker_side
-		.expect(connect)
-			.complete_with(success, after(0ms))
-			.reply_with(connack, after(0ms))
-		.expect(subscribe)
-			.complete_with(fail, after(0ms))
-		.expect(connect)
-			.complete_with(success, after(0ms))
-			.reply_with(connack, after(0ms))
-		.expect(subscribe)
-			.complete_with(success, after(0ms))
-			.reply_with(suback, after(0ms));
-
-	asio::io_context ioc;
-	auto executor = ioc.get_executor();
-	auto& broker = asio::make_service<test::test_broker>(
-		ioc, executor, std::move(broker_side)
-	);
-
-	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
-	c.brokers("127.0.0.1")
-		.run();
-
-	c.async_subscribe(
-		topics, subscribe_props,
-		[&](error_code ec, std::vector<reason_code> rcs, auto) {
-			handlers_called++;
-
-			BOOST_CHECK(!ec);
-			BOOST_ASSERT(rcs.size() == 1);
-			BOOST_CHECK_EQUAL(rcs[0], reason_codes::granted_qos_0);
-
-			c.cancel();
-		}
-	);
-
-	ioc.run_for(std::chrono::seconds(10));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

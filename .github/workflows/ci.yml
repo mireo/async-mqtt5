@@ -96,15 +96,15 @@ jobs:
 
     - name: Build tests
       run: |
-        cmake -S test\\unit -B test\\unit\\build -A ${{ matrix.architecture }} ^
+        cmake -S test -B test\\build -A ${{ matrix.architecture }} ^
         -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" ^
         -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" ^
         -DBoost_INCLUDE_DIR="${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}"
-        cmake --build test\\unit\\build -j 4
+        cmake --build test\\build -j 4
 
     - name: Run tests
       run: |
-        .\\test\\unit\\build\\${{ matrix.build-type }}\\mqtt-test.exe --log_level=test_suite
+        .\\test\\build\\${{ matrix.build-type }}\\mqtt-test.exe --log_level=test_suite
 
   posix:
     name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
@@ -193,11 +193,11 @@ jobs:
 
       - name: Build tests
         run: |
-          cmake -S test/unit -B test/unit/build \
+          cmake -S test -B test/build \
           -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" \
           -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" \
           -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
-          cmake --build test/unit/build -j 4
+          cmake --build test/build -j 4
 
       - name: Run tests
-        run: ./test/unit/build/mqtt-test --log_level=test_suite
+        run: ./test/build/mqtt-test --log_level=test_suite

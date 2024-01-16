@@ -149,8 +149,7 @@ BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
 	using client_type = mqtt_client<stream_type>;
 	client_type c(ioc, "");
 
-	c.credentials("websocket-tcp-tester", "", "")
-		.brokers("broker.hivemq.com/mqtt", 8000)
+	c.brokers("broker.hivemq.com/mqtt", 8000)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
@@ -186,8 +185,7 @@ BOOST_AUTO_TEST_CASE(openssl_tls_client_check) {
 	using client_type = mqtt_client<stream_type, decltype(tls_context)>;
 	client_type c(ioc, "", std::move(tls_context));
 
-	c.credentials("openssl-tls-tester", "", "")
-		.brokers("broker.hivemq.com", 8883)
+	c.brokers("broker.hivemq.com", 8883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
@@ -225,8 +223,7 @@ BOOST_AUTO_TEST_CASE(websocket_tls_client_check) {
 	using client_type = mqtt_client<stream_type, decltype(tls_context)>;
 	client_type c(ioc, "", std::move(tls_context));
 
-	c.credentials("websocket-tls-tester", "", "")
-		.brokers("broker.hivemq.com/mqtt", 8884)
+	c.brokers("broker.hivemq.com/mqtt", 8884)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.run();
 
