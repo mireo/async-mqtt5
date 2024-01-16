@@ -19,9 +19,9 @@ asio::awaitable<void> client_receiver(asio::io_context& ioc) {
 	async_mqtt5::mqtt_client<asio::ip::tcp::socket> client(ioc, "");
 
 	// Configure the``__Client__``.
-	// It is mandatory to call brokers() and run() to configure the Brokers to connect to and start the Client.
+	// It is mandatory to call brokers() and async_run() to configure the Brokers to connect to and start the Client.
 	client.brokers("mqtt.broker", 1883) // Broker that we want to connect to. 1883 is the default TCP port.
-		.run(); // Start the client.
+		.async_run(asio::detached); // Start the client.
 
 	// Configure the request to subscribe to a Topic.
 	async_mqtt5::subscribe_topic sub_topic = async_mqtt5::subscribe_topic {

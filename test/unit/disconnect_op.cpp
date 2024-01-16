@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(test_omitting_props) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1")
-		.run();
+		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
 	timer.expires_after(std::chrono::milliseconds(200));

@@ -25,7 +25,7 @@ void publish_qos0_websocket_tcp() {
 	c.credentials("test-qos0-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_most_once>(
 		"test/mqtt-test", "hello world with qos0!",
@@ -55,7 +55,7 @@ void publish_qos1_websocket_tcp() {
 	c.credentials("test-qos1-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_least_once>(
 		"test/mqtt-test", "hello world with qos1!",
@@ -86,7 +86,7 @@ void publish_qos2_websocket_tcp() {
 	c.credentials("test-qos2-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::exactly_once>(
 		"test/mqtt-test", "hello world with qos2!",
@@ -118,7 +118,7 @@ void subscribe_and_receive_websocket_tcp(int num_receive) {
 	c.credentials("test-subscriber-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	std::vector<subscribe_topic> topics;
 	topics.push_back(subscribe_topic{

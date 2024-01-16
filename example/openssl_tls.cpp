@@ -70,7 +70,7 @@ void publish_qos0_openssl_tls() {
 	c.credentials("test-qos0-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_most_once>(
 		"test/mqtt-test", "hello world with qos0!",
@@ -103,7 +103,7 @@ void publish_qos1_openssl_tls() {
 	c.credentials("test-qos1-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_least_once>(
 		"test/mqtt-test", "hello world with qos1!",
@@ -138,7 +138,7 @@ void publish_qos2_openssl_tls() {
 	c.credentials("test-qos2-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::exactly_once>(
 		"test/mqtt-test", "hello world with qos2!",
@@ -173,7 +173,7 @@ void subscribe_and_receive_openssl_tls(int num_receive) {
 	c.credentials("test-subscriber-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 
 	std::vector<subscribe_topic> topics;

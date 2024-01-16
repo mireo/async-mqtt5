@@ -184,7 +184,7 @@ public:
 private:
 	using tls_context_type = TlsContext;
 	using receive_channel = asio::experimental::basic_concurrent_channel<
-		asio::any_io_executor,
+		executor_type,
 		channel_traits<>,
 		void (error_code, std::string, std::string, publish_props)
 	>;
@@ -204,6 +204,8 @@ private:
 	template <typename ClientService>
 	friend class re_auth_op;
 
+	executor_type _executor;
+
 	stream_context_type _stream_context;
 	stream_type _stream;
 
@@ -219,6 +221,8 @@ private:
 	asio::cancellation_signal _cancel_ping;
 	asio::cancellation_signal _cancel_sentry;
 
+	asio::any_completion_handler<void(error_code)> _run_handler;
+
 public:
 
 	client_service(
@@ -226,6 +230,7 @@ public:
 		const std::string& /* cnf */,
 		tls_context_type tls_context = {}
 	) :
+		_executor(ex),
 		_stream_context(std::move(tls_context)),
 		_stream(ex, _stream_context),
 		_replies(ex),
@@ -235,7 +240,7 @@ public:
 	{}
 
 	executor_type get_executor() const noexcept {
-		return _stream.get_executor();
+		return _executor;
 	}
 
 	template <
@@ -302,7 +307,18 @@ public:
 		return _stream_context.connack_properties();
 	}
 
-	void run() {
+	template <typename Handler>
+	void run(Handler&& handler) {
+		_executor = asio::get_associated_executor(handler, _executor);
+		_run_handler = std::move(handler);
+		auto slot = asio::get_associated_cancellation_slot(_run_handler);
+		if (slot.is_connected()) {
+			using c_t = asio::cancellation_type_t;
+			slot.assign([&svc = *this](c_t c) {
+				if ((c & c_t::terminal) != c_t::none)
+					svc.cancel();
+			});
+		}
 		_stream.open();
 		_rec_channel.reset();
 	}
@@ -320,6 +336,8 @@ public:
 	}
 
 	void cancel() {
+		if (!_run_handler) return;
+
 		_cancel_ping.emit(asio::cancellation_type::terminal);
 		_cancel_sentry.emit(asio::cancellation_type::terminal);
 
@@ -327,6 +345,15 @@ public:
 		_replies.cancel_unanswered();
 		_async_sender.cancel();
 		_stream.close();
+
+		asio::get_associated_cancellation_slot(_run_handler).clear();
+		asio::post(
+			get_executor(),
+			asio::prepend(
+				std::move(_run_handler),
+				asio::error::operation_aborted
+			)
+		);
 	}
 
 	uint16_t allocate_pid() {
@@ -420,9 +447,20 @@ public:
 
 	template <typename CompletionToken>
 	decltype(auto) async_channel_receive(CompletionToken&& token) {
-		// sig = void (error_code, std::string, std::string, publish_props)
-		return _rec_channel.async_receive(
-			std::forward<CompletionToken>(token)
+		using Signature =
+			void(error_code, std::string, std::string, publish_props);
+
+		auto initiation = [] (auto handler, self_type& self) {
+			auto ex = asio::get_associated_executor(
+				handler, self.get_executor()
+			);
+			return self._rec_channel.async_receive(
+				asio::bind_executor(ex, std::move(handler))
+			);
+		};
+
+		return asio::async_initiate<CompletionToken, Signature> (
+			initiation, token, std::ref(*this)
 		);
 	}
 

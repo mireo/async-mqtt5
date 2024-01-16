@@ -155,8 +155,8 @@ public:
 						stream << "Packet mismatch! Expected: "
 							<< to_readable_packet(expected[i])
 							<< " Received: "
-							<< to_readable_packet(std::string((const char*)it->data(), len));
-						log(stream.str());
+							<< to_readable_packet(std::string((const char*)it->data(), it->size()));
+						BOOST_CHECK_MESSAGE(false, stream.str());
 					}
 				}
 			}
@@ -235,7 +235,9 @@ public:
 
 private:
 
-	void shutdown() override { }
+	void shutdown() override {
+		_pending_read.complete(get_executor(), asio::error::operation_aborted, 0);
+	}
 
 	void launch_broker_ops() {
 		for (auto& op: _broker_side.pop_broker_ops(get_executor())) {

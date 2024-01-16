@@ -73,7 +73,7 @@ void receive_publish() {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1")
-		.run();
+		.async_run(asio::detached);
 
 	c.async_receive(
 		[&](
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(test_waiting_on_pubrel) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
-		.run();
+		.async_run(asio::detached);
 
 	c.async_receive(
 		[&](

@@ -259,7 +259,7 @@ inline std::string encode_subscribe(
 
 inline std::string encode_suback(
 	uint16_t packet_id,
-	std::vector<uint8_t>& reason_codes,
+	const std::vector<uint8_t>& reason_codes,
 	const suback_props& props
 ) {
 
@@ -319,7 +319,7 @@ inline std::string encode_unsubscribe(
 
 inline std::string encode_unsuback(
 	uint16_t packet_id,
-	std::vector<uint8_t>& reason_codes,
+	const std::vector<uint8_t>& reason_codes,
 	const unsuback_props& props
 ) {
 

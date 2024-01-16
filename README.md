@@ -68,7 +68,7 @@ int main() {
 
 	c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
 		.brokers("<your-mqtt-broker>", 1883)
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<async_mqtt5::qos_e::at_most_once>(
 		"<topic>", "Hello world!",

@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 
 	c.credentials("test-client", "", "")
 		.brokers("mqtt.broker", 1883)
-		.run();
+		.async_run(asio::detached);
 
 	for (int i = 0; i < thread_num - 1; ++i)
 		threads.emplace_back([&ioc] { ioc.run(); });
@@ -108,4 +108,3 @@ int main(int argc, char** argv) {
 	for (auto& t : threads)
 		if (t.joinable()) t.join();
 }
-

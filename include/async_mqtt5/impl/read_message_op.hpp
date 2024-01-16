@@ -64,10 +64,10 @@ public:
 				"Malformed Packet received from the Server"
 			);
 
-		if (
-			ec == asio::error::operation_aborted ||
-			ec == asio::error::no_recovery
-		)
+		if (ec == asio::error::no_recovery)
+			return _svc_ptr->cancel();
+
+		if (ec == asio::error::operation_aborted)
 			return;
 
 		dispatch(control_code, first, last);
@@ -115,6 +115,8 @@ private:
 				re_auth_op { _svc_ptr }.perform(std::move(*rv));
 			}
 			break;
+			default:
+				assert(false);
 		}
 
 		perform();

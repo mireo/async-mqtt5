@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(tcp_client_check) {
 	c.credentials("tcp-tester", "", "")
 		.brokers("broker.hivemq.com", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	asio::steady_timer timer(ioc);
 	timer.expires_after(std::chrono::seconds(5));
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
 
 	c.brokers("broker.hivemq.com/mqtt", 8000)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	asio::steady_timer timer(ioc);
 	timer.expires_after(std::chrono::seconds(5));
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(openssl_tls_client_check) {
 
 	c.brokers("broker.hivemq.com", 8883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	asio::steady_timer timer(ioc);
 	timer.expires_after(std::chrono::seconds(5));
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(websocket_tls_client_check) {
 
 	c.brokers("broker.hivemq.com/mqtt", 8884)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	asio::steady_timer timer(ioc);
 	timer.expires_after(std::chrono::seconds(5));

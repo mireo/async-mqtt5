@@ -24,7 +24,7 @@ void publish_qos0_tcp() {
 		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.connect_properties(std::move(props))
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_most_once>(
 		"test/mqtt-test", "hello world with qos0!",
@@ -52,7 +52,7 @@ void publish_qos1_tcp() {
 	c.credentials("test-qos1-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_least_once>(
 		"test/mqtt-test", "hello world with qos1!",
@@ -79,7 +79,7 @@ void publish_qos2_tcp() {
 	c.credentials("test-qos2-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::exactly_once>(
 		"test/mqtt-test", "hello world with qos2!",
@@ -107,7 +107,7 @@ void subscribe_and_receive_tcp(int num_receive) {
 	c.credentials("test-subscriber-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
-		.run();
+		.async_run(asio::detached);
 
 	c.async_subscribe(
 		{ "test/mqtt-test", { qos_e::exactly_once } }, subscribe_props {},

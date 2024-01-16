@@ -271,6 +271,7 @@ BOOST_AUTO_TEST_CASE(test_publish_cancellation) {
 	asio::io_context ioc;
 	using client_service_type = test::test_service<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
+	svc_ptr->run([](error_code){});
 	asio::cancellation_signal cancel_signal;
 
 	auto h = [&handlers_called](error_code ec, reason_code rc, puback_props) {

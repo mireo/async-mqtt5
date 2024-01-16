@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(ordering_after_reconnect) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_least_once>(
 		"t_1", "p_1", retain_e::no, publish_props{},
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(throttling) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1")
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_least_once>(
 		"t_1", "p_1", retain_e::no, publish_props{},
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE(cancel_multiple_ops) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1")
-		.run();
+		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_least_once>(
 		"t_1", "p_1", retain_e::no, publish_props{},

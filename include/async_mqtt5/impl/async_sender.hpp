@@ -181,6 +181,9 @@ public:
 			return resend();
 		}
 
+		if (ec == asio::error::no_recovery)
+			_svc.cancel();
+
 		// errors, if any, are propagated to ops
 		for (auto& op : write_queue)
 			op.complete(ec);

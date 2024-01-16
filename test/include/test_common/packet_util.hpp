@@ -2,6 +2,7 @@
 #define ASYNC_MQTT5_TEST_PACKET_UTIL_HPP
 
 #include <string>
+#include <bitset>
 
 #include <async_mqtt5/detail/control_packet.hpp>
 
@@ -89,7 +90,7 @@ inline std::string to_readable_packet(std::string packet) {
 		auto& [topic, packet_id, flags, props, payload] = *publish;
 		stream << code_to_str(code);
 		stream << (packet_id ? " " + std::to_string(*packet_id) : "");
-		stream << "flags: " << flags;
+		stream << " flags: " << std::bitset<8>(flags);
 		return stream.str();
 	}
 

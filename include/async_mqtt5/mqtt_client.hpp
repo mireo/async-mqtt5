@@ -156,13 +156,42 @@ public:
 
 	/**
 	 * \brief Start the Client.
+	 *
+	 * \param token Completion token that will be used to produce a
+	 * completion handler. The handler will be invoked when the operation completes.
+	 *
+	 * \par Handler signature
+	 * The handler signature for this operation:
+	 *	\code
+	 *		void (__ERROR_CODE__)
+	 *	\endcode
+	 *
+	 * \par Completion condition
+	 * The asynchronous operation will complete with
+	 * `boost::asio::error::operation_aborted` when client is cancelled by calling
+	 * \ref mqtt_client::async_disconnect, \ref mqtt_client::cancel, destruction or
+	 * if non-recoverable error happens during connection attempt (e.g. access denied).
+	 *
+	 *	\par Error codes
+	 *	The list of all possible error codes that this operation can finish with:\n
+	 *		- `boost::asio::error::operation_aborted`\n
 	 */
-	void run() {
-		_svc_ptr->run();
-		detail::ping_op { _svc_ptr }
-			.perform(read_timeout - std::chrono::seconds(1));
-		detail::read_message_op { _svc_ptr }.perform();
-		detail::sentry_op { _svc_ptr }.perform();
+	template <typename CompletionToken>
+	decltype(auto) async_run(CompletionToken&& token) {
+		using Signature = void(error_code);
+
+		auto initiation = [] (auto handler, const clisvc_ptr& svc_ptr) {
+			svc_ptr->run(std::move(handler));
+
+			detail::ping_op { svc_ptr }
+				.perform(read_timeout - std::chrono::seconds(1));
+			detail::read_message_op { svc_ptr }.perform();
+			detail::sentry_op { svc_ptr }.perform();
+		};
+
+		return asio::async_initiate<CompletionToken, Signature>(
+			initiation, token, _svc_ptr
+		);
 	}
 
 	/**
@@ -172,12 +201,10 @@ public:
 	 * with `boost::asio::error::operation_aborted`.
 	 *
 	 * \attention This function has terminal effects and will close the Client.
-	 * The Client cannot be used before calling \ref mqtt_client::run again.
+	 * The Client cannot be used before calling \ref mqtt_client::async_run again.
 	 */
 	void cancel() {
-		get_executor().execute([svc_ptr = _svc_ptr]() {
-			svc_ptr->cancel();
-		});
+		_svc_ptr->cancel();
 	}
 
 	/**
@@ -188,9 +215,9 @@ public:
 	 * closed normally.
 	 *
 	 * \attention This function takes action when the client is in a non-operational state,
-	 * meaning the \ref run function has not been invoked.
+	 * meaning the \ref async_run function has not been invoked.
 	 * Furthermore, you can use this function after the \ref cancel function has been called,
-	 * before the \ref run function is invoked again.
+	 * before the \ref async_run function is invoked again.
 	 */
 	mqtt_client& will(will will) {
 		_svc_ptr->will(std::move(will));
@@ -204,9 +231,9 @@ public:
 	 * a User Name and Password.
 	 *
 	 * \attention This function takes action when the client is in a non-operational state,
-	 * meaning the \ref run function has not been invoked.
+	 * meaning the \ref async_run function has not been invoked.
 	 * Furthermore, you can use this function after the \ref cancel function has been called,
-	 * before the \ref run function is invoked again.
+	 * before the \ref async_run function is invoked again.
 	 */
 	mqtt_client& credentials(
 		std::string client_id,
@@ -233,9 +260,9 @@ public:
 	 * explicitly specified in the `hosts` list.
 	 *
 	 * \attention This function takes action when the client is in a non-operational state,
-	 * meaning the \ref run function has not been invoked.
+	 * meaning the \ref async_run function has not been invoked.
 	 * Furthermore, you can use this function after the \ref cancel function has been called,
-	 * before the \ref run function is invoked again.
+	 * before the \ref async_run function is invoked again.
 	 *
 	 * \par Example
 	 * Some valid `hosts` string:
@@ -260,9 +287,9 @@ public:
 	 * and used for authentication. It needs to satisfy \__is_authenticator\__ concept.
 	 *
 	 * \attention This function takes action when the client is in a non-operational state,
-	 * meaning the \ref run function has not been invoked.
+	 * meaning the \ref async_run function has not been invoked.
 	 * Furthermore, you can use this function after the \ref cancel function has been called,
-	 * before the \ref run function is invoked again.
+	 * before the \ref async_run function is invoked again.
 	 *
 	 */
 	template <

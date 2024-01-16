@@ -57,7 +57,7 @@ void test_receive_malformed_packet(
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
-		.run();
+		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
 	timer.expires_after(std::chrono::milliseconds(100));
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(receive_disconnect) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
-		.run();
+		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
 	timer.expires_after(std::chrono::milliseconds(100));

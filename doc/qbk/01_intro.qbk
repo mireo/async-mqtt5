@@ -62,7 +62,7 @@ The following example illustrates a simple scenario of configuring a Client and 
 
 		c.credentials("clientid", "", "")
 			.brokers("mqtt.broker", 1883)
-			.run();
+			.async_run(asio::detached);
 
 		c.async_publish<async_mqtt5::qos_e::at_most_once>(
 			"test/mqtt-test", "hello world!",

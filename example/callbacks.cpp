@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 
 	c.credentials("test-client", "username", "password")
 		.brokers("mqtt.broker", 1883)
-		.run();
+		.async_run(asio::detached);
 
 	run_with_callbacks(c);
 
