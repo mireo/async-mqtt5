@@ -8,6 +8,8 @@
 
 using namespace async_mqtt5;
 
+BOOST_AUTO_TEST_SUITE(malformed_packet/* , *boost::unit_test::disabled()*/)
+
 struct shared_test_data {
 	const std::string connect = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
@@ -32,9 +34,7 @@ struct shared_test_data {
 
 };
 
-BOOST_FIXTURE_TEST_SUITE(malformed_packet, shared_test_data/* , *boost::unit_test::disabled()*/)
-
-BOOST_AUTO_TEST_CASE(test_malformed_publish) {
+BOOST_FIXTURE_TEST_CASE(test_malformed_publish, shared_test_data) {
 	using test::after;
 	using std::chrono_literals::operator ""ms;
 
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_malformed_publish) {
 	BOOST_CHECK(broker.received_all_expected());
 }
 
-BOOST_AUTO_TEST_CASE(malformed_puback) {
+BOOST_FIXTURE_TEST_CASE(malformed_puback, shared_test_data) {
 	using test::after;
 	using std::chrono_literals::operator ""ms;
 
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(malformed_puback) {
 }
 
 
-BOOST_AUTO_TEST_CASE(malformed_pubrel) {
+BOOST_FIXTURE_TEST_CASE(malformed_pubrel, shared_test_data) {
 	using test::after;
 	using std::chrono_literals::operator ""ms;
 
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(malformed_pubrel) {
 	BOOST_CHECK(broker.received_all_expected());
 }
 
-BOOST_AUTO_TEST_CASE(malformed_pubrec) {
+BOOST_FIXTURE_TEST_CASE(malformed_pubrec, shared_test_data) {
 	using test::after;
 	using std::chrono_literals::operator ""ms;
 
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE(malformed_pubrec) {
 }
 
 
-BOOST_AUTO_TEST_CASE(malformed_pubcomp) {
+BOOST_FIXTURE_TEST_CASE(malformed_pubcomp, shared_test_data) {
 	using test::after;
 	using std::chrono_literals::operator ""ms;
 

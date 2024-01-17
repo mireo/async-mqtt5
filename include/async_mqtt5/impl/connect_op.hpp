@@ -214,7 +214,7 @@ public:
 		if (ec)
 			return complete(ec);
 
-		_buffer_ptr = std::make_unique<std::string>(min_packet_sz, 0);
+		_buffer_ptr = std::make_unique<std::string>(min_packet_sz, char(0));
 
 		auto buff = asio::buffer(_buffer_ptr->data(), min_packet_sz);
 		asio::async_read(
@@ -240,7 +240,7 @@ public:
 		);
 
 		if (!varlen)
-			complete(asio::error::try_again);
+			return complete(asio::error::try_again);
 
 		auto varlen_sz = std::distance(_buffer_ptr->cbegin() + 1, varlen_ptr);
 		auto remain_len = *varlen -
