@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
+#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 

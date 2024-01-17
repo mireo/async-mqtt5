@@ -172,6 +172,7 @@ BOOST_AUTO_TEST_CASE(async_run) {
 						"t_1", "p_1", retain_e::no, {},
 						[&](error_code ec, reason_code rc, auto) {
 							BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
+							BOOST_CHECK_EQUAL(rc, reason_codes::empty);
 							BOOST_CHECK(strand.running_in_this_thread());
 							++handlers_called;
 						}
