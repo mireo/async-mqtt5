@@ -20,8 +20,7 @@ using namespace async_mqtt5;
 
 BOOST_AUTO_TEST_SUITE(traits/*, *boost::unit_test::disabled()*/)
 
-class good_authenticator {
-public:
+struct good_authenticator {
 	good_authenticator() = default;
 
 	template <typename CompletionToken>
@@ -44,8 +43,7 @@ public:
 	}
 };
 
-class bad_authenticator {
-public:
+struct bad_authenticator {
 	bad_authenticator() = default;
 
 	void async_auth(std::string /* data */) {}

@@ -61,6 +61,18 @@ inline std::string_view code_to_str(control_code_e code) {
 	}
 }
 
+template <typename Props>
+inline std::string to_readable_props(Props props) {
+	std::ostringstream stream;
+	props.visit([&stream](const auto&, const auto& v) -> bool {
+		if constexpr (is_optional<decltype(v)>)
+			if (v.has_value())
+				stream << *v << " ";
+		return true;
+	});
+	return stream.str();
+}
+ 
 inline std::string to_readable_packet(std::string packet) {
 	auto control_byte = uint8_t(*packet.data());
 	auto code = extract_code(control_byte);
@@ -70,10 +82,7 @@ inline std::string to_readable_packet(std::string packet) {
 
 	std::ostringstream stream;
 
-	if (
-		code == control_code_e::connect || code == control_code_e::connack ||
-		code == control_code_e::disconnect
-	) {
+	if (code == control_code_e::connack || code == control_code_e::disconnect) {
 		stream << code_to_str(code);
 		return stream.str();
 	}
@@ -83,6 +92,13 @@ inline std::string to_readable_packet(std::string packet) {
 		begin, packet.cend(), decoders::basic::varint_
 	);
 
+	if (code == control_code_e::connect) {
+		auto connect = decoders::decode_connect(*varlen, begin);
+		auto& [cli_id, uname, pwd, keep_alive, clean_start, props, will] = *connect;
+		stream << code_to_str(code);
+		stream << " props: " << to_readable_props(props);
+		return stream.str();
+	}
 	if (code == control_code_e::publish) {
 		auto publish = decoders::decode_publish(
 			control_byte, *varlen, begin
@@ -91,6 +107,9 @@ inline std::string to_readable_packet(std::string packet) {
 		stream << code_to_str(code);
 		stream << (packet_id ? " " + std::to_string(*packet_id) : "");
 		stream << " flags: " << std::bitset<8>(flags);
+		stream << " topic: " << topic;
+		stream << " payload: " << payload;
+		stream << " props: " << to_readable_props(props);
 		return stream.str();
 	}
 

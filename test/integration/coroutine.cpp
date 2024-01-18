@@ -112,8 +112,7 @@ BOOST_AUTO_TEST_CASE(tcp_client_check) {
 	using client_type = mqtt_client<stream_type>;
 	client_type c(ioc, "");
 
-	c.credentials("tcp-tester", "", "")
-		.brokers("broker.hivemq.com", 1883)
+	c.brokers("broker.hivemq.com", 1883)
 		.will({ "test/mqtt-test", "Client disconnected!", qos_e::at_least_once })
 		.async_run(asio::detached);
 
