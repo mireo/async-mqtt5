@@ -45,6 +45,9 @@ public:
 	}
 
 	void perform() {
+		if (_auth.method().empty())
+			return;
+
 		auto auth_step = auth_step_e::client_initial;
 		return _auth.async_auth(
 			auth_step, "",
@@ -55,7 +58,7 @@ public:
 	void perform(decoders::auth_message auth_message) {
 		if (_auth.method().empty())
 			return on_auth_fail(
-				"Unexpected AUTH received.",
+				"Unexpected AUTH received",
 				disconnect_rc_e::protocol_error
 			);
 

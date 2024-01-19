@@ -82,7 +82,7 @@ inline std::string to_readable_packet(std::string packet) {
 
 	std::ostringstream stream;
 
-	if (code == control_code_e::connack || code == control_code_e::disconnect) {
+	if (code == control_code_e::connack || code == control_code_e::auth) {
 		stream << code_to_str(code);
 		return stream.str();
 	}
@@ -99,6 +99,16 @@ inline std::string to_readable_packet(std::string packet) {
 		stream << " props: " << to_readable_props(props);
 		return stream.str();
 	}
+
+	if (code == control_code_e::disconnect) {
+		auto disconnect = decoders::decode_disconnect(*varlen, begin);
+		auto& [rc, props] = *disconnect;
+		stream << code_to_str(code);
+		stream << " rc: " << int(rc);
+		stream << " reason string: " << props[prop::reason_string].value_or("");
+		return stream.str();
+	}
+
 	if (code == control_code_e::publish) {
 		auto publish = decoders::decode_publish(
 			control_byte, *varlen, begin

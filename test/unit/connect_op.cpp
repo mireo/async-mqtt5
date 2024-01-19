@@ -11,6 +11,7 @@
 
 #include <async_mqtt5/types.hpp>
 
+#include "test_common/test_authenticators.hpp"
 #include "test_common/test_stream.hpp"
 
 using namespace async_mqtt5;
@@ -30,7 +31,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using std::chrono_literals::operator ""ms;
+using namespace std::chrono;
 
 void run_unit_test(
 	detail::mqtt_ctx mqtt_ctx, test::msg_exchange broker_side,
@@ -58,7 +59,7 @@ void run_unit_test(
 		stream, std::move(handler), mqtt_ctx
 	).perform(eps, ap);
 
-	ioc.run_for(std::chrono::seconds(1));
+	ioc.run_for(1s);
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 	BOOST_CHECK(broker.received_all_expected());
 }
@@ -215,6 +216,7 @@ BOOST_FIXTURE_TEST_CASE(receive_unexpected_auth, shared_test_data) {
 	auth_props aprops;
 	aprops[prop::authentication_method] = "method";
 	aprops[prop::authentication_data] = "data";
+
 	auto auth = encoders::encode_auth(uint8_t(0x19), aprops);
 
 	test::msg_exchange broker_side;
@@ -231,33 +233,6 @@ BOOST_FIXTURE_TEST_CASE(receive_unexpected_auth, shared_test_data) {
 }
 
 // enhanced auth
-
-struct test_authenticator {
-	test_authenticator() = default;
-
-	template <typename CompletionToken>
-	decltype(auto) async_auth(
-		auth_step_e step, std::string data,
-		CompletionToken&& token
-	) {
-		using error_code = boost::system::error_code;
-		using Signature = void (error_code, std::string);
-
-		auto initiate = [](auto handler, auth_step_e, std::string) {
-			asio::dispatch(
-				asio::prepend(std::move(handler), error_code {}, "")
-			);
-		};
-
-		return asio::async_initiate<CompletionToken, Signature>(
-			initiate, token, step, std::move(data)
-		);
-	}
-
-	std::string_view method() const {
-		return "method";
-	}
-};
 
 struct shared_test_auth_data {
 	error_code success {};
@@ -308,12 +283,35 @@ BOOST_FIXTURE_TEST_CASE(successful_auth, shared_test_auth_data) {
 
 	detail::mqtt_ctx mqtt_ctx;
 	mqtt_ctx.co_props = init_connect_props();
-	mqtt_ctx.authenticator = test_authenticator();
+	mqtt_ctx.authenticator = test::test_authenticator();
+	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
+}
+
+BOOST_FIXTURE_TEST_CASE(successful_auth_multi_step, shared_test_auth_data) {
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(2ms))
+			.reply_with(auth_challenge, after(3ms))
+		.expect(auth_response)
+			.complete_with(success, after(2ms))
+			.reply_with(auth_challenge, after(4ms))
+		.expect(auth_response)
+			.complete_with(success, after(2ms))
+			.reply_with(connack, after(4ms));
+
+	auto handler = [&](error_code ec) {
+		BOOST_CHECK(ec == success);
+	};
+
+	detail::mqtt_ctx mqtt_ctx;
+	mqtt_ctx.co_props = init_connect_props();
+	mqtt_ctx.authenticator = test::test_authenticator();
 	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
 }
 
 BOOST_FIXTURE_TEST_CASE(malformed_auth_rc, shared_test_auth_data) {
-	const std::string malformed_auth_challenge = encoders::encode_auth(
+	auto malformed_auth_challenge = encoders::encode_auth(
 		reason_codes::server_busy.value(), init_auth_props()
 	);
 
@@ -329,7 +327,7 @@ BOOST_FIXTURE_TEST_CASE(malformed_auth_rc, shared_test_auth_data) {
 
 	detail::mqtt_ctx mqtt_ctx;
 	mqtt_ctx.co_props = init_connect_props();
-	mqtt_ctx.authenticator = test_authenticator();
+	mqtt_ctx.authenticator = test::test_authenticator();
 	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
 }
 
@@ -337,7 +335,7 @@ BOOST_FIXTURE_TEST_CASE(mismatched_auth_method, shared_test_auth_data) {
 	auth_props aprops;
 	aprops[prop::authentication_method] = "wrong method";
 
-	const std::string mismatched_auth_challenge = encoders::encode_auth(
+	auto mismatched_auth_challenge = encoders::encode_auth(
 		reason_codes::continue_authentication.value(), aprops
 	);
 
@@ -353,7 +351,7 @@ BOOST_FIXTURE_TEST_CASE(mismatched_auth_method, shared_test_auth_data) {
 
 	detail::mqtt_ctx mqtt_ctx;
 	mqtt_ctx.co_props = init_connect_props();
-	mqtt_ctx.authenticator = test_authenticator();
+	mqtt_ctx.authenticator = test::test_authenticator();
 	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
 }
 
@@ -372,41 +370,9 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_auth, shared_test_auth_data) {
 
 	detail::mqtt_ctx mqtt_ctx;
 	mqtt_ctx.co_props = init_connect_props();
-	mqtt_ctx.authenticator = test_authenticator();
+	mqtt_ctx.authenticator = test::test_authenticator();
 	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
 }
-
-template <auth_step_e fail_on_step>
-struct fail_test_authenticator {
-	fail_test_authenticator() = default;
-
-	template <typename CompletionToken>
-	decltype(auto) async_auth(
-		auth_step_e step, std::string data,
-		CompletionToken&& token
-	) {
-		using error_code = boost::system::error_code;
-		using Signature = void (error_code, std::string);
-
-		auto initiate = [](auto handler, auth_step_e step, std::string) {
-			error_code ec;
-			if (fail_on_step == step)
-				ec = asio::error::no_recovery;
-
-			asio::dispatch(
-				asio::prepend(std::move(handler), ec, "")
-			);
-		};
-
-		return asio::async_initiate<CompletionToken, Signature>(
-			initiate, token, step, std::move(data)
-		);
-	}
-
-	std::string_view method() const {
-		return "method";
-	}
-};
 
 BOOST_FIXTURE_TEST_CASE(auth_step_client_initial_fail, shared_test_auth_data) {
 	test::msg_exchange broker_side;
@@ -417,7 +383,7 @@ BOOST_FIXTURE_TEST_CASE(auth_step_client_initial_fail, shared_test_auth_data) {
 
 	detail::mqtt_ctx mqtt_ctx;
 	mqtt_ctx.co_props = init_connect_props();
-	mqtt_ctx.authenticator = fail_test_authenticator<auth_step_e::client_initial>();
+	mqtt_ctx.authenticator = test::fail_test_authenticator<auth_step_e::client_initial>();
 	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
 }
 
@@ -434,7 +400,7 @@ BOOST_FIXTURE_TEST_CASE(auth_step_server_challenge_fail, shared_test_auth_data) 
 
 	detail::mqtt_ctx mqtt_ctx;
 	mqtt_ctx.co_props = init_connect_props();
-	mqtt_ctx.authenticator = fail_test_authenticator<auth_step_e::server_challenge>();
+	mqtt_ctx.authenticator = test::fail_test_authenticator<auth_step_e::server_challenge>();
 	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
 }
 
@@ -454,7 +420,7 @@ BOOST_FIXTURE_TEST_CASE(auth_step_server_final_fail, shared_test_auth_data) {
 
 	detail::mqtt_ctx mqtt_ctx;
 	mqtt_ctx.co_props = init_connect_props();
-	mqtt_ctx.authenticator = fail_test_authenticator<auth_step_e::server_final>();
+	mqtt_ctx.authenticator = test::fail_test_authenticator<auth_step_e::server_final>();
 	run_unit_test(std::move(mqtt_ctx), std::move(broker_side), std::move(handler));
 }
 

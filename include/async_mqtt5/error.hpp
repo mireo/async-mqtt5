@@ -517,7 +517,7 @@ template <
 >
 std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
-		success, continue_authentication
+		success, continue_authentication, reauthenticate
 	};
 	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
 	return std::make_pair(valid_codes, len);
@@ -594,13 +594,13 @@ template <
 std::pair<reason_code*, size_t> valid_codes() {
 	static reason_code valid_codes[] = {
 		normal_disconnection, unspecified_error,
-		malformed_packet,protocol_error,
+		malformed_packet, protocol_error,
 		implementation_specific_error, not_authorized,
 		server_busy, server_shutting_down,
 		keep_alive_timeout, session_taken_over,
 		topic_filter_invalid, topic_name_invalid,
 		receive_maximum_exceeded, topic_alias_invalid,
-		packet_too_large,message_rate_too_high,
+		packet_too_large, message_rate_too_high,
 		quota_exceeded, administrative_action,
 		payload_format_invalid, retain_not_supported,
 		qos_not_supported, use_another_server,
