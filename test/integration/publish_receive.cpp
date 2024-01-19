@@ -46,7 +46,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using std::chrono_literals::operator ""ms;
+using namespace std::chrono;
 
 void run_test(test::msg_exchange broker_side) {
 	constexpr int expected_handlers_called = 1;
@@ -124,7 +124,6 @@ BOOST_FIXTURE_TEST_CASE(test_receive_publish_qos2, shared_test_data) {
 
 	run_test(std::move(broker_side));
 }
-
 
 BOOST_FIXTURE_TEST_CASE(fail_to_send_pubrec, shared_test_data) {
 	auto publish_dup = encoders::encode_publish(

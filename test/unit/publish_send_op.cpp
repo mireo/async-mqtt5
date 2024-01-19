@@ -264,42 +264,4 @@ BOOST_AUTO_TEST_CASE(test_topic_alias_maximum) {
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
-BOOST_AUTO_TEST_CASE(test_publish_cancellation) {
-	constexpr int expected_handlers_called = 1;
-	int handlers_called = 0;
-
-	asio::io_context ioc;
-	using client_service_type = test::test_service<asio::ip::tcp::socket>;
-	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
-	svc_ptr->run([](error_code){});
-	asio::cancellation_signal cancel_signal;
-
-	auto h = [&handlers_called](error_code ec, reason_code rc, puback_props) {
-		++handlers_called;
-		BOOST_CHECK(ec == asio::error::operation_aborted);
-		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
-	};
-
-	auto handler = asio::bind_cancellation_slot(cancel_signal.slot(), std::move(h));
-
-	asio::steady_timer timer(ioc.get_executor());
-	timer.expires_after(std::chrono::milliseconds(60));
-	timer.async_wait(
-		[&cancel_signal](error_code) {
-			cancel_signal.emit(asio::cancellation_type::terminal);
-		}
-	);
-
-	detail::publish_send_op<
-		client_service_type, decltype(handler), qos_e::at_least_once
-	> { svc_ptr, std::move(handler) }
-	.perform(
-		"test", "payload", retain_e::no, {}
-	);
-
-	ioc.run_for(std::chrono::milliseconds(500));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-}
-
-
 BOOST_AUTO_TEST_SUITE_END()

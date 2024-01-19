@@ -126,7 +126,7 @@ public:
 
 		_svc_ptr->async_wait_reply(
 			control_code_e::unsuback, packet_id,
-			asio::prepend(std::move(*this), on_unsuback{}, std::move(packet))
+			asio::prepend(std::move(*this), on_unsuback {}, std::move(packet))
 		);
 	}
 
