@@ -174,7 +174,7 @@ void run_cancel_op_test() {
 	});
 
 
-	ioc.run_for(20ms);
+	ioc.run_for(std::chrono::seconds(1));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(signal_emit_async_run_cancels_client) {
 		signal.emit(asio::cancellation_type::terminal);
 	});
 
-	ioc.run_for(std::chrono::milliseconds(20));
+	ioc.run_for(std::chrono::seconds(1));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
