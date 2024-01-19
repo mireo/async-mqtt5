@@ -127,9 +127,29 @@ jobs:
             cxxflags: ''
             ldflags: ''
 
+          - toolset: g++-12
+            compiler: g++-12
+            install: g++-12
+            os: ubuntu-latest
+            container: ubuntu:22.04
+            build-type: 'Release'
+            cxxstd: 20
+            cxxflags: ''
+            ldflags: ''
+
           - toolset: clang++-12
             compiler: clang++-12
             install: clang++-12
+            os: ubuntu-latest
+            container: ubuntu:22.04
+            build-type: 'Release'
+            cxxstd: 17
+            cxxflags: '-fdeclspec'
+            ldflags: ''
+
+          - toolset: clang++-13
+            compiler: clang++-13
+            install: clang++-13
             os: ubuntu-latest
             container: ubuntu:22.04
             build-type: 'Release'

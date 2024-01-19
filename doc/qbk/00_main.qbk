@@ -1,4 +1,4 @@
-[library Async.MQTT5: a C++20 MQTT client
+[library Async.MQTT5: a C++17 MQTT client
     [quickbook 1.7]
     [copyright 2023 Mireo]
     [id async_mqtt5]

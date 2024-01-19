@@ -1,5 +1,10 @@
-Async.MQTT5: A ~~C++20~~ C++17 MQTT client based on Boost.Asio
+Async.MQTT5: A C++17 MQTT client based on Boost.Asio
 ===============================
+
+Branch | Windows/Linux Build | Coverage | Documentation |
+-------|---------------------|----------|---------------|
+[`master`](https://github.com/mireo/async-mqtt5/tree/master) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/master) | [Documentation](https://spacetime.mireo.com/async-mqtt5/)
+
 Async.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. Async.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
 
 Our clear intention is to include the Async.MQTT5 library into [Boost](https://www.boost.org/). We are actively working on it.
@@ -106,8 +111,8 @@ Async.MQTT5 is a header-only library. To use Async.MQTT5 it requires the followi
 - **OpenSSL**. Only if you require an SSL connection by using [boost::asio::ssl::stream](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio/reference/ssl__stream.html).
 
 Async.MQTT5 has been tested with the following compilers: 
-- clang 14.0 (Linux)
-- GCC 12 (Linux)
+- clang 12.0, 13.0, 14.0, 15.0 (Linux)
+- GCC 10, 11, 12 (Linux)
 - MSVC 14.37 - Visual Studio 2022 (Windows)
 
 Contributing
@@ -119,7 +124,7 @@ You may merge a Pull Request once you have the sign-off from other developers, o
 License
 ---------
 
-Copyright (c) 2001-2023 Mireo, EU
+Copyright (c) 2001-2024 Mireo, EU
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

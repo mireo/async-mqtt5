@@ -190,6 +190,28 @@ BOOST_FIXTURE_TEST_CASE(async_auth_fail, shared_test_data) {
 	);
 }
 
+BOOST_FIXTURE_TEST_CASE(unexpected_auth, shared_test_data) {
+	auto connect_no_auth = encoders::encode_connect(
+		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+	);
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::protocol_error.value(),
+		dprops_with_reason_string("Unexpected AUTH received")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect_no_auth)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(1ms))
+		.send(auth_challenge, after(50ms))
+		.expect(disconnect);
+
+	run_test(
+		std::move(broker_side)
+	);
+}
+
 BOOST_FIXTURE_TEST_CASE(re_auth_without_authenticator, shared_test_data) {
 	auto connect_no_auth = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt

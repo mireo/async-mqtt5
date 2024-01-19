@@ -60,18 +60,19 @@ The following example illustrates a simple scenario of configuring a Client and 
 		using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
 		client_type c(ioc, "");
 
-		c.credentials("clientid", "", "")
-			.brokers("mqtt.broker", 1883)
+		c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
+			.brokers("<your-mqtt-broker>", 1883)
 			.async_run(asio::detached);
 
 		c.async_publish<async_mqtt5::qos_e::at_most_once>(
-			"test/mqtt-test", "hello world!",
+			"<topic>", "Hello world!",
 			async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-			[](async_mqtt5::error_code ec) {
+			[&c](async_mqtt5::error_code ec) {
 				std::cout << ec.message() << std::endl;
+				c.async_disconnect(boost::asio::detached); // disconnect and close the client
 			}
 		);
-		
+
 		ioc.run();
 	}
 
@@ -102,8 +103,9 @@ To use __Self__ it requires the following:
 
 __Self__ has been tested with the following compilers:
 
-* clang 14.0 (Linux)
-* MSVC 14.37 - Visual Studio 2022 (Windows) 
+* clang 12.0, 13.0, 14.0, 15.0 (Linux)
+* GCC 10, 11, 12 (Linux)
+* MSVC 14.37 - Visual Studio 2022 (Windows)
 
 [heading Acknowledgements]
 We thank [@https://github.com/chriskohlhoff Christopher Kohlhoff] for his outstanding __Asio__ library,
