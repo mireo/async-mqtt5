@@ -338,7 +338,6 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
 		[&]() -> asio::awaitable<void> {
 			mqtt_client<test::test_stream> c(ioc, "");
 			c.brokers("127.0.0.1,127.0.0.1", 1883) // to avoid reconnect backoff
-				.credentials("cliend-id", "", "")
 				.async_run(asio::detached);
 
 			auto [ec, rc, props] = co_await c.async_publish<qos_e::at_least_once>(
