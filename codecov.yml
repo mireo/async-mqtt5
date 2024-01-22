@@ -1,0 +1,23 @@
+codecov:
+  require_ci_to_pass: true
+
+comment:
+  behavior: default
+  layout: reach,diff,flags,tree,reach
+  show_carryforward_flags: false
+
+coverage:
+  precision: 2
+  round: down
+  status:
+    changes: false
+    default_rules:
+      flag_coverage_not_uploaded_behavior: include
+    patch:
+      default:
+        informational: true
+    project:
+      default:
+        informational: true
+github_checks:
+  annotations: true

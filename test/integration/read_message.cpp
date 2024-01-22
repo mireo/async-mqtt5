@@ -1,8 +1,5 @@
 #include <boost/test/unit_test.hpp>
 
-#include <boost/asio/prepend.hpp>
-#include <boost/asio/post.hpp>
-
 #include <async_mqtt5/mqtt_client.hpp>
 
 #include "test_common/message_exchange.hpp"
@@ -13,12 +10,12 @@ using namespace async_mqtt5;
 
 BOOST_AUTO_TEST_SUITE(read_message/*, *boost::unit_test::disabled()*/)
 
+using test::after;
+using namespace std::chrono;
+
 void test_receive_malformed_packet(
 	std::string malformed_packet, std::string reason_string
 ) {
-	using test::after;
-	using std::chrono_literals::operator ""ms;
-
 	// packets
 	auto connect = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
@@ -102,10 +99,16 @@ BOOST_AUTO_TEST_CASE(receive_malformed_publish) {
 	);
 }
 
-BOOST_AUTO_TEST_CASE(receive_disconnect) {
-	using test::after;
-	using std::chrono_literals::operator ""ms;
+struct shared_test_data {
+	error_code success {};
 
+	const std::string connect = encoders::encode_connect(
+		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+	);
+	const std::string connack = encoders::encode_connack(false, uint8_t(0x00), {});
+};
+
+BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
 	// packets
 	auto connect = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
@@ -147,10 +150,7 @@ BOOST_AUTO_TEST_CASE(receive_disconnect) {
 
 }
 
-BOOST_AUTO_TEST_CASE(receive_pingresp) {
-	using test::after;
-	using std::chrono_literals::operator ""ms;
-
+BOOST_FIXTURE_TEST_CASE(receive_pingresp, shared_test_data) {
 	// packets
 	auto connect = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
@@ -189,10 +189,7 @@ BOOST_AUTO_TEST_CASE(receive_pingresp) {
 }
 
 
-BOOST_AUTO_TEST_CASE(send_byte_by_byte) {
-	using test::after;
-	using std::chrono_literals::operator ""ms;
-
+BOOST_FIXTURE_TEST_CASE(receive_byte_by_byte, shared_test_data) {
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
 

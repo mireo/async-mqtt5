@@ -105,7 +105,6 @@ BOOST_FIXTURE_TEST_CASE(connection_refused, shared_test_data) {
 	run_unit_test(std::move(broker_side), std::move(handler));
 }
 
-
 BOOST_FIXTURE_TEST_CASE(access_denied, shared_test_data) {
 	auto denied_connack = encoders::encode_connack(
 		true, reason_codes::bad_username_or_password.value(), {}
@@ -136,7 +135,6 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_connect, shared_test_data) {
 
 	run_unit_test(std::move(broker_side), std::move(handler));
 }
-
 
 BOOST_FIXTURE_TEST_CASE(receive_wrong_packet, shared_test_data) {
 	// packets

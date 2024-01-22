@@ -8,7 +8,7 @@ env:
 
 jobs:
   posix:
-    name: "coverage ${{matrix.compiler}} -std=c++${{matrix.cxxstd}}"
+    name: "coverage ${{ matrix.compiler }} -std=c++${{ matrix.cxxstd }}"
     defaults:
       run:
         shell: bash
@@ -66,7 +66,7 @@ jobs:
           cmake --build test/build -j 4
 
       - name: Run tests
-        run: ./test/build/mqtt-test --log_level=test_suite
+        run: ./test/build/mqtt-test
 
       - name: Generate Coverage Report
         run: |

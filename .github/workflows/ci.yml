@@ -104,7 +104,7 @@ jobs:
 
     - name: Run tests
       run: |
-        .\\test\\build\\${{ matrix.build-type }}\\mqtt-test.exe --log_level=test_suite
+        .\\test\\build\\${{ matrix.build-type }}\\mqtt-test.exe
 
   posix:
     name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
@@ -220,4 +220,4 @@ jobs:
           cmake --build test/build -j 4
 
       - name: Run tests
-        run: ./test/build/mqtt-test --log_level=test_suite
+        run: ./test/build/mqtt-test

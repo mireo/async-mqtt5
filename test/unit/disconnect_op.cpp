@@ -17,49 +17,50 @@ using namespace async_mqtt5;
 
 BOOST_AUTO_TEST_SUITE(disconnect_op/*, *boost::unit_test::disabled()*/)
 
-
-BOOST_AUTO_TEST_CASE(test_malformed_packet) {
-	std::string malformed_str = std::string{ 0x01 };
-
-	disconnect_props invalid_user_props;
-	invalid_user_props[prop::user_property].push_back(malformed_str);
-
-	disconnect_props invalid_reason_string;
-	invalid_reason_string[prop::reason_string] = malformed_str;
-
-	std::vector<disconnect_props> testing_props = {
-		invalid_user_props, invalid_reason_string
-	};
-
-	int expected_handlers_called = static_cast<int>(testing_props.size());
+void run_malformed_props_test(const disconnect_props& dprops) {
+	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
 
 	asio::io_context ioc;
 	using client_service_type = test::test_service<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
 
-	for (const auto& props : testing_props) {
-		auto handler = [&handlers_called](error_code ec) {
-			++handlers_called;
-			BOOST_CHECK(ec == client::error::malformed_packet);
-		};
 
-		detail::disconnect_ctx ctx;
-		ctx.props = props;
+	auto handler = [&handlers_called](error_code ec) {
+		++handlers_called;
+		BOOST_CHECK(ec == client::error::malformed_packet);
+	};
 
-		detail::disconnect_op<
-			client_service_type, detail::disconnect_ctx
-		> { svc_ptr, std::move(ctx), std::move(handler) }
-		.perform();
-	}
+	detail::disconnect_ctx ctx;
+	ctx.props = dprops;
+
+	detail::disconnect_op<
+		client_service_type, detail::disconnect_ctx
+	> { svc_ptr, std::move(ctx), std::move(handler) }
+	.perform();
 
 	ioc.run_for(std::chrono::milliseconds(500));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 }
 
-BOOST_AUTO_TEST_CASE(test_omitting_props) {
+
+BOOST_AUTO_TEST_CASE(malformed_reason_string) {
+	disconnect_props dprops;
+	dprops[prop::reason_string] = std::string { 0x01 };
+
+	run_malformed_props_test(dprops);
+}
+
+BOOST_AUTO_TEST_CASE(malformed_user_property) {
+	disconnect_props dprops;
+	dprops[prop::user_property].push_back(std::string { 0x01 });
+
+	run_malformed_props_test(dprops);
+}
+
+BOOST_AUTO_TEST_CASE(omit_props) {
 	using test::after;
-	using std::chrono_literals::operator ""ms;
+	using namespace std::chrono;
 
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
@@ -106,18 +107,18 @@ BOOST_AUTO_TEST_CASE(test_omitting_props) {
 		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::milliseconds(200));
+	timer.expires_after(std::chrono::milliseconds(50));
 	timer.async_wait([&](auto) {
 		c.async_disconnect(
 			disconnect_rc_e::normal_disconnection, props,
-			[&](error_code ec) {
+			[&handlers_called](error_code ec) {
 				handlers_called++;
 				BOOST_CHECK(!ec);
 			}
 		);
 	});
 
-	ioc.run_for(std::chrono::seconds(5));
+	ioc.run_for(std::chrono::seconds(2));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 	BOOST_CHECK(broker.received_all_expected());
 }
