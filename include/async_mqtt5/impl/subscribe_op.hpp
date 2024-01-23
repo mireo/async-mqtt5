@@ -229,7 +229,7 @@ private:
 		return (min_subscription_identifier <= *sub_id &&
 			*sub_id <= max_subscription_identifier) ?
 				error_code {} :
-				client::error::subscription_identifier_not_available;
+				client::error::malformed_packet;
 	}
 
 	static std::vector<reason_code> to_reason_codes(
