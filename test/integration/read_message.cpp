@@ -57,8 +57,8 @@ void test_receive_malformed_packet(
 		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::milliseconds(100));
-	timer.async_wait([&](auto) { c.cancel(); });
+	timer.expires_after(100ms);
+	timer.async_wait([&c](error_code) { c.cancel(); });
 
 	ioc.run();
 	BOOST_CHECK(broker.received_all_expected());
@@ -110,16 +110,9 @@ struct shared_test_data {
 
 BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
 	// packets
-	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
-	);
-	auto connack = encoders::encode_connack(false, reason_codes::success.value(), {});
-
 	auto disconnect = encoders::encode_disconnect(0x00, {});
 
 	test::msg_exchange broker_side;
-	error_code success {};
-
 	broker_side
 		.expect(connect)
 			.complete_with(success, after(0ms))
@@ -142,8 +135,8 @@ BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
 		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::milliseconds(100));
-	timer.async_wait([&](auto) { c.cancel(); });
+	timer.expires_after(100ms);
+	timer.async_wait([&c](error_code) { c.cancel(); });
 
 	ioc.run();
 	BOOST_CHECK(broker.received_all_expected());
@@ -152,22 +145,14 @@ BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
 
 BOOST_FIXTURE_TEST_CASE(receive_pingresp, shared_test_data) {
 	// packets
-	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
-	);
-	auto connack = encoders::encode_connack(false, reason_codes::success.value(), {});
-
 	auto pingresp = encoders::encode_pingresp();
 
 	test::msg_exchange broker_side;
-	error_code success {};
-
 	broker_side
 		.expect(connect)
 			.complete_with(success, after(0ms))
 			.reply_with(connack, after(0ms))
 		.send(pingresp, after(10ms));
-
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
@@ -181,13 +166,12 @@ BOOST_FIXTURE_TEST_CASE(receive_pingresp, shared_test_data) {
 		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::milliseconds(100));
-	timer.async_wait([&](auto) { c.cancel(); });
+	timer.expires_after(100ms);
+	timer.async_wait([&c](error_code) { c.cancel(); });
 
 	ioc.run();
 	BOOST_CHECK(broker.received_all_expected());
 }
-
 
 BOOST_FIXTURE_TEST_CASE(receive_byte_by_byte, shared_test_data) {
 	constexpr int expected_handlers_called = 1;
@@ -198,18 +182,11 @@ BOOST_FIXTURE_TEST_CASE(receive_byte_by_byte, shared_test_data) {
 	std::string payload = "payload";
 
 	// packets
-	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
-	);
-	auto connack = encoders::encode_connack(false, reason_codes::success.value(), {});
-
 	auto publish = encoders::encode_publish(
 		0, topic, payload, qos_e::at_most_once, retain_e::no, dup_e::no, {}
 	);
 
 	test::msg_exchange broker_side;
-	error_code success {};
-
 	broker_side
 		.expect(connect)
 			.complete_with(success, after(0ms))
@@ -243,7 +220,7 @@ BOOST_FIXTURE_TEST_CASE(receive_byte_by_byte, shared_test_data) {
 		c.cancel();
 	});
 
-	ioc.run_for(std::chrono::milliseconds(100));
+	ioc.run_for(100ms);
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 	BOOST_CHECK(broker.received_all_expected());
 }

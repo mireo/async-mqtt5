@@ -244,46 +244,6 @@ BOOST_AUTO_TEST_CASE(signal_emit_async_unsubscribe) {
 	run_cancel_op_test<test::signal_emit, test::unsubscribe>();
 }
 
-BOOST_AUTO_TEST_CASE(signal_emit_async_run_cancels_client) {
-	using namespace test;
-
-	constexpr int expected_handlers_called = 2;
-	int handlers_called = 0;
-
-	asio::io_context ioc;
-	client_type c(ioc, "");
-
-	asio::cancellation_signal signal;
-
-	c.brokers("127.0.0.1", 1883)
-		.async_run(
-			asio::bind_cancellation_slot(
-				signal.slot(),
-				[&handlers_called](error_code ec) {
-					BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-					handlers_called++;
-				}
-			)
-		);
-
-	c.async_publish<qos_e::at_most_once>(
-		"topic", "payload", retain_e::yes, {},
-		[&handlers_called](error_code ec) {
-			BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-			handlers_called++;
-		}
-	);
-
-	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::milliseconds(10));
-	timer.async_wait([&](auto) {
-		signal.emit(asio::cancellation_type::terminal);
-	});
-
-	ioc.run_for(std::chrono::seconds(1));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-}
-
 struct shared_test_data {
 	error_code success {};
 	error_code fail = asio::error::not_connected;

@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(executors)
 
 BOOST_AUTO_TEST_CASE(async_run) {
 	using test::after;
-	using std::chrono_literals::operator ""ms;
+	using namespace std::chrono;
 
 	constexpr int expected_handlers_called = 9;
 	int handlers_called = 0;
