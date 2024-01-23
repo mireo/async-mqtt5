@@ -2,7 +2,6 @@
 
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
 
@@ -12,7 +11,7 @@
 
 using namespace async_mqtt5;
 
-BOOST_AUTO_TEST_SUITE(publish_receive/*, *boost::unit_test::disabled()*/)
+BOOST_AUTO_TEST_SUITE(receive_publish/*, *boost::unit_test::disabled()*/)
 
 struct shared_test_data {
 	error_code success {};
@@ -63,29 +62,27 @@ void run_test(test::msg_exchange broker_side) {
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
 		.async_run(asio::detached);
 
-	c.async_receive(
-		[&](
-			error_code ec,
-			std::string rec_topic, std::string rec_payload,
-			publish_props
-		) {
+	c.async_receive([&handlers_called, &c](
+			error_code ec, std::string rec_topic, std::string rec_payload, publish_props
+		){
 			++handlers_called;
 
+			auto data = shared_test_data();
 			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(shared_test_data().topic, rec_topic);
-			BOOST_CHECK_EQUAL(shared_test_data().payload,  rec_payload);
+			BOOST_CHECK_EQUAL(data.topic, rec_topic);
+			BOOST_CHECK_EQUAL(data.payload, rec_payload);
 
 			c.cancel();
 		}
 	);
 
-	ioc.run_for(std::chrono::seconds(10));
+	ioc.run_for(3s);
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 	BOOST_CHECK(broker.received_all_expected());
 }
 
-
-BOOST_FIXTURE_TEST_CASE(test_receive_publish_qos0, shared_test_data) {
+ 
+BOOST_FIXTURE_TEST_CASE(receive_publish_qos0, shared_test_data) {
 	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect)
@@ -96,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(test_receive_publish_qos0, shared_test_data) {
 	run_test(std::move(broker_side));
 }
 
-BOOST_FIXTURE_TEST_CASE(test_receive_publish_qos1, shared_test_data) {
+BOOST_FIXTURE_TEST_CASE(receive_publish_qos1, shared_test_data) {
 	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect)
@@ -109,7 +106,7 @@ BOOST_FIXTURE_TEST_CASE(test_receive_publish_qos1, shared_test_data) {
 	run_test(std::move(broker_side));
 }
 
-BOOST_FIXTURE_TEST_CASE(test_receive_publish_qos2, shared_test_data) {
+BOOST_FIXTURE_TEST_CASE(receive_publish_qos2, shared_test_data) {
 	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect)
@@ -125,7 +122,123 @@ BOOST_FIXTURE_TEST_CASE(test_receive_publish_qos2, shared_test_data) {
 	run_test(std::move(broker_side));
 }
 
+disconnect_props dprops_with_reason_string(const std::string& reason_string) {
+	disconnect_props dprops;
+	dprops[prop::reason_string] = reason_string;
+	return dprops;
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_malformed_publish, shared_test_data) {
+	// packets
+	auto malformed_publish = encoders::encode_publish(
+		1, "malformed topic", "malformed payload",
+		static_cast<qos_e>(0b11), retain_e::yes, dup_e::no, {}
+	);
+
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::malformed_packet.value(),
+		dprops_with_reason_string("Malformed PUBLISH received: QoS bits set to 0b11")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(malformed_publish, after(10ms))
+		.expect(disconnect)
+			.complete_with(success, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(publish_qos0, after(50ms));
+
+	run_test(std::move(broker_side));
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_malformed_pubrel, shared_test_data) {
+	// packets
+	auto malformed_pubrel = encoders::encode_pubrel(1, uint8_t(0x04), {});
+
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::malformed_packet.value(),
+		dprops_with_reason_string("Malformed PUBREL received: invalid Reason Code")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(publish_qos2, after(10ms))
+		.expect(pubrec)
+			.complete_with(success, after(1ms))
+			.reply_with(malformed_pubrel, after(2ms))
+		.expect(disconnect)
+			.complete_with(success, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(pubrel, after(100ms))
+		.expect(pubcomp)
+			.complete_with(success, after(1ms));
+
+	run_test(std::move(broker_side));
+}
+
+BOOST_FIXTURE_TEST_CASE(fail_to_send_puback, shared_test_data) {
+	// packets
+	auto publish_qos1_dup = encoders::encode_publish(
+		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::yes, {}
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(publish_qos1, after(3ms))
+		.expect(puback)
+			.complete_with(fail, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.send(publish_qos1_dup, after(100ms))
+		.expect(puback)
+			.complete_with(success, after(1ms));
+
+	run_test(std::move(broker_side));
+}
+
 BOOST_FIXTURE_TEST_CASE(fail_to_send_pubrec, shared_test_data) {
+	// packets
+	auto publish_qos2_dup = encoders::encode_publish(
+		1, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::yes, {}
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(publish_qos2, after(3ms))
+		.expect(pubrec)
+			.complete_with(fail, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(publish_qos2_dup, after(100ms))
+		.expect(pubrec)
+			.complete_with(success, after(1ms))
+			.reply_with(pubrel, after(2ms))
+		.expect(pubcomp)
+			.complete_with(success, after(1ms));
+
+	run_test(std::move(broker_side));
+}
+
+BOOST_FIXTURE_TEST_CASE(broker_fails_to_receive_pubrec, shared_test_data) {
+	// packets
 	auto publish_dup = encoders::encode_publish(
 		1, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::yes, {}
 	);
