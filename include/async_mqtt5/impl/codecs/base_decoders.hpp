@@ -390,6 +390,10 @@ bool parse_to_prop(
 
 	if constexpr (async_mqtt5::is_vector<prop_type>) {
 		std::string value;
+		// key
+		rv = basic::utf8_.parse(iter, last, ctx, rctx, value);
+		if (rv) prop.push_back(std::move(value));
+		// value
 		rv = basic::utf8_.parse(iter, last, ctx, rctx, value);
 		if (rv) prop.push_back(std::move(value));
 	}
@@ -439,7 +443,7 @@ public:
 
 			// either rv = false or property with prop_id was not found
 			if (!rv || iter == saved)
-				break;
+				return false;
 		}
 
 		first = iter;

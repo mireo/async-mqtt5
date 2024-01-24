@@ -370,7 +370,7 @@ using encoder_types = std::tuple<
 	prop_encoder_type<pp::content_type_t, basic::utf8_def>,
 	prop_encoder_type<pp::response_topic_t, basic::utf8_def>,
 	prop_encoder_type<pp::correlation_data_t, basic::utf8_def>,
-	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<basic::varint_t>>, // varint
+	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<basic::varint_t>>,
 	prop_encoder_type<pp::session_expiry_interval_t, basic::int_def<int32_t>>,
 	prop_encoder_type<pp::assigned_client_identifier_t, basic::utf8_def>,
 	prop_encoder_type<pp::server_keep_alive_t, basic::int_def<int16_t>>,
@@ -454,12 +454,19 @@ public:
 
 	size_t byte_size() const {
 		if (_val.empty()) return 0;
+
 		size_t total_size = 0;
-		for (const auto& pr: _val) {
-			auto sval = encoder_for_prop<p>(pr);
-			size_t prop_size = sval.byte_size();
-			if (prop_size) total_size += 1 + prop_size;
+		for (size_t i = 0; i < _val.size() && i + 1 < _val.size(); i += 2) {
+			auto skey = encoder_for_prop<p>(_val[i]);
+			size_t key_size = skey.byte_size();
+
+			auto sval = encoder_for_prop<p>(_val[i + 1]);
+			size_t val_size = sval.byte_size();
+
+			if (key_size && val_size)
+				total_size += 1 + key_size + val_size;
 		}
+
 		return total_size;
 	}
 
@@ -467,11 +474,16 @@ public:
 		if (_val.empty())
 			return s;
 
-		for (const auto& pr: _val) {
-			auto sval = encoder_for_prop<p>(pr);
+		for (size_t i = 0; i < _val.size() && i + 1 < _val.size(); i += 2) {
 			s.push_back(p);
+
+			auto skey = encoder_for_prop<p>(_val[i]);
+			skey.encode(s);
+
+			auto sval = encoder_for_prop<p>(_val[i + 1]);
 			sval.encode(s);
 		}
+
 		return s;
 	}
 };
