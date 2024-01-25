@@ -4,6 +4,10 @@
 #include <string>
 #include <bitset>
 
+#include <boost/algorithm/string/join.hpp>
+
+#include <boost/range/algorithm/transform.hpp>
+
 #include <async_mqtt5/detail/control_packet.hpp>
 
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
@@ -11,7 +15,14 @@
 
 namespace async_mqtt5::test {
 
-using error_code = boost::system::error_code;
+template <typename ...Strings>
+std::string concat_strings(Strings&&... strings) {
+	std::ostringstream stream;
+	(stream << ... << std::forward<Strings>(strings));
+	return stream.str();
+}
+
+namespace detail {
 
 inline qos_e extract_qos(uint8_t flags) {
 	auto byte = (flags & 0b0110) >> 1;
@@ -68,23 +79,233 @@ inline std::string to_readable_props(Props props) {
 		if constexpr (is_optional<decltype(v)>)
 			if (v.has_value())
 				stream << *v << " ";
+		if constexpr (is_vector<decltype(v)>)
+			stream << boost::algorithm::join(v, ",");
 		return true;
 	});
 	return stream.str();
 }
- 
+
+using byte_citer = std::string::const_iterator;
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::connect, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	auto connect = decoders::decode_connect(remain_length, it);
+	if (!connect.has_value())
+		return "Cannot decode Connect packet!";
+	auto& [cli_id, uname, pwd, keep_alive, clean_start, props, will] = *connect;
+
+	return concat_strings(
+		code_to_str(code),
+		" uname: ", uname.value_or(""), " pwd: ", pwd.value_or(""),
+		" keep_alive: ", keep_alive, " clean_start: ", clean_start,
+		" props: ", to_readable_props(props)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::connack, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	auto connack = decoders::decode_connack(remain_length, it);
+	if (!connack.has_value())
+		return "Cannot decode Connack packet!";
+	auto& [session_present, reason_code, props] = *connack;
+
+	return concat_strings(
+		code_to_str(code),
+		" session_present: ", session_present, " reason_code: ", reason_code,
+		" props: ", to_readable_props(props)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::disconnect, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	auto disconnect = decoders::decode_disconnect(remain_length, it);
+	if (!disconnect.has_value())
+		return "Cannot decode Disconnect packet!";
+	auto& [reason_code, props] = *disconnect;
+
+	return concat_strings(
+		code_to_str(code),
+		" reason_code: ", std::to_string(uint8_t(reason_code)),
+		" props: ", to_readable_props(props)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::publish, bool> = true
+>
+inline std::string to_string(
+	uint8_t control_byte, uint32_t remain_length, byte_citer& it
+) {
+	auto publish = decoders::decode_publish(control_byte, remain_length, it);
+	if (!publish.has_value())
+		return "Cannot decode Publish packet!";
+	auto& [topic, packet_id, flags, props, payload] = *publish;
+
+	return concat_strings(
+		code_to_str(code), (packet_id ? " " + std::to_string(*packet_id) : ""),
+		" flags: ", std::bitset<8>(flags),
+		" topic: ", topic, " payload: ", payload,
+		" props: ", to_readable_props(props)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<
+		code == control_code_e::puback || code == control_code_e::pubrec ||
+		code == control_code_e::pubrel || code == control_code_e::pubcomp,
+	bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	const auto packet_id = decoders::decode_packet_id(it).value_or(0);
+	remain_length -= sizeof(uint16_t);
+	uint8_t reason_code = remain_length == 0 ? 0 : uint8_t(*it);
+	return concat_strings(
+		code_to_str(code),
+		" packet_id: ", packet_id, " reason_code: ", std::to_string(reason_code)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::auth, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	auto auth = decoders::decode_auth(remain_length, it);
+	if (!auth.has_value())
+		return "Cannot decode Auth packet!";
+	auto& [reason_code, props] = *auth;
+
+	return concat_strings(
+		code_to_str(code),
+		" reason_code: ", std::to_string(uint8_t(reason_code)),
+		" props: ", to_readable_props(props)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::subscribe, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	const auto packet_id = decoders::decode_packet_id(it).value_or(0);
+	remain_length -= sizeof(uint16_t);
+	auto subscribe = decoders::decode_subscribe(remain_length, it);
+	if (!subscribe.has_value())
+		return "Cannot decode Subscribe packet!";
+	auto& [props, topics] = *subscribe;
+
+	std::vector<std::string> topics_str;
+	topics_str.resize(topics.size());
+	boost::transform(
+		boost::make_iterator_range(topics.cbegin(), topics.cend()),
+		topics_str.begin(),
+		[](const auto& tuple) {
+			auto& [topic, options] = tuple;
+			return concat_strings(topic, " ", std::bitset<8>(options));
+		}
+	);
+	return concat_strings(
+		code_to_str(code),
+		" packet_id: ", packet_id,
+		" topics: ", boost::algorithm::join(topics_str, ","),
+		" props: ", to_readable_props(props)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::unsubscribe, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	const auto packet_id = decoders::decode_packet_id(it).value_or(0);
+	remain_length -= sizeof(uint16_t);
+	auto unsubscribe = decoders::decode_unsubscribe(remain_length, it);
+	if (!unsubscribe.has_value())
+		return "Cannot decode Unsubscribe packet!";
+	auto& [props, topics] = *unsubscribe;
+
+	return concat_strings(
+		code_to_str(code),
+		" packet_id: ", packet_id,
+		" topics: ", boost::algorithm::join(topics, ","),
+		" props: ", to_readable_props(props)
+	);
+}
+
+inline std::string reason_codes_to_string(const std::vector<uint8_t>& rcs) {
+	std::vector<std::string> rcs_str;
+	rcs_str.resize(rcs.size());
+	boost::transform(
+		boost::make_iterator_range(rcs.cbegin(), rcs.cend()),
+		rcs_str.begin(),
+		[](const auto& rc) { return std::to_string(rc); }
+	);
+	return boost::algorithm::join(rcs_str, ",");
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::suback, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	const auto packet_id = decoders::decode_packet_id(it).value_or(0);
+	remain_length -= sizeof(uint16_t);
+	auto suback = decoders::decode_suback(remain_length, it);
+	if (!suback.has_value())
+		return "Cannot decode Suback packet!";
+	auto& [props, reason_codes] = *suback;
+
+	return concat_strings(
+		code_to_str(code),
+		" packet_id: ", packet_id,
+		" reason_codes: ", reason_codes_to_string(reason_codes),
+		" props: ", to_readable_props(props)
+	);
+}
+
+template <
+	control_code_e code,
+	std::enable_if_t<code == control_code_e::unsuback, bool> = true
+>
+inline std::string to_string(uint32_t remain_length, byte_citer& it) {
+	const auto packet_id = decoders::decode_packet_id(it).value_or(0);
+	remain_length -= sizeof(uint16_t);
+	auto unsuback = decoders::decode_unsuback(remain_length, it);
+	if (!unsuback.has_value())
+		return "Cannot decode Unuback packet!";
+	auto& [props, reason_codes] = *unsuback;
+
+	return concat_strings(
+		code_to_str(code),
+		" packet_id: ", packet_id,
+		" reason_codes: ", reason_codes_to_string(reason_codes),
+		" props: ", to_readable_props(props)
+	);
+}
+
+} // end namespace detail
+
 inline std::string to_readable_packet(std::string packet) {
 	auto control_byte = uint8_t(*packet.data());
-	auto code = extract_code(control_byte);
+	auto code = detail::extract_code(control_byte);
 
-	if (code == control_code_e::no_packet)
-		return {};
-
-	std::ostringstream stream;
-
-	if (code == control_code_e::connack || code == control_code_e::auth) {
-		stream << code_to_str(code);
-		return stream.str();
+	if (
+		code == control_code_e::pingreq ||
+		code == control_code_e::pingresp
+	) {
+		return concat_strings(detail::code_to_str(code));
 	}
 
 	auto begin = ++packet.cbegin();
@@ -92,55 +313,50 @@ inline std::string to_readable_packet(std::string packet) {
 		begin, packet.cend(), decoders::basic::varint_
 	);
 
-	if (code == control_code_e::connect) {
-		auto connect = decoders::decode_connect(*varlen, begin);
-		auto& [cli_id, uname, pwd, keep_alive, clean_start, props, will] = *connect;
-		stream << code_to_str(code);
-		stream << " props: " << to_readable_props(props);
-		return stream.str();
+	switch (code) {
+		case control_code_e::connect:
+			return detail::to_string<control_code_e::connect>(*varlen, begin);
+		case control_code_e::connack:
+			return detail::to_string<control_code_e::connack>(*varlen, begin);
+		case control_code_e::disconnect:
+			return detail::to_string<control_code_e::disconnect>(*varlen, begin);
+		case control_code_e::publish:
+			return detail::to_string<control_code_e::publish>(
+				control_byte, *varlen, begin
+			);
+		case control_code_e::puback:
+			return detail::to_string<control_code_e::puback>(*varlen, begin);
+		case control_code_e::pubrec:
+			return detail::to_string<control_code_e::pubrec>(*varlen, begin);
+		case control_code_e::pubrel:
+			return detail::to_string<control_code_e::pubrel>(*varlen, begin);
+		case control_code_e::pubcomp:
+			return detail::to_string<control_code_e::pubcomp>(*varlen, begin);
+		case control_code_e::auth:
+			return detail::to_string<control_code_e::auth>(*varlen, begin);
+		case control_code_e::subscribe:
+			return detail::to_string<control_code_e::subscribe>(*varlen, begin);
+		case control_code_e::suback:
+			return detail::to_string<control_code_e::suback>(*varlen, begin);
+		case control_code_e::unsubscribe:
+			return detail::to_string<control_code_e::unsubscribe>(*varlen, begin);
+		case control_code_e::unsuback:
+			return detail::to_string<control_code_e::unsuback>(*varlen, begin);
+		default:
+			assert(false);
 	}
 
-	if (code == control_code_e::disconnect) {
-		auto disconnect = decoders::decode_disconnect(*varlen, begin);
-		auto& [rc, props] = *disconnect;
-		stream << code_to_str(code);
-		stream << " rc: " << int(rc);
-		stream << " reason string: " << props[prop::reason_string].value_or("");
-		return stream.str();
-	}
-
-	if (code == control_code_e::publish) {
-		auto publish = decoders::decode_publish(
-			control_byte, *varlen, begin
-		);
-		auto& [topic, packet_id, flags, props, payload] = *publish;
-		stream << code_to_str(code);
-		stream << (packet_id ? " " + std::to_string(*packet_id) : "");
-		stream << " flags: " << std::bitset<8>(flags);
-		stream << " topic: " << topic;
-		stream << " payload: " << payload;
-		stream << " props: " << to_readable_props(props);
-		return stream.str();
-	}
-
-	const auto packet_id = decoders::decode_packet_id(begin).value();
-	stream << code_to_str(code) << " " << packet_id;
-	return stream.str();
+	return {};
 }
 
 template <typename ConstBufferSequence>
-std::vector<std::string> to_packets(const ConstBufferSequence& buffers) {
+std::vector<std::string> to_readable_packets(const ConstBufferSequence& buffers) {
 	std::vector<std::string> content;
 	
-	for (const auto& buff : buffers) {
-		auto control_byte = *(const uint8_t*) buff.data();
-		auto code = extract_code(control_byte);
-
-		if (code == control_code_e::pingreq)
-			continue;
-
-		content.push_back({ (const char*)buff.data(), buff.size() });
-	}
+	for (const auto& buff : buffers)
+		content.push_back(
+			to_readable_packet(std::string { (const char*) buff.data(), buff.size() })
+		);
 
 	return content;
 }

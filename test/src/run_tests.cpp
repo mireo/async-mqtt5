@@ -5,7 +5,7 @@
 boost::unit_test::test_suite* init_tests(
 	int /*argc*/, char* /*argv*/[]
 ) {
-	async_mqtt5::test::logging_enabled() = true;
+	async_mqtt5::test::logging_enabled() = false;
 	return nullptr;
 }
 

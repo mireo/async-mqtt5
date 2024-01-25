@@ -30,9 +30,8 @@ void test_receive_malformed_packet(
 		reason_codes::malformed_packet.value(), dc_props
 	);
 
-	test::msg_exchange broker_side;
 	error_code success {};
-
+	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect)
 			.complete_with(success, after(0ms))

@@ -273,6 +273,9 @@ using namespace std::chrono;
 constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
+	// packets
+	auto disconnect = encoders::encode_disconnect(uint8_t(0x00), {});
+
 	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect)
@@ -286,7 +289,8 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
 			.reply_with(connack, after(2ms))
 		.expect(publish_qos1)
 			.complete_with(success, after(1ms))
-			.reply_with(puback, after(2ms));
+			.reply_with(puback, after(2ms))
+		.expect(disconnect);
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();

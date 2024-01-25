@@ -197,8 +197,8 @@ private:
 			return perform(wait_for, asio::transfer_at_least(0));
 
 		bool is_reply = code != control_code_e::publish &&
-				code != control_code_e::auth &&
-				code != control_code_e::disconnect;
+			code != control_code_e::auth &&
+			code != control_code_e::disconnect;
 
 		if (is_reply) {
 			auto packet_id = decoders::decode_packet_id(first).value();
@@ -213,6 +213,8 @@ private:
 		error_code ec, uint8_t control_code,
 		byte_citer first, byte_citer last
 	) {
+		if (ec)
+			_data_span = { _read_buff.cend(), _read_buff.cend() };
 		std::move(_handler)(ec, control_code, first, last);
 	}
 };

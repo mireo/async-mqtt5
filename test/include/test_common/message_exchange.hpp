@@ -216,6 +216,10 @@ public:
 		return ret;
 	}
 
+	bool has_remaining_messages() const {
+		return !_to_broker.empty() || !_from_broker.empty();
+	}
+
 private:
 
 	template <typename Tuple>

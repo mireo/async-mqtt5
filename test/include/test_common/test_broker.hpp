@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/algorithm/string/join.hpp>
+
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/cancellation_signal.hpp>
@@ -117,7 +119,7 @@ public:
 	}
 
 	bool received_all_expected() {
-		return !_broker_side.pop_reply_action().has_value();
+		return !_broker_side.has_remaining_messages();
 	}
 
 	template <typename ConstBufferSequence, typename WriteToken>
@@ -150,16 +152,27 @@ public:
 				for (size_t i = 0; i < num_packets; ++i, ++it) {
 					BOOST_CHECK_EQUAL(it->size(), expected[i].size());
 					size_t len = std::min(it->size(), expected[i].size());
-					if (memcmp(it->data(), expected[i].data(), len)) {
-						std::ostringstream stream;
-						stream << "Packet mismatch! Expected: "
-							<< to_readable_packet(expected[i])
-							<< " Received: "
-							<< to_readable_packet(std::string((const char*)it->data(), it->size()));
-						BOOST_CHECK_MESSAGE(false, stream.str());
-					}
+					if (memcmp(it->data(), expected[i].data(), len))
+						BOOST_CHECK_MESSAGE(
+							false,
+							concat_strings(
+								"Packet mismatch!\nExpected: ",
+								to_readable_packet(expected[i]),
+								"\nReceived: ",
+								to_readable_packet(std::string((const char*)it->data(), it->size()))
+							)
+						);
+					else
+						log(to_readable_packet(expected[i]));
 				}
-			}
+			} else 
+				BOOST_CHECK_MESSAGE(
+					false,
+					concat_strings(
+						"Broker side did not expect: ",
+						boost::algorithm::join(to_readable_packets(buffers), ",")
+					)
+				);
 
 			auto complete_op = reply_action ?
 				reply_action->write_completion(ex) :
