@@ -100,7 +100,7 @@ void setup_cancel_op_test_case(
 
 template <
 	test::operation_type op_type,
-	std::enable_if_t<op_type == test::operation_type::subscribe, bool > = true
+	std::enable_if_t<op_type == test::operation_type::unsubscribe, bool > = true
 >
 void setup_cancel_op_test_case(
 	client_type& c, asio::cancellation_signal& signal, int& handlers_called
@@ -115,9 +115,8 @@ void setup_cancel_op_test_case(
 			) {
 				handlers_called++;
 				BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-				// TODO: be consistent with complete_post
-				//BOOST_ASSERT(rcs.size() == 1);
-				//BOOST_CHECK(rcs[0] == reason_codes::empty);
+				BOOST_ASSERT(rcs.size() == 1);
+				BOOST_CHECK(rcs[0] == reason_codes::empty);
 			}
 		)
 	);
@@ -125,7 +124,7 @@ void setup_cancel_op_test_case(
 
 template <
 	test::operation_type op_type,
-	std::enable_if_t<op_type == test::operation_type::unsubscribe, bool> = true
+	std::enable_if_t<op_type == test::operation_type::subscribe, bool> = true
 >
 void setup_cancel_op_test_case(
 	client_type& c, asio::cancellation_signal& signal, int& handlers_called
@@ -140,9 +139,8 @@ void setup_cancel_op_test_case(
 			) {
 				handlers_called++;
 				BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-				// TODO: be consistent with complete_post
-				//BOOST_ASSERT(rcs.size() == 1);
-				//BOOST_CHECK(rcs[0] == reason_codes::empty);
+				BOOST_ASSERT(rcs.size() == 1);
+				BOOST_CHECK(rcs[0] == reason_codes::empty);
 			}
 		)
 	);

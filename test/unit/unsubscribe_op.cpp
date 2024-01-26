@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
 }
 
 void run_test(
-	error_code expected_ec, const std::string& topic_filter,
+	error_code expected_ec, const std::vector<std::string>& topics,
 	const unsubscribe_props& uprops = {}, const connack_props& cprops = {}
 ) {
 	constexpr int expected_handlers_called = 1;
@@ -45,22 +45,33 @@ void run_test(
 	using client_service_type = test::test_service<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor(), cprops);
 
-	auto handler = [&handlers_called, expected_ec]
+	auto handler = [&handlers_called, expected_ec, num_tp = topics.size()]
 	(error_code ec, std::vector<reason_code> rcs, unsuback_props) {
 		++handlers_called;
 
 		BOOST_CHECK(ec == expected_ec);
-		BOOST_ASSERT(rcs.size() == 1);
-		BOOST_CHECK_EQUAL(rcs[0], reason_codes::empty);
+		BOOST_ASSERT(rcs.size() == num_tp);
+
+		for (size_t i = 0; i < rcs.size(); ++i)
+			BOOST_CHECK_EQUAL(rcs[i], reason_codes::empty);
 	};
 
 	detail::unsubscribe_op<
 		client_service_type, decltype(handler)
 	> { svc_ptr, std::move(handler) }
-	.perform({ topic_filter }, uprops);
+	.perform(topics, uprops);
 
 	ioc.run_for(std::chrono::milliseconds(500));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+}
+
+void run_test(
+	error_code expected_ec, const std::string& topic,
+	const unsubscribe_props& uprops = {}, const connack_props& cprops = {}
+) {
+	return run_test(
+		expected_ec, std::vector<std::string> { topic }, uprops, cprops
+	);
 }
 
 BOOST_AUTO_TEST_CASE(invalid_topic_filter_1) {
@@ -109,6 +120,10 @@ BOOST_AUTO_TEST_CASE(packet_too_large) {
 		client::error::packet_too_large, "very large topic",
 		unsubscribe_props {}, cprops
 	);
+}
+
+BOOST_AUTO_TEST_CASE(zero_topic_filters) {
+	run_test(client::error::invalid_topic, std::vector<std::string> {});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

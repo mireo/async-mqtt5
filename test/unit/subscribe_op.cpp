@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
 }
 
 void run_test(
-	error_code expected_ec, const std::string& topic_filter,
+	error_code expected_ec, const std::vector<subscribe_topic>& topics,
 	const subscribe_props& sprops = {}, const connack_props& cprops = {}
 ) {
 	constexpr int expected_handlers_called = 1;
@@ -47,24 +47,36 @@ void run_test(
 	using client_service_type = test::test_service<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor(), cprops);
 
-	auto handler = [&handlers_called, expected_ec]
+	auto handler = [&handlers_called, expected_ec, num_tp = topics.size()]
 		(error_code ec, std::vector<reason_code> rcs, suback_props) {
 			++handlers_called;
 
 			BOOST_CHECK(ec == expected_ec);
-			BOOST_ASSERT(rcs.size() == 1);
-			BOOST_CHECK_EQUAL(rcs[0], reason_codes::empty);
+			BOOST_ASSERT(rcs.size() == num_tp);
+
+			for (size_t i = 0; i < rcs.size(); ++i)
+				BOOST_CHECK_EQUAL(rcs[i], reason_codes::empty);
 		};
 
 	detail::subscribe_op<
 		client_service_type, decltype(handler)
 	> { svc_ptr, std::move(handler) }
-	.perform(
-		{ { topic_filter, { qos_e::exactly_once } } }, sprops
-	);
+	.perform(topics, sprops);
 
 	ioc.run_for(std::chrono::milliseconds(500));
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+}
+
+void run_test(
+	error_code expected_ec, const std::string& topic,
+	const subscribe_props& sprops = {}, const connack_props& cprops = {}
+) {
+	auto sub_topic = subscribe_topic(topic, subscribe_options());
+	return run_test(
+		expected_ec,
+		std::vector<subscribe_topic> { std::move(sub_topic) },
+		sprops, cprops
+	);
 }
 
 BOOST_AUTO_TEST_CASE(invalid_topic_filter_1) {
@@ -154,9 +166,7 @@ BOOST_AUTO_TEST_CASE(large_subscription_id) {
 	subscribe_props sprops;
 	sprops[prop::subscription_identifier] = std::numeric_limits<uint32_t>::max();
 
-	run_test(
-		client::error::malformed_packet, "topic", sprops, cprops
-	);
+	run_test(client::error::malformed_packet, "topic", sprops, cprops);
 }
 
 BOOST_AUTO_TEST_CASE(packet_too_large) {
@@ -166,6 +176,10 @@ BOOST_AUTO_TEST_CASE(packet_too_large) {
 	run_test(
 		client::error::packet_too_large, "very large topic", subscribe_props {}, cprops
 	);
+}
+
+BOOST_AUTO_TEST_CASE(zero_topic_filters) {
+	run_test(client::error::invalid_topic, std::vector<subscribe_topic> {});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

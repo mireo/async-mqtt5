@@ -33,6 +33,8 @@ class unsubscribe_op {
 	>;
 	handler_type _handler;
 
+	size_t _num_topics { 0 };
+
 public:
 	unsubscribe_op(
 		const std::shared_ptr<client_service>& svc_ptr,
@@ -65,15 +67,18 @@ public:
 		const std::vector<std::string>& topics,
 		const unsubscribe_props& props
 	) {
+		_num_topics = topics.size();
+
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
-			return complete_post(
-				client::error::pid_overrun, packet_id, topics.size()
-			);
+			return complete_post(client::error::pid_overrun, packet_id);
+
+		if (_num_topics == 0)
+			return complete_post(client::error::invalid_topic, packet_id);
 
 		auto ec = validate_unsubscribe(topics, props);
 		if (ec)
-			return complete_post(ec, packet_id, topics.size());
+			return complete_post(ec, packet_id);
 
 		auto unsubscribe = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
@@ -86,9 +91,7 @@ public:
 				.value_or(default_max_send_size)
 		);
 		if (unsubscribe.size() > max_packet_size)
-			return complete_post(
-				client::error::packet_too_large, packet_id, topics.size()
-		);
+			return complete_post(client::error::packet_too_large, packet_id);
 
 		send_unsubscribe(std::move(unsubscribe));
 	}
@@ -150,11 +153,18 @@ public:
 			return resend_unsubscribe(std::move(packet));
 		}
 
-		auto& [props, reason_codes] = *unsuback;
+		auto& [props, rcs] = *unsuback;
+		auto reason_codes = to_reason_codes(std::move(rcs));
+		if (reason_codes.size() != _num_topics) {
+			on_malformed_packet(
+				"Malformed UNSUBACK: does not contain a "
+				"valid Reason Code for every Topic Filter"
+			);
+			return resend_unsubscribe(std::move(packet));
+		}
 
 		complete(
-			ec, packet_id,
-			to_reason_codes(std::move(reason_codes)), std::move(props)
+			ec, packet_id, std::move(reason_codes), std::move(props)
 		);
 	}
 
@@ -196,11 +206,11 @@ private:
 		);
 	}
 
-	void complete_post(error_code ec, uint16_t packet_id, size_t num_topics) {
+	void complete_post(error_code ec, uint16_t packet_id) {
 		if (packet_id != 0)
 			_svc_ptr->free_pid(packet_id);
 		_handler.complete_post(
-			ec, std::vector<reason_code>(num_topics, reason_codes::empty),
+			ec, std::vector<reason_code>(_num_topics, reason_codes::empty),
 			unsuback_props {}
 		);
 	}
@@ -209,6 +219,9 @@ private:
 		error_code ec, uint16_t packet_id,
 		std::vector<reason_code> reason_codes = {}, unsuback_props props = {}
 	) {
+		if (reason_codes.empty() && _num_topics)
+			reason_codes = std::vector<reason_code>(_num_topics, reason_codes::empty);
+
 		_svc_ptr->free_pid(packet_id);
 		_handler.complete(ec, std::move(reason_codes), std::move(props));
 	}

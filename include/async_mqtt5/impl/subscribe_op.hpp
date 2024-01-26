@@ -38,6 +38,8 @@ class subscribe_op {
 	>;
 	handler_type _handler;
 
+	size_t _num_topics { 0 };
+
 public:
 	subscribe_op(
 		const std::shared_ptr<client_service>& svc_ptr,
@@ -70,15 +72,18 @@ public:
 		const std::vector<subscribe_topic>& topics,
 		const subscribe_props& props
 	) {
+		_num_topics = topics.size();
+
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
-			return complete_post(
-				client::error::pid_overrun, packet_id, topics.size()
-			);
+			return complete_post(client::error::pid_overrun, packet_id);
+
+		if (_num_topics == 0)
+			return complete_post(client::error::invalid_topic, packet_id);
 
 		auto ec = validate_subscribe(topics, props);
 		if (ec)
-			return complete_post(ec, packet_id, topics.size());
+			return complete_post(ec, packet_id);
 
 		auto subscribe = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
@@ -91,9 +96,7 @@ public:
 				.value_or(default_max_send_size)
 		);
 		if (subscribe.size() > max_packet_size)
-			return complete_post(
-				client::error::packet_too_large, packet_id, topics.size()
-			);
+			return complete_post(client::error::packet_too_large, packet_id);
 
 		send_subscribe(std::move(subscribe));
 	}
@@ -155,11 +158,18 @@ public:
 			return resend_subscribe(std::move(packet));
 		}
 
-		auto& [props, reason_codes] = *suback;
+		auto& [props, rcs] = *suback;
+		auto reason_codes = to_reason_codes(std::move(rcs));
+		if (reason_codes.size() != _num_topics) {
+			on_malformed_packet(
+				"Malformed SUBACK: does not contain a "
+				"valid Reason Code for every Topic Filter"
+			);
+			return resend_subscribe(std::move(packet));
+		}
 
 		complete(
-			ec, packet_id,
-			to_reason_codes(std::move(reason_codes)), std::move(props)
+			ec, packet_id, std::move(reason_codes), std::move(props)
 		);
 	}
 
@@ -232,9 +242,7 @@ private:
 				client::error::malformed_packet;
 	}
 
-	static std::vector<reason_code> to_reason_codes(
-		std::vector<uint8_t> codes
-	) {
+	static std::vector<reason_code> to_reason_codes(std::vector<uint8_t> codes) {
 		std::vector<reason_code> ret;
 		for (uint8_t code : codes) {
 			auto rc = to_reason_code<reason_codes::category::suback>(code);
@@ -253,12 +261,11 @@ private:
 		);
 	}
 
-
-	void complete_post(error_code ec, uint16_t packet_id, size_t num_topics) {
+	void complete_post(error_code ec, uint16_t packet_id) {
 		if (packet_id != 0)
 			_svc_ptr->free_pid(packet_id);
 		_handler.complete_post(
-			ec, std::vector<reason_code>(num_topics, reason_codes::empty),
+			ec, std::vector<reason_code>(_num_topics, reason_codes::empty),
 			suback_props {}
 		);
 	}
@@ -267,6 +274,9 @@ private:
 		error_code ec, uint16_t packet_id,
 		std::vector<reason_code> reason_codes = {}, suback_props props = {}
 	) {
+		if (reason_codes.empty() && _num_topics)
+			reason_codes = std::vector<reason_code>(_num_topics, reason_codes::empty);
+
 		if (!_svc_ptr->subscriptions_present()) {
 			bool has_success_rc = std::any_of(
 				reason_codes.cbegin(), reason_codes.cend(),

@@ -6,7 +6,9 @@
 #include <async_mqtt5/mqtt_client.hpp>
 
 #include "test_common/message_exchange.hpp"
+#include "test_common/packet_util.hpp"
 #include "test_common/test_authenticators.hpp"
+#include "test_common/test_broker.hpp"
 #include "test_common/test_stream.hpp"
 
 using namespace async_mqtt5;
@@ -85,12 +87,6 @@ void run_test(
 	BOOST_CHECK(broker.received_all_expected());
 }
 
-disconnect_props dprops_with_reason_string(std::string_view reason_string) {
-	disconnect_props dprops;
-	dprops[prop::reason_string] = reason_string;
-	return dprops;
-}
-
 BOOST_FIXTURE_TEST_CASE(successful_re_auth, shared_test_data) {
 	test::msg_exchange broker_side;
 	broker_side
@@ -123,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(successful_re_auth_multi_step, shared_test_data) {
 BOOST_FIXTURE_TEST_CASE(malformed_auth_rc, shared_test_data) {
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::malformed_packet.value(),
-		dprops_with_reason_string("Malformed AUTH received: bad reason code")
+		test::dprops_with_reason_string("Malformed AUTH received: bad reason code")
 	);
 	auto malformed_auth = encoders::encode_auth(
 		reason_codes::administrative_action.value(), init_auth_props()
@@ -152,7 +148,7 @@ BOOST_FIXTURE_TEST_CASE(mismatched_auth_method, shared_test_data) {
 
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::protocol_error.value(),
-		dprops_with_reason_string("Malformed AUTH received: wrong authentication method")
+		test::dprops_with_reason_string("Malformed AUTH received: wrong authentication method")
 	);
 
 	test::msg_exchange broker_side;
@@ -171,7 +167,7 @@ BOOST_FIXTURE_TEST_CASE(mismatched_auth_method, shared_test_data) {
 BOOST_FIXTURE_TEST_CASE(async_auth_fail, shared_test_data) {
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::unspecified_error.value(),
-		dprops_with_reason_string("Re-authentication: authentication fail")
+		test::dprops_with_reason_string("Re-authentication: authentication fail")
 	);
 
 	test::msg_exchange broker_side;
@@ -196,7 +192,7 @@ BOOST_FIXTURE_TEST_CASE(unexpected_auth, shared_test_data) {
 	);
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::protocol_error.value(),
-		dprops_with_reason_string("Unexpected AUTH received")
+		test::dprops_with_reason_string("Unexpected AUTH received")
 	);
 
 	test::msg_exchange broker_side;

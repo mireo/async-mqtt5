@@ -361,6 +361,11 @@ std::vector<std::string> to_readable_packets(const ConstBufferSequence& buffers)
 	return content;
 }
 
+inline disconnect_props dprops_with_reason_string(const std::string& reason_string) {
+	disconnect_props dprops;
+	dprops[prop::reason_string] = reason_string;
+	return dprops;
+}
 
 } // end namespace async_mqtt5::test
 

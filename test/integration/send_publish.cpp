@@ -5,6 +5,7 @@
 #include <async_mqtt5/mqtt_client.hpp>
 
 #include "test_common/message_exchange.hpp"
+#include "test_common/packet_util.hpp"
 #include "test_common/test_service.hpp"
 #include "test_common/test_stream.hpp"
 
@@ -200,12 +201,6 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_pubrel, shared_test_data) {
 	);
 }
 
-disconnect_props dprops_with_reason_string(const std::string& reason_string) {
-	disconnect_props dprops;
-	dprops[prop::reason_string] = reason_string;
-	return dprops;
-}
-
 BOOST_FIXTURE_TEST_CASE(receive_malformed_puback, shared_test_data) {
 	// packets
 	auto publish_qos1_dup = encoders::encode_publish(
@@ -215,7 +210,7 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_puback, shared_test_data) {
 
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::malformed_packet.value(),
-		dprops_with_reason_string("Malformed PUBACK: invalid Reason Code")
+		test::dprops_with_reason_string("Malformed PUBACK: invalid Reason Code")
 	);
 
 	test::msg_exchange broker_side;
@@ -254,7 +249,7 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_pubrec, shared_test_data) {
 
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::malformed_packet.value(),
-		dprops_with_reason_string("Malformed PUBREC: invalid Reason Code")
+		test::dprops_with_reason_string("Malformed PUBREC: invalid Reason Code")
 	);
 
 	test::msg_exchange broker_side;
@@ -292,7 +287,7 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_pubcomp, shared_test_data) {
 
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::malformed_packet.value(),
-		dprops_with_reason_string("Malformed PUBCOMP: invalid Reason Code")
+		test::dprops_with_reason_string("Malformed PUBCOMP: invalid Reason Code")
 	);
 
 	test::msg_exchange broker_side;
