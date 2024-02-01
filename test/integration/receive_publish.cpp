@@ -43,7 +43,6 @@ struct shared_test_data {
 	const std::string publish_qos2 = encoders::encode_publish(
 		1, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::no, {}
 	);
-	const std::string big_publish = encode_big_publish();
 
 	const std::string puback = encoders::encode_puback(1, uint8_t(0x00), {});
 
@@ -55,20 +54,8 @@ struct shared_test_data {
 private:
 	connect_props allow_big_packets_cprops() {
 		connect_props c_props;
-		c_props[prop::maximum_packet_size] = std::numeric_limits<int32_t>::max();
+		c_props[prop::maximum_packet_size] = 10'000'000;
 		return c_props;
-	}
-
-	std::string encode_big_publish() {
-		publish_props big_props;
-		for (int i = 0; i < 100; i++)
-			big_props[prop::user_property].push_back(std::string(65534, 'u'));
-
-		return encoders::encode_publish(
-			1, topic, payload,
-			qos_e::at_most_once, retain_e::no, dup_e::no,
-			std::move(big_props)
-		);
 	}
 };
 
@@ -315,6 +302,18 @@ BOOST_FIXTURE_TEST_CASE(receive_big_publish, shared_test_data) {
 	const int expected_handlers_called = 1;
 	int handlers_called = 0;
 
+	// data
+	publish_props big_props;
+	for (int i = 0; i < 100; i++)
+		big_props[prop::user_property].push_back(std::string(65534, 'u'));
+
+	// packets
+	auto big_publish = encoders::encode_publish(
+		1, topic, payload,
+		qos_e::at_most_once, retain_e::no, dup_e::no,
+		std::move(big_props)
+	);
+
 	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect_with_cprops)
@@ -342,7 +341,7 @@ BOOST_FIXTURE_TEST_CASE(receive_big_publish, shared_test_data) {
 			BOOST_TEST(!ec);
 			BOOST_TEST(topic == topic_);
 			BOOST_TEST(payload == payload_);
-			BOOST_TEST(pprops[prop::user_property].size() == 100);
+			BOOST_TEST(pprops[prop::user_property].size() == 100u);
 
 			c.cancel();
 		});

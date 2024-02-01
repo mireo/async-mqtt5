@@ -416,7 +416,7 @@ BOOST_FIXTURE_TEST_CASE(send_big_publish, shared_test_data) {
 	std::vector<std::string> buffers;
 	for (size_t i = 0; i < big_publish.size(); i += 65536)
 		buffers.push_back(big_publish.substr(i, 65536));
-	BOOST_TEST_REQUIRE(buffers.size() == 3);
+	BOOST_TEST_REQUIRE(buffers.size() == 3u);
 	// this single async_send will result in 3 calls to async_write_some in our stream
 
 	test::msg_exchange broker_side;

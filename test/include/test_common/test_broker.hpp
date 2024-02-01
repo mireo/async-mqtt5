@@ -162,8 +162,6 @@ public:
 								to_readable_packet(std::string((const char*)it->data(), it->size()))
 							)
 						);
-					else
-						log(to_readable_packet(expected[i]));
 				}
 			} else 
 				BOOST_CHECK_MESSAGE(
