@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
 
@@ -16,6 +17,9 @@ struct shared_test_data {
 	error_code success {};
 	error_code fail = asio::error::not_connected;
 
+	const std::string topic = "topic";
+	const std::string payload = "payload";
+
 	const std::string connect = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
@@ -23,8 +27,14 @@ struct shared_test_data {
 		false, reason_codes::success.value(), {}
 	);
 
-	const std::string topic = "topic";
-	const std::string payload = "payload";
+	const std::string publish_qos1 = encoders::encode_publish(
+		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::no, {}
+	);
+	const std::string publish_qos1_dup = encoders::encode_publish(
+		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::yes, {}
+	);
+
+	const std::string puback = encoders::encode_puback(1, uint8_t(0x00), {});
 };
 
 using test::after;
@@ -35,18 +45,10 @@ BOOST_FIXTURE_TEST_CASE(ordering_after_reconnect, shared_test_data) {
 	int handlers_called = 0;
 
 	// packets
-	auto publish_qos1 = encoders::encode_publish(
-		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::no, {}
-	);
-	auto publish_qos1_dup = encoders::encode_publish(
-		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::yes, {}
-	);
-
 	auto publish_qos2 = encoders::encode_publish(
 		2, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::no, {}
 	);
 
-	auto puback = encoders::encode_puback(1, uint8_t(0x00), {});
 	auto pubrec = encoders::encode_pubrec(2, uint8_t(0x00), {});
 	auto pubrel = encoders::encode_pubrel(2, uint8_t(0x00), {});
 	auto pubcomp = encoders::encode_pubcomp(2, uint8_t(0x00), {});
@@ -84,8 +86,8 @@ BOOST_FIXTURE_TEST_CASE(ordering_after_reconnect, shared_test_data) {
 		[&](error_code ec, reason_code rc, puback_props) {
 			++handlers_called;
 
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_MESSAGE(!rc, rc.message());
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 
 			if (handlers_called == expected_handlers_called)
 				c.cancel();
@@ -97,8 +99,8 @@ BOOST_FIXTURE_TEST_CASE(ordering_after_reconnect, shared_test_data) {
 		[&](error_code ec, reason_code rc, pubcomp_props) {
 			++handlers_called;
 
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_MESSAGE(!rc, rc.message());
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 
 			if (handlers_called == expected_handlers_called)
 				c.cancel();
@@ -106,8 +108,8 @@ BOOST_FIXTURE_TEST_CASE(ordering_after_reconnect, shared_test_data) {
 	);
 
 	ioc.run_for(1s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_FIXTURE_TEST_CASE(throttling, shared_test_data) {
@@ -168,9 +170,9 @@ BOOST_FIXTURE_TEST_CASE(throttling, shared_test_data) {
 			[&c, &handlers_called, i](error_code ec, reason_code rc, puback_props) {
 				++handlers_called;
 
-				BOOST_CHECK_MESSAGE(!ec, ec.message());
-				BOOST_CHECK_MESSAGE(!rc, rc.message());
-				BOOST_CHECK_EQUAL(handlers_called, i + 1);
+				BOOST_TEST(!ec);
+				BOOST_TEST(rc == reason_codes::success);
+				BOOST_TEST(handlers_called == i + 1);
 
 				if (i == 2)
 					c.cancel();
@@ -178,8 +180,82 @@ BOOST_FIXTURE_TEST_CASE(throttling, shared_test_data) {
 		);
 
 	ioc.run_for(1s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
+}
+
+BOOST_FIXTURE_TEST_CASE(prioritize_disconnect, shared_test_data) {
+	constexpr int expected_handlers_called = 3;
+	int handlers_called = 0;
+
+	// data
+	std::vector<subscribe_topic> sub_topics = {
+		subscribe_topic { "topic", subscribe_options {} }
+	};
+	std::vector<uint8_t> reason_codes = { uint8_t(0x00) };
+
+	// packets
+	auto disconnect = encoders::encode_disconnect(uint8_t(0x00), {});
+	auto subscribe = encoders::encode_subscribe(
+		1, sub_topics, subscribe_props {}
+	);
+	auto suback = encoders::encode_suback(1, reason_codes, suback_props {});
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos1) // first one goes alone
+			.complete_with(success, after(3ms))
+		.expect(disconnect) // disconnect overrides a subscribe request
+			.complete_with(success, after(1ms));
+
+	asio::io_context ioc;
+	auto executor = ioc.get_executor();
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
+
+	using client_type = mqtt_client<test::test_stream>;
+	client_type c(executor, "");
+	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
+		.async_run(asio::detached);
+
+	// give time to establish a connection
+	asio::steady_timer timer(executor);
+	timer.expires_after(100ms);
+	timer.async_wait([&](error_code) {
+		c.async_publish<qos_e::at_least_once>(
+			topic, payload, retain_e::no, publish_props {},
+			[&](error_code ec, reason_code rc, puback_props) {
+				++handlers_called;
+
+				BOOST_TEST(ec == asio::error::operation_aborted);
+				BOOST_TEST(rc == reason_codes::empty);
+			}
+		);
+
+		c.async_subscribe(
+			sub_topics, subscribe_props {},
+			[&](error_code ec, std::vector<reason_code> rcs, suback_props) {
+				++handlers_called;
+
+				BOOST_TEST(ec == asio::error::operation_aborted);
+				BOOST_ASSERT(rcs.size() == 1);
+				BOOST_TEST(rcs[0] == reason_codes::empty);
+			}
+		);
+
+		c.async_disconnect([&](error_code ec) {
+			++handlers_called;
+			BOOST_TEST(!ec);
+		});
+	});
+
+	ioc.run_for(2s);
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_SUITE_END();

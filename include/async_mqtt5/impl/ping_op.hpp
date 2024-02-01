@@ -94,12 +94,16 @@ public:
 		);
 	}
 
-	void operator()(on_pingreq, error_code) {
+	void operator()(on_pingreq, error_code ec) {
 		get_cancellation_slot().clear();
 
-		if (_cancellation_state.cancelled() == asio::cancellation_type::terminal)
+		if (
+			_cancellation_state.cancelled() == asio::cancellation_type::terminal ||
+			ec == asio::error::no_recovery
+		)
 			return;
 
+		_cancellation_state.clear();
 		perform();
 	}
 

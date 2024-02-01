@@ -183,23 +183,21 @@ BOOST_FIXTURE_TEST_CASE(keep_alive_change_while_waiting, shared_test_data) {
 
 BOOST_FIXTURE_TEST_CASE(keep_alive_change_during_writing, shared_test_data) {
 	// data
-	uint16_t keep_alive = 0;
+	uint16_t keep_alive = 1;
 	uint16_t server_keep_alive = 1;
 
 	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect_with_keep_alive(keep_alive))
 			.complete_with(success, after(1ms))
-			.reply_with(connack_with_keep_alive(server_keep_alive), after(2ms))
+			.reply_with(connack_with_keep_alive(server_keep_alive), after(1500ms))
 		.expect(pingreq)
-			.complete_with(fail, after(1ms))
-		.expect(connect_with_keep_alive(keep_alive))
 			.complete_with(success, after(1ms))
-			.reply_with(connack_no_ka, after(2ms));
+			.reply_with(pingresp, after(2ms));
 
 	run_test(
 		std::move(broker_side),
-		std::chrono::milliseconds(1500), keep_alive
+		std::chrono::milliseconds(2700), keep_alive
 	);
 }
 

@@ -343,10 +343,8 @@ inline std::string to_readable_packet(std::string packet) {
 		case control_code_e::unsuback:
 			return detail::to_string<control_code_e::unsuback>(*varlen, begin);
 		default:
-			assert(false);
+			return "";
 	}
-
-	return {};
 }
 
 template <typename ConstBufferSequence>

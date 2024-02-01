@@ -19,6 +19,11 @@ struct shared_test_data {
 	error_code success {};
 	error_code fail = asio::error::not_connected;
 
+	connect_props cprops = allow_big_packets_cprops();
+	const std::string connect_with_cprops = encoders::encode_connect(
+		"", std::nullopt, std::nullopt, 60, false, cprops, std::nullopt
+	);
+
 	const std::string connect = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
@@ -38,12 +43,33 @@ struct shared_test_data {
 	const std::string publish_qos2 = encoders::encode_publish(
 		1, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::no, {}
 	);
+	const std::string big_publish = encode_big_publish();
 
 	const std::string puback = encoders::encode_puback(1, uint8_t(0x00), {});
 
 	const std::string pubrec = encoders::encode_pubrec(1, uint8_t(0x00), {});
 	const std::string pubrel = encoders::encode_pubrel(1, uint8_t(0x00), {});
 	const std::string pubcomp = encoders::encode_pubcomp(1, uint8_t(0x00), {});
+
+
+private:
+	connect_props allow_big_packets_cprops() {
+		connect_props c_props;
+		c_props[prop::maximum_packet_size] = std::numeric_limits<int32_t>::max();
+		return c_props;
+	}
+
+	std::string encode_big_publish() {
+		publish_props big_props;
+		for (int i = 0; i < 100; i++)
+			big_props[prop::user_property].push_back(std::string(65534, 'u'));
+
+		return encoders::encode_publish(
+			1, topic, payload,
+			qos_e::at_most_once, retain_e::no, dup_e::no,
+			std::move(big_props)
+		);
+	}
 };
 
 using test::after;
@@ -70,17 +96,17 @@ void run_test(test::msg_exchange broker_side) {
 			++handlers_called;
 
 			auto data = shared_test_data();
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(data.topic, rec_topic);
-			BOOST_CHECK_EQUAL(data.payload, rec_payload);
+			BOOST_TEST(!ec);
+			BOOST_TEST(data.topic == rec_topic);
+			BOOST_TEST(data.payload == rec_payload);
 
 			c.cancel();
 		}
 	);
 
 	ioc.run_for(3s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
  
@@ -283,6 +309,47 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_pubcomp, shared_test_data) {
 			.complete_with(success, after(1ms));
 
 	run_test(std::move(broker_side));
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_big_publish, shared_test_data) {
+	const int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect_with_cprops)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.send(big_publish, after(1s));
+
+	asio::io_context ioc;
+	auto executor = ioc.get_executor();
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
+
+	using client_type = mqtt_client<test::test_stream>;
+	client_type c(executor, "");
+	c.brokers("127.0.0.1")
+		.connect_properties(cprops)
+		.async_run(asio::detached);
+
+	c.async_receive([&](
+		error_code ec, std::string topic_, std::string payload_, publish_props pprops
+		) {
+			handlers_called++;
+
+			BOOST_TEST(!ec);
+			BOOST_TEST(topic == topic_);
+			BOOST_TEST(payload == payload_);
+			BOOST_TEST(pprops[prop::user_property].size() == 100);
+
+			c.cancel();
+		});
+
+	ioc.run();
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_SUITE_END();

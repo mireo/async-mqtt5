@@ -26,7 +26,7 @@ struct shared_test_data {
 
 	const std::string topic = "topic";
 	const std::string payload = "payload";
-
+	
 	const std::string publish_qos0 = encoders::encode_publish(
 		0, topic, payload, qos_e::at_most_once, retain_e::no, dup_e::no, {}
 	);
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(send_publish_qos0, shared_test_data) {
 	run_test<qos_e::at_most_once>(
 		std::move(broker_side),
 		[](error_code ec) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
+			BOOST_TEST(!ec);
 		}
 	);
 }
@@ -122,8 +122,8 @@ BOOST_FIXTURE_TEST_CASE(send_publish_qos1, shared_test_data) {
 	run_test<qos_e::at_least_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, puback_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::success);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 		}
 	);
 }
@@ -144,8 +144,8 @@ BOOST_FIXTURE_TEST_CASE(send_publish_qos2, shared_test_data) {
 	run_test<qos_e::exactly_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, pubcomp_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::success);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 		}
 	);
 }
@@ -168,8 +168,8 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_publish, shared_test_data) {
 	run_test<qos_e::at_least_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, puback_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::success);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 		}
 	);
 }
@@ -195,8 +195,8 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_pubrel, shared_test_data) {
 	run_test<qos_e::exactly_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, pubcomp_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::success);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 		}
 	);
 }
@@ -233,8 +233,8 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_puback, shared_test_data) {
 	run_test<qos_e::at_least_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, puback_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::success);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 		}
 	);
 }
@@ -275,8 +275,8 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_pubrec, shared_test_data) {
 	run_test<qos_e::exactly_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, pubcomp_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::success);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 		}
 	);
 }
@@ -313,8 +313,8 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_pubcomp, shared_test_data) {
 	run_test<qos_e::exactly_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, pubcomp_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::success);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
 		}
 	);
 }
@@ -337,8 +337,8 @@ BOOST_FIXTURE_TEST_CASE(receive_pubrec_with_rc, shared_test_data) {
 	run_test<qos_e::exactly_once>(
 		std::move(broker_side),
 		[](error_code ec, reason_code rc, pubcomp_props) {
-			BOOST_CHECK_MESSAGE(!ec, ec.message());
-			BOOST_CHECK_EQUAL(rc, reason_codes::unspecified_error);
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::unspecified_error);
 		}
 	);
 }
@@ -372,8 +372,8 @@ BOOST_FIXTURE_TEST_CASE(cancel_resending_publish, shared_test_data) {
 			[&handlers_called, &c](error_code ec, reason_code rc, puback_props) {
 				++handlers_called;
 
-				BOOST_CHECK(ec = asio::error::operation_aborted);
-				BOOST_CHECK_EQUAL(rc, reason_codes::empty);
+				BOOST_TEST(ec = asio::error::operation_aborted);
+				BOOST_TEST(rc == reason_codes::empty);
 
 				c.cancel();
 			}
@@ -382,8 +382,82 @@ BOOST_FIXTURE_TEST_CASE(cancel_resending_publish, shared_test_data) {
 	cancel_signal.emit(asio::cancellation_type::total);
 
 	ioc.run_for(1s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
+}
+
+BOOST_FIXTURE_TEST_CASE(send_big_publish, shared_test_data) {
+	// currently broken in test environment
+
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	// data
+	connack_props cprops;
+	cprops[prop::maximum_packet_size] = 10'000'000;
+
+	const std::string big_topic = std::string(65534, 't');
+	const std::string big_payload = std::string(65534, 'p');
+
+	publish_props big_props;
+	for (int i = 0; i < 1; i++)
+		big_props[prop::user_property].push_back(std::string(65534, 'u'));
+
+	// packets
+	auto allow_big_connack = encoders::encode_connack(false, uint8_t(0x00), cprops);
+	auto big_publish = encoders::encode_publish(
+		1, big_topic, big_payload,
+		qos_e::at_least_once, retain_e::no, dup_e::no,
+		big_props
+	);
+	auto pingreq = encoders::encode_pingreq();
+	auto pingresp = encoders::encode_pingresp();
+
+	std::vector<std::string> buffers;
+	for (size_t i = 0; i < big_publish.size(); i += 65536)
+		buffers.push_back(big_publish.substr(i, 65536));
+	BOOST_TEST_REQUIRE(buffers.size() == 3);
+	// this single async_send will result in 3 calls to async_write_some in our stream
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(allow_big_connack, after(2ms))
+		.expect(buffers[0])
+			.complete_with(success, after(1ms))
+		.expect(buffers[1])
+			.complete_with(success, after(1ms))
+		.expect(buffers[2])
+			.complete_with(success, after(1ms))
+			.reply_with(puback, after(2ms));
+
+	asio::io_context ioc;
+	auto executor = ioc.get_executor();
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
+
+	using client_type = mqtt_client<test::test_stream>;
+	client_type c(executor, "");
+	c.brokers("127.0.0.1") // to avoid reconnect backoff
+		.async_run(asio::detached);
+
+	c.async_publish<qos_e::at_least_once>(
+		big_topic, big_payload, retain_e::no, big_props,
+		[&handlers_called, &c](error_code ec, reason_code rc, puback_props) {
+			++handlers_called;
+
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
+
+			c.cancel();
+		}
+	);
+
+	ioc.run_for(2s);
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_SUITE_END();
