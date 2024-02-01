@@ -71,7 +71,7 @@ void run_test(
 	error_code expected_ec, const std::string& topic,
 	const subscribe_props& sprops = {}, const connack_props& cprops = {}
 ) {
-	auto sub_topic = subscribe_topic(topic, subscribe_options());
+	auto sub_topic = subscribe_topic { topic, subscribe_options() };
 	return run_test(
 		expected_ec,
 		std::vector<subscribe_topic> { std::move(sub_topic) },
