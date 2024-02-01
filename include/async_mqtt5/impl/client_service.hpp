@@ -46,6 +46,10 @@ public:
 		return _mqtt_context;
 	}
 
+	const auto& mqtt_context() const {
+		return _mqtt_context;
+	}
+
 	auto& tls_context() {
 		return _tls_context;
 	}
@@ -113,6 +117,10 @@ public:
 	explicit stream_context(std::monostate) {}
 
 	auto& mqtt_context() {
+		return _mqtt_context;
+	}
+
+	const auto& mqtt_context() const {
 		return _mqtt_context;
 	}
 
@@ -283,6 +291,16 @@ public:
 			);
 	}
 
+	uint16_t negotiated_keep_alive() const {
+		return connack_property(prop::server_keep_alive)
+			.value_or(_stream_context.mqtt_context().keep_alive);
+	}
+
+	void keep_alive(uint16_t seconds) {
+		if (!is_open())
+			_stream_context.mqtt_context().keep_alive = seconds;
+	}
+
 	template <typename Prop>
 	const auto& connect_property(Prop p) const {
 		return _stream_context.connect_property(p);
@@ -382,21 +400,21 @@ public:
 	}
 
 	template <typename CompletionToken>
-	decltype(auto) async_assemble(duration wait_for, CompletionToken&& token) {
+	decltype(auto) async_assemble(CompletionToken&& token) {
 		using Signature = void (error_code, uint8_t, byte_citer, byte_citer);
 
 		auto initiation = [] (
 			auto handler, self_type& self,
-			duration wait_for, std::string& read_buff, data_span& active_span
+			std::string& read_buff, data_span& active_span
 		) {
 			assemble_op {
 				self, std::move(handler), read_buff, active_span
-			}.perform(wait_for, asio::transfer_at_least(0));
+			}.perform(asio::transfer_at_least(0));
 		};
 
 		return asio::async_initiate<CompletionToken, Signature> (
 			initiation, token, std::ref(*this),
-			wait_for, std::ref(_read_buff), std::ref(_active_span)
+			std::ref(_read_buff), std::ref(_active_span)
 		);
 	}
 
@@ -429,6 +447,8 @@ public:
 				session_state.subscriptions_present(false);
 			}
 		}
+
+		_cancel_ping.emit(asio::cancellation_type::total);
 	}
 
 	bool channel_store(decoders::publish_message message) {

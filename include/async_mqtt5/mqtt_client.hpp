@@ -43,8 +43,6 @@ private:
 	using stream_type = StreamType;
 	using tls_context_type = TlsContext;
 
-	static constexpr auto read_timeout = std::chrono::seconds(5);
-
 	using client_service_type = detail::client_service<
 		stream_type, tls_context_type
 	>;
@@ -183,8 +181,7 @@ public:
 		auto initiation = [] (auto handler, const clisvc_ptr& svc_ptr) {
 			svc_ptr->run(std::move(handler));
 
-			detail::ping_op { svc_ptr }
-				.perform(read_timeout - std::chrono::seconds(1));
+			detail::ping_op { svc_ptr }.perform();
 			detail::read_message_op { svc_ptr }.perform();
 			detail::sentry_op { svc_ptr }.perform();
 		};
@@ -298,6 +295,30 @@ public:
 	>
 	mqtt_client& authenticator(Authenticator&& authenticator) {
 		_svc_ptr->authenticator(std::forward<Authenticator>(authenticator));
+		return *this;
+	}
+
+	/**
+	 * \brief Assign the maximum time interval that is permitted to elapse between
+	 * two transmissions from the Client.
+	 *
+	 * \details A non-zero value initiates a process of sending a \__PINGREQ\__
+	 * packet every `seconds`. If this function is not invoked, the Client assumes
+	 * a \__KEEP_ALIVE\__ interval of 60 seconds.
+	 *
+	 * \param seconds Time interval in seconds.
+	 *
+	 * \note If the Server sends a \__SERVER_KEEP_ALIVE\__,
+	 * the Client will send a \__PINGREQ\__ packet every \__SERVER_KEEP_ALIVE\__ seconds.
+	 *
+	 * \attention This function takes action when the client is in a non-operational state,
+	 * meaning the \ref async_run function has not been invoked.
+	 * Furthermore, you can use this function after the \ref cancel function has been called,
+	 * before the \ref async_run function is invoked again.
+	 *
+	 */
+	mqtt_client& keep_alive(uint16_t seconds) {
+		_svc_ptr->keep_alive(seconds);
 		return *this;
 	}
 

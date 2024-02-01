@@ -49,7 +49,6 @@ public:
 
 	void perform() {
 		_svc_ptr->async_assemble(
-			std::chrono::seconds(20),
 			asio::prepend(std::move(*this), on_message {})
 		);
 	}

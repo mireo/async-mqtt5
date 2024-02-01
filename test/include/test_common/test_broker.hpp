@@ -246,10 +246,14 @@ public:
 		asio::dispatch(asio::prepend(std::move(handler), ec, bytes));
 	}
 
+	void cancel_pending_read() {
+		_pending_read.complete(get_executor(), asio::error::operation_aborted, 0);
+	}
+
 private:
 
 	void shutdown() override {
-		_pending_read.complete(get_executor(), asio::error::operation_aborted, 0);
+		cancel_pending_read();
 	}
 
 	void launch_broker_ops() {

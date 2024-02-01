@@ -196,7 +196,7 @@ public:
 			encoders::encode_connect,
 			_ctx.creds.client_id,
 			_ctx.creds.username, _ctx.creds.password,
-			uint16_t(10), false, _ctx.co_props, _ctx.will_msg
+			_ctx.keep_alive, false, _ctx.co_props, _ctx.will_msg
 		);
 
 		auto wire_data = packet.wire_data();

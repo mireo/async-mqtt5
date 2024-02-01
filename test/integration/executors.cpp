@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(async_run) {
 
 	// packets
 	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 	auto connack = encoders::encode_connack(
 		false, reason_codes::success.value(), {}

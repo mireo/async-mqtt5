@@ -84,7 +84,7 @@ public:
 	}
 
 	template <typename CompletionCondition>
-	void perform(duration wait_for, CompletionCondition cc) {
+	void perform(CompletionCondition cc) {
 		_read_buff.erase(
 			_read_buff.cbegin(), _data_span.first()
 		);
@@ -100,7 +100,7 @@ public:
 			return asio::post(
 				asio::prepend(
 					std::move(*this), on_read {}, error_code {},
-					0, wait_for, std::move(cc)
+					0, std::move(cc)
 				)
 			);
 		}
@@ -110,9 +110,9 @@ public:
 		auto store_size = std::distance(_data_span.last(), _read_buff.cend());
 
 		_svc._stream.async_read_some(
-			asio::buffer(store_begin, store_size), wait_for,
+			asio::buffer(store_begin, store_size), compute_read_timeout(),
 			asio::prepend(
-				asio::append(std::move(*this), wait_for, std::move(cc)),
+				asio::append(std::move(*this), std::move(cc)),
 				on_read {}
 			)
 		);
@@ -121,13 +121,13 @@ public:
 	template <typename CompletionCondition>
 	void operator()(
 		on_read, error_code ec, size_t bytes_read,
-		duration wait_for, CompletionCondition cc
+		CompletionCondition cc
 	) {
 		if (ec == asio::error::try_again) {
 			_svc.update_session_state();
 			_svc._async_sender.resend();
 			_data_span = { _read_buff.cend(), _read_buff.cend() };
-			return perform(wait_for, std::move(cc));
+			return perform(std::move(cc));
 		}
 
 		if (ec)
@@ -149,7 +149,7 @@ public:
 
 		if (!varlen) {
 			if (_data_span.size() < 5)
-				return perform(wait_for, asio::transfer_at_least(1));
+				return perform(asio::transfer_at_least(1));
 			return complete(client::error::malformed_packet, 0, {}, {});
 		}
 
@@ -160,16 +160,23 @@ public:
 			return complete(client::error::malformed_packet, 0, {}, {});
 
 		if (static_cast<uint32_t>(std::distance(first, _data_span.last())) < *varlen)
-			return perform(wait_for, asio::transfer_at_least(1));
+			return perform(asio::transfer_at_least(1));
 
 		_data_span.remove_prefix(
 			std::distance(_data_span.first(), first) + *varlen
 		);
 
-		dispatch(wait_for, control_byte, first, first + *varlen);
+		dispatch(control_byte, first, first + *varlen);
 	}
 
 private:
+	duration compute_read_timeout() const {
+		auto negotiated_ka = _svc.negotiated_keep_alive();
+		return negotiated_ka ?
+			std::chrono::milliseconds(3 * negotiated_ka * 1000 / 2) :
+			duration(std::numeric_limits<duration::rep>::max());
+	}
+
 	static bool valid_header(uint8_t control_byte) {
 		auto code = control_code_e(control_byte & 0b11110000);
 
@@ -183,7 +190,6 @@ private:
 	}
 
 	void dispatch(
-		duration wait_for,
 		uint8_t control_byte, byte_citer first, byte_citer last
 	) {
 		using namespace decoders;
@@ -194,7 +200,7 @@ private:
 		auto code = control_code_e(control_byte & 0b11110000);
 
 		if (code == control_code_e::pingresp)
-			return perform(wait_for, asio::transfer_at_least(0));
+			return perform(asio::transfer_at_least(0));
 
 		bool is_reply = code != control_code_e::publish &&
 			code != control_code_e::auth &&
@@ -203,7 +209,7 @@ private:
 		if (is_reply) {
 			auto packet_id = decoders::decode_packet_id(first).value();
 			_svc._replies.dispatch(error_code {}, code, packet_id, first, last);
-			return perform(wait_for, asio::transfer_at_least(0));
+			return perform(asio::transfer_at_least(0));
 		}
 
 		complete(error_code {}, control_byte, first, last);

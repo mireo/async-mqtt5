@@ -23,7 +23,7 @@ struct shared_test_data {
 	error_code fail = asio::error::not_connected;
 
 	const std::string connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 	const std::string connack = encoders::encode_connack(
 		true, reason_codes::success.value(), {}
@@ -237,7 +237,7 @@ struct shared_test_auth_data {
 	error_code fail = asio::error::not_connected;
 
 	const std::string connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, init_connect_props(), std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, init_connect_props(), std::nullopt
 	);
 
 	const std::string connack = encoders::encode_connack(

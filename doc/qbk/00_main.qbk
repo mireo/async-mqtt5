@@ -98,6 +98,9 @@
 [def __DISCONNECT_PROPS__ [reflink2 disconnect_props async_mqtt5::disconnect_props]]
 [def __AUTH_PROPS__ [reflink2 auth_props async_mqtt5::auth_props]]
 
+[def __KEEP_ALIVE__ [mqttlink 3901045 `Keep Alive`]]
+[def __SERVER_KEEP_ALIVE__ [mqttlink 3901094 `Server Keep Alive`]]
+
 [def __ERROR_CODE__ [reflink2 error_code `async_mqtt5::error_code`]]
 [def __REASON_CODE__ [reflink2 reason_code `async_mqtt5::reason_code`]]
 

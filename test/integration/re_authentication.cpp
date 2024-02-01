@@ -13,14 +13,14 @@
 
 using namespace async_mqtt5;
 
-BOOST_AUTO_TEST_SUITE(re_auth_op/*, *boost::unit_test::disabled()*/)
+BOOST_AUTO_TEST_SUITE(re_authentication/*, *boost::unit_test::disabled()*/)
 
 struct shared_test_data {
 	error_code success {};
 	error_code fail = asio::error::not_connected;
 
 	const std::string connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, init_connect_props(), std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, init_connect_props(), std::nullopt
 	);
 	const std::string connack = encoders::encode_connack(
 		true, reason_codes::success.value(), {}
@@ -188,7 +188,7 @@ BOOST_FIXTURE_TEST_CASE(async_auth_fail, shared_test_data) {
 
 BOOST_FIXTURE_TEST_CASE(unexpected_auth, shared_test_data) {
 	auto connect_no_auth = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::protocol_error.value(),
@@ -210,7 +210,7 @@ BOOST_FIXTURE_TEST_CASE(unexpected_auth, shared_test_data) {
 
 BOOST_FIXTURE_TEST_CASE(re_auth_without_authenticator, shared_test_data) {
 	auto connect_no_auth = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 
 	test::msg_exchange broker_side;

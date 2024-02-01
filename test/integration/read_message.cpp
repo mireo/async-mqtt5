@@ -18,7 +18,7 @@ void test_receive_malformed_packet(
 ) {
 	// packets
 	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 	connack_props co_props;
 	co_props[prop::maximum_packet_size] = 2000;
@@ -102,7 +102,7 @@ struct shared_test_data {
 	error_code success {};
 
 	const std::string connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 	const std::string connack = encoders::encode_connack(false, uint8_t(0x00), {});
 };
@@ -140,36 +140,6 @@ BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
 	ioc.run();
 	BOOST_CHECK(broker.received_all_expected());
 
-}
-
-BOOST_FIXTURE_TEST_CASE(receive_pingresp, shared_test_data) {
-	// packets
-	auto pingresp = encoders::encode_pingresp();
-
-	test::msg_exchange broker_side;
-	broker_side
-		.expect(connect)
-			.complete_with(success, after(0ms))
-			.reply_with(connack, after(0ms))
-		.send(pingresp, after(10ms));
-
-	asio::io_context ioc;
-	auto executor = ioc.get_executor();
-	auto& broker = asio::make_service<test::test_broker>(
-		ioc, executor, std::move(broker_side)
-	);
-
-	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
-	c.brokers("127.0.0.1")
-		.async_run(asio::detached);
-
-	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(100ms);
-	timer.async_wait([&c](error_code) { c.cancel(); });
-
-	ioc.run();
-	BOOST_CHECK(broker.received_all_expected());
 }
 
 BOOST_FIXTURE_TEST_CASE(receive_byte_by_byte, shared_test_data) {

@@ -70,6 +70,7 @@ private:
 struct mqtt_ctx {
 	credentials creds;
 	std::optional<will> will_msg;
+	uint16_t keep_alive = 60;
 	connect_props co_props;
 	connack_props ca_props;
 	session_state state;

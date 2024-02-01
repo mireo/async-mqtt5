@@ -9,6 +9,8 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
+#include <async_mqtt5/detail/cancellable_handler.hpp>
+
 #include "test_common/test_broker.hpp"
 
 namespace async_mqtt5::test {
@@ -94,15 +96,25 @@ template <typename Handler>
 class read_op {
 	struct on_read {};
 	std::shared_ptr<test_stream_impl> _stream_impl;
-	Handler _handler;
 
+	using handler_type = async_mqtt5::detail::cancellable_handler<
+		Handler,
+		typename test_stream_impl::executor_type
+	>;
+	handler_type _handler;
 public:
 	read_op(
 		std::shared_ptr<test_stream_impl> stream_impl, Handler handler
 	) :
 		_stream_impl(std::move(stream_impl)),
-		_handler(std::move(handler))
-	{}
+		_handler(std::move(handler), _stream_impl->get_executor())
+	{
+		auto slot = asio::get_associated_cancellation_slot(_handler);
+		if (slot.is_connected())
+			slot.assign([stream_impl = _stream_impl](asio::cancellation_type_t) {
+				stream_impl->_test_broker->cancel_pending_read();
+			});
+	}
 
 	read_op(read_op&&) noexcept = default;
 	read_op(const read_op&) = delete;
@@ -136,17 +148,11 @@ public:
 
 private:
 	void complete_post(error_code ec, size_t bytes_read) {
-		asio::post(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec, bytes_read)
-		);
+		_handler.complete_post(ec, bytes_read);
 	}
 
 	void complete(error_code ec, size_t bytes_read) {
-		asio::dispatch(
-			get_executor(),
-			asio::prepend(std::move(_handler), ec, bytes_read)
-		);
+		_handler.complete(ec, bytes_read);
 	}
 };
 

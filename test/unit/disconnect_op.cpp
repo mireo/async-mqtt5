@@ -70,19 +70,19 @@ BOOST_AUTO_TEST_CASE(omit_props) {
 
 	// packets
 	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 10, false, {}, std::nullopt
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 	auto connack = encoders::encode_connack(
 		false, reason_codes::success.value(), co_props
 	);
 
 	disconnect_props props;
-	props[prop::user_property].push_back(std::string(50, 'a'));
+	props[prop::reason_string] = std::string(50, 'a');
 	auto disconnect = encoders::encode_disconnect(
 		reason_codes::normal_disconnection.value(), props
 	);
 	auto disconnect_no_props = encoders::encode_disconnect(
-		reason_codes::normal_disconnection.value(), disconnect_props{}
+		reason_codes::normal_disconnection.value(), disconnect_props {}
 	);
 
 	test::msg_exchange broker_side;
@@ -107,18 +107,18 @@ BOOST_AUTO_TEST_CASE(omit_props) {
 		.async_run(asio::detached);
 
 	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::milliseconds(50));
-	timer.async_wait([&](auto) {
+	timer.expires_after(50ms);
+	timer.async_wait([&](error_code) {
 		c.async_disconnect(
 			disconnect_rc_e::normal_disconnection, props,
-			[&handlers_called](error_code ec) {
+			[&](error_code ec) {
 				handlers_called++;
 				BOOST_CHECK(!ec);
 			}
 		);
 	});
 
-	ioc.run_for(std::chrono::seconds(2));
+	ioc.run_for(2s);
 	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
 	BOOST_CHECK(broker.received_all_expected());
 }

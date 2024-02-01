@@ -1,9 +1,11 @@
 #ifndef ASYNC_MQTT5_PING_OP_HPP
 #define ASYNC_MQTT5_PING_OP_HPP
 
+#include <limits>
 #include <chrono>
 #include <memory>
 
+#include <boost/asio/cancellation_state.hpp>
 #include <boost/asio/consign.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>
@@ -24,15 +26,19 @@ class ping_op {
 	struct on_timer {};
 	struct on_pingreq {};
 
-	static constexpr auto ping_interval = std::chrono::seconds(5);
-
 	std::shared_ptr<client_service> _svc_ptr;
 	std::unique_ptr<asio::steady_timer> _ping_timer;
+	asio::cancellation_state _cancellation_state;
 
 public:
 	ping_op(const std::shared_ptr<client_service>& svc_ptr) :
 		_svc_ptr(svc_ptr),
-		_ping_timer(new asio::steady_timer(svc_ptr->get_executor()))
+		_ping_timer(new asio::steady_timer(svc_ptr->get_executor())),
+		_cancellation_state(
+			svc_ptr->_cancel_ping.slot(),
+			asio::enable_total_cancellation {},
+			asio::enable_total_cancellation {}
+		)
 	{}
 
 	ping_op(ping_op&&) noexcept = default;
@@ -50,21 +56,28 @@ public:
 
 	using cancellation_slot_type = asio::cancellation_slot;
 	asio::cancellation_slot get_cancellation_slot() const noexcept {
-		return _svc_ptr->_cancel_ping.slot();
+		return _cancellation_state.slot();
 	}
 
-	void perform(duration from_now) {
-		_ping_timer->expires_from_now(from_now);
+	void perform() {
+		_ping_timer->expires_from_now(compute_wait_time());
 		_ping_timer->async_wait(
 			asio::prepend(std::move(*this), on_timer {})
 		);
 	}
 
-	void operator()(on_timer, error_code ec) {
+	void operator()(on_timer, error_code) {
 		get_cancellation_slot().clear();
 
-		if (ec == asio::error::operation_aborted || !_svc_ptr->is_open())
+		if (
+			_cancellation_state.cancelled() == asio::cancellation_type::terminal ||
+			!_svc_ptr->is_open()
+		)
 			return;
+		else if (_cancellation_state.cancelled() == asio::cancellation_type::total) {
+			_cancellation_state.clear();
+			return perform();
+		}
 
 		auto pingreq = control_packet<allocator_type>::of(
 			no_pid, get_allocator(), encoders::encode_pingreq
@@ -81,11 +94,21 @@ public:
 		);
 	}
 
-	void operator()(on_pingreq, error_code ec) {
+	void operator()(on_pingreq, error_code) {
 		get_cancellation_slot().clear();
 
-		if (!ec || ec == asio::error::try_again)
-			perform(ping_interval - std::chrono::seconds(1));
+		if (_cancellation_state.cancelled() == asio::cancellation_type::terminal)
+			return;
+
+		perform();
+	}
+
+private:
+	duration compute_wait_time() const {
+		auto negotiated_ka = _svc_ptr->negotiated_keep_alive();
+		return negotiated_ka ?
+			std::chrono::seconds(negotiated_ka) :
+			duration(std::numeric_limits<duration::rep>::max());
 	}
 };
 
