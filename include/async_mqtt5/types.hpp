@@ -80,57 +80,55 @@ enum class auth_step_e {
 };
 
 /**
+ * \brief Representation of the No Local Subscribe Option.
+ *
+ * \details A Subscribe Option indicating whether or not Application Messages
+ * will be forwarded to a connection with a ClientID equal to the ClientID of the
+ * publishing connection.
+ */
+enum class no_local_e : std::uint8_t {
+	/** Application Messages can be forwarded to a connection with equal ClientID. */
+	no = 0b0,
+
+	/** Application Messages MUST NOT be forwarded to a connection with equal ClientID. */
+	yes = 0b1
+};
+
+/**
+ * \brief Representation of the Retain As Published Subscribe Option.
+ *
+ * \details A Subscribe Option indicating whether or not Application Messages forwarded
+ * using this subscription keep the \__RETAIN\__ flag they were published with.
+ */
+enum class retain_as_published_e : std::uint8_t {
+	/** Application Messages have the \__RETAIN\__ flag set to 0. */
+	dont = 0b0,
+
+	/** Application Messages keep the \__RETAIN\__ flag they were published with. */
+	retain = 0b1
+};
+
+/**
+ * \brief Representation of the Retain Handling Subscribe Option.
+ *
+ * \details A Subscribe Option specifying whether retained messages are sent
+ * when the subscription is established.
+ */
+enum class retain_handling_e : std::uint8_t {
+	/** Send retained messages at the time of subscribe. */
+	send = 0b00,
+
+	/** Send retained message only if the subscription does not currently exist. */
+	new_subscription_only = 0b01,
+
+	/** Do not send retained messages at the time of subscribe. */
+	not_send = 0b10
+};
+
+/**
  * \brief Represents the \__SUBSCRIBE_OPTIONS\__ associated with each Subscription.
  */
 struct subscribe_options {
-
-	/**
-	 * \brief Representation of the No Local Subscribe Option.
-	 *
-	 * \details A Subscribe Option indicating whether or not Application Messages
-	 * will be forwarded to a connection with a ClientID equal to the ClientID of the
-	 * publishing connection.
-	 */
-	enum class no_local_e : std::uint8_t {
-		/** Application Messages can be forwarded to a connection with equal ClientID. */
-		no = 0b0,
-
-		/** Application Messages MUST NOT be forwarded to a connection with equal ClientID. */
-		yes = 0b1
-	};
-
-	/**
-	 * \brief Representation of the Retain As Published Subscribe Option.
-	 *
-	 * \details A Subscribe Option indicating whether or not Application Messages forwarded
-	 * using this subscription keep the \__RETAIN\__ flag they were published with.
-	 */
-	enum class retain_as_published_e : std::uint8_t {
-		/** Application Messages have the \__RETAIN\__ flag set to 0. */
-		dont = 0b0,
-
-		/** Application Messages keep the \__RETAIN\__ flag they were published with. */
-		retain = 0b1
-	};
-
-	/**
-	 * \brief Representation of the Retain Handling Subscribe Option.
-	 *
-	 * \details A Subscribe Option specifying whether retained messages are sent
-	 * when the subscription is established.
-	 */
-	enum class retain_handling_e : std::uint8_t {
-		/** Send retained messages at the time of subscribe. */
-		send = 0b00,
-
-		/** Send retained message only if the subscription does not currently exist. */
-		new_subscription_only = 0b01,
-
-		/** Do not send retained messages at the time of subscribe. */
-		not_send = 0b10
-	};
-
-
 	/// Maximum \__QOS\__ level at which the Server can send Application Messages to the Client.
 	qos_e max_qos = qos_e::exactly_once;
 

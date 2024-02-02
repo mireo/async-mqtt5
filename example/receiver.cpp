@@ -28,9 +28,9 @@ asio::awaitable<void> client_receiver(asio::io_context& ioc) {
 		"test/mqtt-test",
 		async_mqtt5::subscribe_options {
 			async_mqtt5::qos_e::exactly_once, // All messages will arrive at QoS 2.
-			async_mqtt5::subscribe_options::no_local_e::no, // Forward message from Clients with same ID.
-			async_mqtt5::subscribe_options::retain_as_published_e::retain, // Keep the original RETAIN flag.
-			async_mqtt5::subscribe_options::retain_handling_e::send // Send retained messages when the subscription is established.
+			async_mqtt5::no_local_e::no, // Forward message from Clients with same ID.
+			async_mqtt5::retain_as_published_e::retain, // Keep the original RETAIN flag.
+			async_mqtt5::retain_handling_e::send // Send retained messages when the subscription is established.
 		}
 	};
 

@@ -85,7 +85,10 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	BOOST_CHECK_EQUAL(keep_alive_, keep_alive);
 	BOOST_CHECK_EQUAL(clean_start_, clean_start);
 
-	cprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	cprops_.visit([](const auto& prop, const auto&) {
+		(void)prop; BOOST_ASSERT(prop);
+		return true;
+	});
 	BOOST_CHECK_EQUAL(*cprops_[prop::session_expiry_interval], session_expiry_interval);
 	BOOST_CHECK_EQUAL(*cprops_[prop::receive_maximum], receive_max);
 	BOOST_CHECK_EQUAL(*cprops_[prop::maximum_packet_size], maximum_packet_size);
@@ -103,7 +106,7 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	BOOST_CHECK_EQUAL((*w_).topic(), will_topic);
 	BOOST_CHECK_EQUAL((*w_).message(), will_message);
 
-	(*w_).visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	(*w_).visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*(*w_)[prop::will_delay_interval], will_delay_interval);
 	BOOST_CHECK_EQUAL(*(*w_)[prop::payload_format_indicator], will_payload_format_indicator);
 	BOOST_CHECK_EQUAL(*(*w_)[prop::message_expiry_interval], will_message_expiry_interval);
@@ -173,7 +176,7 @@ BOOST_AUTO_TEST_CASE(test_connack) {
 	BOOST_CHECK_EQUAL(session_present_, session_present);
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 
-	cprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	cprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*cprops_[prop::session_expiry_interval], session_expiry_interval);
 	BOOST_CHECK_EQUAL(*cprops_[prop::receive_maximum], receive_maximum);
 	BOOST_CHECK_EQUAL(*cprops_[prop::maximum_qos], max_qos);
@@ -242,7 +245,7 @@ BOOST_AUTO_TEST_CASE(test_publish) {
 	BOOST_CHECK_EQUAL(topic_, topic);
 	BOOST_CHECK_EQUAL(payload_, payload);
 
-	pprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*pprops_[prop::payload_format_indicator], payload_format_indicator);
 	BOOST_CHECK_EQUAL(*pprops_[prop::message_expiry_interval], message_expiry_interval);
 	BOOST_CHECK_EQUAL(*pprops_[prop::topic_alias], topic_alias);
@@ -311,7 +314,7 @@ BOOST_AUTO_TEST_CASE(test_puback) {
 	BOOST_ASSERT(rv);
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
 	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
@@ -348,7 +351,7 @@ BOOST_AUTO_TEST_CASE(test_pubrec) {
 	BOOST_ASSERT(rv);
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
 	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
@@ -385,7 +388,7 @@ BOOST_AUTO_TEST_CASE(test_pubrel) {
 	BOOST_ASSERT(rv);
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
 	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
@@ -422,7 +425,7 @@ BOOST_AUTO_TEST_CASE(test_pubcomp) {
 	BOOST_ASSERT(rv);;
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
 	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
@@ -435,11 +438,6 @@ BOOST_AUTO_TEST_CASE(test_subscribe) {
 	uint32_t sub_id = 1'234'567;
 	std::string user_property_1 = "SUBSCRIBE user prop";
 	std::string user_property_2 = "SUBSCRIBE user prop val";
-
-	// delete using lines when we shorten the enum names
-	using no_local_e = subscribe_options::no_local_e;
-	using retain_as_published_e = subscribe_options::retain_as_published_e;
-	using retain_handling_e = subscribe_options::retain_handling_e;
 
 	qos_e qos = qos_e::at_least_once;
 	no_local_e no_local = no_local_e::yes;
@@ -483,7 +481,7 @@ BOOST_AUTO_TEST_CASE(test_subscribe) {
 		static_cast<uint8_t>(qos);
 	BOOST_CHECK_EQUAL(options_, mask);
 
-	sprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*sprops_[prop::subscription_identifier], sub_id);
 	BOOST_ASSERT(sprops_[prop::user_property].size() == 2);
 	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0], user_property_1);
@@ -520,7 +518,7 @@ BOOST_AUTO_TEST_CASE(test_suback) {
 	const auto& [sprops_, reason_codes_] = *rv;
 	BOOST_CHECK(reason_codes_ == reason_codes);
 
-	sprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*sprops_[prop::reason_string], reason_string);
 	BOOST_ASSERT(sprops_[prop::user_property].size() == 2);
 	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0], user_property_1);
@@ -555,7 +553,7 @@ BOOST_AUTO_TEST_CASE(test_unsubscribe) {
 	const auto& [uprops_, topics_] = *rv;
 	BOOST_CHECK(topics_ == topics);
 
-	uprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_ASSERT(uprops_[prop::user_property].size() == 2);
 	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0], user_property_1);
 	BOOST_CHECK_EQUAL(uprops_[prop::user_property][1], user_property_2);
@@ -591,7 +589,7 @@ BOOST_AUTO_TEST_CASE(test_unsuback) {
 	const auto& [uprops_, reason_codes_] = *rv;
 	BOOST_CHECK(reason_codes_ == reason_codes);
 
-	uprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*uprops_[prop::reason_string], reason_string);
 	BOOST_ASSERT(uprops_[prop::user_property].size() == 2);
 	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0], user_property_1);
@@ -628,7 +626,7 @@ BOOST_AUTO_TEST_CASE(test_disconnect) {
 	const auto& [reason_code_, dprops_] = *rv;
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 
-	dprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	dprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*dprops_[prop::session_expiry_interval], session_expiry_interval);
 	BOOST_CHECK_EQUAL(*dprops_[prop::reason_string], reason_string);
 	BOOST_ASSERT(dprops_[prop::user_property].size() == 2);
@@ -668,7 +666,7 @@ BOOST_AUTO_TEST_CASE(test_auth) {
 	const auto& [reason_code_, aprops_] = *rv;
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 
-	aprops_.visit([](const auto& prop, const auto&) { BOOST_ASSERT(prop); return true; });
+	aprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*aprops_[prop::authentication_method], authentication_method);
 	BOOST_CHECK_EQUAL(*aprops_[prop::authentication_data], authentication_data);
 	BOOST_CHECK_EQUAL(*aprops_[prop::reason_string], reason_string);

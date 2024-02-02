@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(reason_code_to_string) {
 		wildcard_subscriptions_not_supported
 	};
 
-	BOOST_CHECK_EQUAL(rcs.size(), 46);
+	BOOST_CHECK_EQUAL(rcs.size(), 46u);
 
 	constexpr auto default_output = "Invalid reason code";
 	for (const auto& rc: rcs) 

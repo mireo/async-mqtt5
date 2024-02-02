@@ -124,11 +124,11 @@ void subscribe_and_receive_websocket_tcp(int num_receive) {
 	topics.push_back(subscribe_topic{
 		"test/mqtt-test", {
 			qos_e::exactly_once,
-			subscribe_options::no_local_e::no,
-			subscribe_options::retain_as_published_e::retain,
-			subscribe_options::retain_handling_e::send
+			no_local_e::no,
+			retain_as_published_e::retain,
+			retain_handling_e::send
 		}
-		});
+	});
 
 	c.async_subscribe(
 		topics, subscribe_props{},
