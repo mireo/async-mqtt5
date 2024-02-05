@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
+#include <async_mqtt5/reason_codes.hpp>
 #include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>

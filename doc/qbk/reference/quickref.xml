@@ -38,7 +38,8 @@
         <bridgehead renderas="sect3">Enumerations</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="async_mqtt5.ref.auth_step_e">auth_step_e</link></member>
-          <member><link linkend="async_mqtt5.ref.client.error">client_error</link></member>
+          <member><link linkend="async_mqtt5.ref.connection.error">connection::error</link></member>
+          <member><link linkend="async_mqtt5.ref.client.error">client::error</link></member>
           <member><link linkend="async_mqtt5.ref.disconnect_rc_e">disconnect_rc_e</link></member>
           <member><link linkend="async_mqtt5.ref.qos_e">qos_e</link></member>
           <member><link linkend="async_mqtt5.ref.retain_e">retain_e</link></member>

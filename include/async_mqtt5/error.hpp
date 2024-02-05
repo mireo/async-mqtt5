@@ -1,9 +1,6 @@
 #ifndef ASYNC_MQTT5_ERROR_HPP
 #define ASYNC_MQTT5_ERROR_HPP
 
-#include <algorithm>
-#include <optional>
-
 #include <boost/asio/error.hpp>
 
 namespace async_mqtt5 {
@@ -14,7 +11,7 @@ namespace async_mqtt5 {
  * \details Represents all Reason Codes that the Client can send to the Server
  * in the \__DISCONNECT\__ packet as the reason for the disconnection.
  */
-enum class disconnect_rc_e : std::uint8_t {
+enum class disconnect_rc_e : uint8_t {
 	/** Close the connection normally. Do not send the Will Message. */
 	normal_disconnection = 0x00,
 
@@ -25,7 +22,7 @@ enum class disconnect_rc_e : std::uint8_t {
 
 namespace detail {
 
-enum class disconnect_rc_e : std::uint8_t {
+enum class disconnect_rc_e : uint8_t {
 	normal_disconnection = 0x00,
 	disconnect_with_will_message = 0x04,
 
@@ -48,44 +45,44 @@ enum class disconnect_rc_e : std::uint8_t {
 
 namespace client {
 /**
- * \brief MQTT client error codes.
+ * \brief Defines error codes related to MQTT client.
  *
- * \details Represents error that occur on the client side.
+ * \details Encapsulates errors that occur on the client side.
  */
 enum class error : int {
-	/** The packet is malformed. */
+	/** The packet is malformed */
 	malformed_packet = 100,
 
-	/** The packet has exceeded the Maximum Packet Size the Server is willing to accept. */
+	/** The packet has exceeded the Maximum Packet Size the Server is willing to accept */
 	packet_too_large,
 
-	/** The Client's session does not exist or it has expired. */
+	/** The Client's session does not exist or it has expired */
 	session_expired,
 
-	/** There are no more available Packet Identifiers to use. */
+	/** There are no more available Packet Identifiers to use */
 	pid_overrun,
 
-	/** The Topic is invalid and does not conform to the specification. */
+	/** The Topic is invalid and does not conform to the specification */
 	invalid_topic,
 
 	// publish
-	/** The Server does not support the specified \ref qos_e. */
+	/** The Server does not support the specified \ref qos_e */
 	qos_not_supported,
 
-	/** The Server does not support retained messages. */
+	/** The Server does not support retained messages */
 	retain_not_available,
 
-	/** The Client attempted to send a Topic Alias that is greater than Topic Alias Maximum. */
+	/** The Client attempted to send a Topic Alias that is greater than Topic Alias Maximum */
 	topic_alias_maximum_reached,
 
 	// subscribe
-	/** The Server does not support Wildcard Subscriptions. */
+	/** The Server does not support Wildcard Subscriptions */
 	wildcard_subscription_not_available,
 
-	/** The Server does not support this Subscription Identifier. */
+	/** The Server does not support this Subscription Identifier */
 	subscription_identifier_not_available,
 
-	/** The Server does not support Shared Subscriptions. */
+	/** The Server does not support Shared Subscriptions */
 	shared_subscription_not_available
 };
 
@@ -93,38 +90,33 @@ enum class error : int {
 inline std::string client_error_to_string(error err) {
 	switch (err) {
 		case error::malformed_packet:
-			return "The packet is malformed.";
+			return "The packet is malformed";
 		case error::packet_too_large:
 			return "The packet has exceeded the Maximum Packet Size "
-				"the Server is willing to accept.";
+				"the Server is willing to accept";
 		case error::session_expired:
-			return "The Client's session does not exist or it has expired.";
+			return "The Client's session does not exist or it has expired";
 		case error::pid_overrun:
-			return "There are no more available Packet Identifiers to use.";
+			return "There are no more available Packet Identifiers to use";
 		case error::invalid_topic:
 			return "The Topic is invalid and "
-				"does not conform to the specification.";
+				"does not conform to the specification";
 		case error::qos_not_supported:
-			return "The Server does not support the specified QoS.";
+			return "The Server does not support the specified QoS";
 		case error::retain_not_available:
-			return "The Server does not support retained messages.";
+			return "The Server does not support retained messages";
 		case error::topic_alias_maximum_reached:
 			return "The Client attempted to send a Topic Alias "
-				"that is greater than Topic Alias Maximum.";
+				"that is greater than Topic Alias Maximum";
 		case error::wildcard_subscription_not_available:
-			return "The Server does not support Wildcard Subscriptions.";
+			return "The Server does not support Wildcard Subscriptions";
 		case error::subscription_identifier_not_available:
-			return "The Server does not support this Subscription Identifier.";
+			return "The Server does not support this Subscription Identifier";
 		case error::shared_subscription_not_available:
-			return "The Server does not support Shared Subscriptions.";
+			return "The Server does not support Shared Subscriptions";
 		default:
-			return "Unknown client error.";
+			return "Unknown client error";
 	}
-}
-
-inline std::ostream& operator<<(std::ostream& os, const client::error& err) {
-	os << client_error_to_string(err);
-	return os;
 }
 
 struct client_ec_category : public boost::system::error_category {
@@ -145,493 +137,193 @@ inline boost::system::error_code make_error_code(error r) {
 	return { static_cast<int>(r), get_error_code_category() };
 }
 
+inline std::ostream& operator<<(std::ostream& os, const error& err) {
+	os << get_error_code_category().name() << ":" << static_cast<int>(err);
+	return os;
+}
 
 } // end namespace client
 
-/// \cond internal
-namespace reason_codes {
 
-enum class category : uint8_t {
-	none,
-	connack, puback, pubrec,
-	pubrel, pubcomp, suback,
-	unsuback, auth, disconnect
-};
-
-} // end namespace reason_codes
-
-/// \endcond
+namespace connection {
 
 /**
- * \brief A class holding Reason Code values originating from Control Packets.
- *
- * \details A Reason Code is a one byte unsigned value that indicates the result of an operation.
- *	Reason Codes less than 0x80 indicate successful completion of an operation.
- *	The normal Reason Code for success is 0.
- *	Reason Code values of 0x80 or greater indicate failure.
- *	The \__CONNACK\__,  \__PUBACK\__,  \__PUBREC\__,  \__PUBREL\__,  \__PUBCOMP\__,  \__DISCONNECT\__
- *	and  \__AUTH\__ Control Packets have a single Reason Code as part of the Variable Header.
- *	The \__SUBACK\__ and \__UNSUBACK\__ packets contain a list of one or more Reason Codes in the Payload.
- *
- *	\see See \__REASON_CODES\__ for a complete list of all possible instances of this class.
- */
-class reason_code {
-	uint8_t _code;
-	reason_codes::category _category { reason_codes::category::none };
-public:
-/// \cond INTERNAL
-	constexpr reason_code() : _code(0xff) {}
+* \brief Defines error codes related to MQTT client connection.
+*
+* \details Encapsulates errors encountered during the process of establishing a connection.
+*/
+enum class error : int {
+	/** Connection has been successfully established */
+	success = 0,
 
-	constexpr reason_code(uint8_t code, reason_codes::category cat)
-		: _code(code), _category(cat)
-	{}
+	/** An error occured during TLS handshake */
+	tls_handshake_error = 1,
 
-	constexpr explicit reason_code(uint8_t code) : _code(code) {}
-/// \endcond
+	/** An error occured during WebSocket handshake */
+	websocket_handshake_error = 2,
 
-	/// Copy constructor.
-	reason_code(const reason_code&) = default;
+	// CONNACK
+	/** The Server does not wish to reveal the reason for the failure */
+	unspecified_error = 128,
 
-	/// Move constructor.
-	reason_code(reason_code&&) = default;
+	/** Data within the CONNECT packet could not be correctly parsed */
+	malformed_packet = 129,
 
-	/// Copy assignment operator.
-	reason_code& operator=(const reason_code&) = default;
+	/** Data in the CONNECT packet does not conform to this specification */
+	protocol_error = 130,
 
-	/// Move assignment operator.
-	reason_code& operator=(reason_code&&) = default;
+	/** The CONNECT is valid but is not accepted by this Server */
+	implementation_specific_error = 131,
 
-	/**
-	 * \brief Indication if the object holds a Reason Code indicating an error.
-	 *
-	 * \details Any Reason Code holding a value equal or greater than 0x80.
-	 */
-	explicit operator bool() const noexcept {
-		return _code >= 0x80;
+	/** The Server does not support the version of the MQTT protocol requested by the Client */
+	unsupported_protocol_version = 132,
+
+	/** The Client Identifier is a valid string but is not allowed by the Server */
+	client_identifier_not_valid = 133,
+
+	/** The Server does not accept the User Name or Password specified by the Client */
+	bad_username_or_password = 134,
+
+	/** The Client is not authorized to connect */
+	not_authorized = 135,
+
+	/** The MQTT Server is not available */
+	server_unavailable = 136,
+
+	/** The Server is busy, try again later */
+	server_busy = 137,
+
+	/** This Client has been banned by administrative action */
+	banned = 138,
+
+	/** The authentication method is not supported or does not match the one currently in use. */
+	bad_authentication_method = 140,
+
+	/** The Will Topic Name is not malformed, but is not accepted by this Server */
+	topic_name_invalid = 144,
+
+	/** The CONNECT packet exceeded the maximum permissible size */
+	packet_too_large = 149,
+
+	/** An implementation or administrative imposed limit has been exceeded */
+	quota_exceeded = 151,
+
+	/** The Will Payload does not match the specified Payload Format Indicator */
+	payload_format_invalid = 153,
+
+	/** The Server does not support retained messages, and Will Retain was set to 1 */
+	retain_not_supported = 154,
+
+	/** The Server does not support the QoS set in Will QoS */
+	qos_not_supported = 155,
+
+	/** The Client should temporarily use another server */
+	use_another_server = 156,
+
+	/** The Client should permanently use another server */
+	server_moved = 157,
+
+	/** The connection rate limit has been exceeded */
+	connection_rate_exceeded = 159
+};
+
+inline std::string connection_error_to_string(error err) {
+	switch (err) {
+		case error::success:
+			return "Connection has been successfully established";
+		case error::tls_handshake_error:
+			return "Connection failed: An error occured during TLS handshake";
+		case error::websocket_handshake_error:
+			return "Connection failed: An error occured during WebSocket handshake";
+		case error::unspecified_error:
+			return "Connection failed: The Server does not wish to reveal "
+				"the reason for the failure or none of the codes apply";
+		case error::malformed_packet:
+			return "Connection failed: Data within the CONNECT packet "
+				"could not be correctly parsed";
+		case error::protocol_error:
+			return "Connection failed: Data in the CONNECT packet does"
+				" not conform to this specification";
+		case error::implementation_specific_error:
+			return "Connection failed : The CONNECT is valid but "
+				"is not accepted by this Server";
+		case error::unsupported_protocol_version:
+			return "Connection failed: The Server does not support the "
+				"version of the MQTT protocol requested by the Client";
+		case error::client_identifier_not_valid:
+			return "Connection failed: The Client Identifier is a valid "
+				"string but is not allowed by the Server";
+		case error::bad_username_or_password:
+			return "Connection failed: The Server does not accept the User Name "
+				" or Password specified by the Client";
+		case error::not_authorized:
+			return "Connection failed: The Client is not authorized to connect";
+		case error::server_unavailable:
+			return "Connection failed: The MQTT Server is not available";
+		case error::server_busy:
+			return "Connection failed: The Server is busy, try again later";
+		case error::banned:
+			return "Connection failed: This Client has been banned "
+				"by administrative action, contact the server administrator";
+		case error::bad_authentication_method:
+			return "Connection failed: The authentication method is not supported "
+				"or does not match the authentication method currently in use";
+		case error::topic_name_invalid:
+			return "Connection failed: The Will Topic Name is not malformed, "
+				"but is not accepted by this Server";
+		case error::packet_too_large:
+			return "Connection failed: The CONNECT packet exceeded the maximum "
+				" permissible size";
+		case error::quota_exceeded:
+			return "Connection failed: An implementation or administrative "
+				"imposed limit has been exceeded";
+		case error::payload_format_invalid:
+			return "Connection failed: The Will Payload does not match "
+				"the specified Payload Format Indicator";
+		case error::retain_not_supported:
+			return "Connection failed: The Server does not support "
+				"retained messages, and Will Retain was set to 1";
+		case error::qos_not_supported:
+			return "Connection failed: The Server does not support "
+				"the QoS set in Will QoS";
+		case error::use_another_server:
+			return "Connection failed: The Client should temporarily "
+				"use another server";
+		case error::server_moved:
+			return "Connection failed: The Client should permanently "
+				"use another server";
+		case error::connection_rate_exceeded:
+			return "Connection failed: The connection rate limit "
+				"has been exceeded";
+		default:
+			return "Unknown connection error";
 	}
+}
 
-	/**
-	 * \brief Returns the byte value of the Reason Code.
-	 */
-	constexpr uint8_t value() const noexcept {
-		return _code;
-	}
-
-	/// Insertion operator.
-	friend std::ostream& operator<<(std::ostream& os, const reason_code& rc) {
-		os << rc.message();
-		return os;
-	}
-
-	/// Operator less than.
-	friend bool operator<(const reason_code& lhs, const reason_code& rhs) {
-		return lhs._code < rhs._code;
-	}
-
-	/// Equality operator.
-	friend bool operator==(const reason_code& lhs, const reason_code& rhs) {
-		return lhs._code == rhs._code && lhs._category == rhs._category;
-	}
-
-	/**
-	 * \brief Returns a message describing the meaning behind the Reason Code.
-	 */
-	std::string message() const {
-		switch (_code) {
-			case 0x00:
-				if (_category == reason_codes::category::suback)
-					return "The subscription is accepted with maximum QoS sent at 0";
-				if (_category == reason_codes::category::disconnect)
-					return "Close the connection normally. Do not send the Will Message";
-				return "The operation completed successfully";
-			case 0x01:
-				return "The subscription is accepted with maximum QoS sent at 1";
-			case 0x02:
-				return "The subscription is accepted with maximum QoS sent at 2";
-			case 0x04:
-				return "The Client wishes to disconnect but requires"
-						"that the Server also publishes its Will Message";
-			case 0x10:
-				return "The message is accepted but there are no subscribers";
-			case 0x11:
-				return "No matching Topic Filter is being used by the Client.";
-			case 0x18:
-				return "Continue the authentication with another step";
-			case 0x19:
-				return "Initiate a re-authentication";
-			case 0x80:
-				return "The Server does not wish to reveal the reason for the"
-						"failure, or none of the other Reason Codes apply";
-			case 0x81:
-				return "Data within the packet could not be correctly parsed";
-			case 0x82:
-				return "Data in the packet does not conform to this specification";
-			case 0x83:
-				return "The packet is valid but not accepted by this Server";
-			case 0x84:
-				return "The Server does not support the requested "
-						"version of the MQTT protocol";
-			case 0x85:
-				return "The Client ID is valid but not allowed by this Server";
-			case 0x86:
-				return "The Server does not accept the User Name or Password provided";
-			case 0x87:
-				return "The request is not authorized";
-			case 0x88:
-				return "The MQTT Server is not available";
-			case 0x89:
-				return "The MQTT Server is busy, try again later";
-			case 0x8a:
-				return "The Client has been banned by administrative action";
-			case 0x8b:
-				return "The Server is shutting down";
-			case 0x8c:
-				return "The authentication method is not supported or "
-						"does not match the method currently in use";
-			case 0x8d:
-				return "No packet has been received for 1.5 times the Keepalive time";
-			case 0x8e:
-				return "Another Connection using the same ClientID has connected "
-						"causing this Connection to be closed";
-			case 0x8f:
-				return "The Topic Filer is not malformed, but it is not accepted";
-			case 0x90:
-				return "The Topic Name is not malformed, but it is not accepted";
-			case 0x91:
-				return "The Packet Identifier is already in use";
-			case 0x92:
-				return "The Packet Identifier is not known";
-			case 0x93:
-				return "The Client or Server has received more than Receive "
-						"Maximum publication for which it has not sent PUBACK or PUBCOMP";
-			case 0x94:
-				return "The Client or Server received a PUBLISH packet containing "
-						"a Topic Alias greater than the Maximum Topic Alias";
-			case 0x95:
-				return "The packet exceeded the maximum permissible size";
-			case 0x96:
-				return "The received data rate is too high";
-			case 0x97:
-				return "An implementation or administrative imposed limit has been exceeded";
-			case 0x98:
-				return "The Connection is closed due to an administrative action";
-			case 0x99:
-				return "The Payload does not match the specified Payload Format Indicator";
-			case 0x9a:
-				return "The Server does not support retained messages";
-			case 0x9b:
-				return "The Server does not support the QoS the Client specified or "
-						"it is greater than the Maximum QoS specified";
-			case 0x9c:
-				return "The Client should temporarily use another server";
-			case 0x9d:
-				return "The Client should permanently use another server";
-			case 0x9e:
-				return "The Server does not support Shared Subscriptions for this Client";
-			case 0x9f:
-				return "The connection rate limit has been exceeded";
-			case 0xa0:
-				return "The maximum connection time authorized for this "
-						"connection has been exceeded";
-			case 0xa1:
-				return "The Server does not support Subscription Identifiers";
-			case 0xa2:
-				return "The Server does not support Wildcard Subscriptions";
-			case 0xff:
-				return "No reason code";
-			default:
-				return "Invalid reason code";
-		}
+struct connection_ec_category : public boost::system::error_category {
+	const char* name() const noexcept override { return "mqtt_connection_error"; }
+	std::string message(int ev) const noexcept override {
+		return connection_error_to_string(static_cast<error>(ev));
 	}
 };
 
-namespace reason_codes {
-
-/** No Reason Code. A \ref client::error occurred.*/
-constexpr reason_code empty {};
-
-/** The operation completed successfully. */
-constexpr reason_code success { 0x00 };
-
-/** Close the connection normally. Do not send the Will Message. */
-constexpr reason_code normal_disconnection { 0x00, category::disconnect };
-
-/** The subscription is accepted with maximum QoS sent at 0. */
-constexpr reason_code granted_qos_0 { 0x00, category::suback };
-
-/** The subscription is accepted with maximum QoS sent at 1. */
-constexpr reason_code granted_qos_1 { 0x01 };
-
-/** The subscription is accepted with maximum QoS sent at 2 */
-constexpr reason_code granted_qos_2 { 0x02 };
-
-/** The Client wishes to disconnect but requires that
- the Server also publishes its Will Message. */
-constexpr reason_code disconnect_with_will_message { 0x04 };
-
-/** The message is accepted but there are no subscribers. */
-constexpr reason_code no_matching_subscribers { 0x10 };
-
-/** No matching Topic Filter is being used by the Client. */
-constexpr reason_code no_subscription_existed { 0x11 };
-
-/** Continue the authentication with another step. */
-constexpr reason_code continue_authentication { 0x18 };
-
-/** Initiate a re-authentication. */
-constexpr reason_code reauthenticate { 0x19 };
-
-/** The Server does not wish to reveal the reason for the
- failure, or none of the other Reason Codes apply. */
-constexpr reason_code unspecified_error { 0x80 };
-
-/** Data within the packet could not be correctly parsed. */
-constexpr reason_code malformed_packet { 0x81 };
-
-/** Data in the packet does not conform to this specification. */
-constexpr reason_code protocol_error { 0x82 };
-
-/** The packet is valid but not accepted by this Server. */
-constexpr reason_code implementation_specific_error { 0x83 };
-
-/** The Server does not support the requested version of the MQTT protocol. */
-constexpr reason_code unsupported_protocol_version { 0x84 };
-
-/** The Client ID is valid but not allowed by this Server. */
-constexpr reason_code client_id_not_valid { 0x85 };
-
-/** The Server does not accept the User Name or Password provided. */
-constexpr reason_code bad_username_or_password { 0x86 };
-
-/** The request is not authorized. */
-constexpr reason_code not_authorized { 0x87 };
-
-/** The MQTT Server is not available. */
-constexpr reason_code server_unavailable { 0x88 };
-
-/** The MQTT Server is busy, try again later. */
-constexpr reason_code server_busy { 0x89 };
-
-/** The Client has been banned by administrative action. */
-constexpr reason_code banned { 0x8a };
-
-/** The Server is shutting down. */
-constexpr reason_code server_shutting_down { 0x8b };
-
-/** The authentication method is not supported or
- does not match the method currently in use. */
-constexpr reason_code bad_authentication_method { 0x8c };
-
-/** No packet has been received for 1.5 times the Keepalive time. */
-constexpr reason_code keep_alive_timeout { 0x8d };
-
-/** Another Connection using the same ClientID has connected
- causing this Connection to be closed. */
-constexpr reason_code session_taken_over { 0x8e };
-
-/** The Topic Filter is not malformed, but it is not accepted. */
-constexpr reason_code topic_filter_invalid { 0x8f };
-
-/** The Topic Name is not malformed, but it is not accepted. */
-constexpr reason_code topic_name_invalid { 0x90 };
-
-/** The Packet Identifier is already in use. */
-constexpr reason_code packet_id_in_use { 0x91 };
-
-/** The Packet Identifier is not known. */
-constexpr reason_code packet_id_not_found { 0x92 };
-
-/** The Client or Server has received more than Receive
- Maximum publication for which it has not sent PUBACK or PUBCOMP. */
-constexpr reason_code receive_maximum_exceeded { 0x93 };
-
-/** The Client or Server received a PUBLISH packet containing
- a Topic Alias greater than the Maximum Topic Alias. */
-constexpr reason_code topic_alias_invalid { 0x94 };
-
-/** The packet exceeded the maximum permissible size. */
-constexpr reason_code packet_too_large { 0x95 };
-
-/** The received data rate is too high. */
-constexpr reason_code message_rate_too_high { 0x96 };
-
-/** An implementation or administrative imposed limit has been exceeded. */
-constexpr reason_code quota_exceeded { 0x97 };
-
-/** The Connection is closed due to an administrative action. */
-constexpr reason_code administrative_action { 0x98 };
-
-/** The Payload does not match the specified Payload Format Indicator. */
-constexpr reason_code payload_format_invalid { 0x99 };
-
-/** The Server does not support retained messages. */
-constexpr reason_code retain_not_supported { 0x9a };
-
-/** The Server does not support the QoS the Client specified or
- it is greater than the Maximum QoS specified. */
-constexpr reason_code qos_not_supported { 0x9b };
-
-/** The Client should temporarily use another server. */
-constexpr reason_code use_another_server { 0x9c };
-
-/** The Client should permanently use another server. */
-constexpr reason_code server_moved { 0x9d };
-
-/** The Server does not support Shared Subscriptions for this Client. */
-constexpr reason_code shared_subscriptions_not_supported { 0x9e };
-
-/** The connection rate limit has been exceeded. */
-constexpr reason_code connection_rate_exceeded { 0x9f };
-
-/** The maximum connection time authorized for this
- connection has been exceeded. */
-constexpr reason_code maximum_connect_time { 0xa0 };
-
-/** The Server does not support Subscription Identifiers. */
-constexpr reason_code subscription_ids_not_supported { 0xa1 };
-
-/** The Server does not support Wildcard Subscriptions. */
-constexpr reason_code wildcard_subscriptions_not_supported { 0xa2 };
-
-namespace detail {
-
-template <
-	category cat,
-	std::enable_if_t<cat == category::connack, bool> = true
->
-std::pair<reason_code*, size_t> valid_codes() {
-	static reason_code valid_codes[] = {
-		success, unspecified_error, malformed_packet,
-		protocol_error, implementation_specific_error,
-		unsupported_protocol_version, client_id_not_valid,
-		bad_username_or_password, not_authorized,
-		server_unavailable, server_busy, banned,
-		bad_authentication_method, topic_name_invalid,
-		packet_too_large, quota_exceeded,
-		payload_format_invalid, retain_not_supported,
-		qos_not_supported, use_another_server,
-		server_moved, connection_rate_exceeded
-	};
-	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
-	return std::make_pair(valid_codes, len);
+/// Returns the error category associated with \ref connection::error.
+inline const connection_ec_category& get_error_code_category() {
+	static connection_ec_category cat;
+	return cat;
 }
 
-template <
-	category cat,
-	std::enable_if_t<cat == category::auth, bool> = true
->
-std::pair<reason_code*, size_t> valid_codes() {
-	static reason_code valid_codes[] = {
-		success, continue_authentication, reauthenticate
-	};
-	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
-	return std::make_pair(valid_codes, len);
+/// Creates an \ref error_code from a \ref connection::error.
+inline boost::system::error_code make_error_code(error r) {
+	return { static_cast<int>(r), get_error_code_category() };
 }
 
-template <
-	category cat,
-	std::enable_if_t<
-		cat == category::puback || cat == category::pubrec, bool
-	> = true
->
-std::pair<reason_code*, size_t> valid_codes() {
-	static reason_code valid_codes[] = {
-		success, no_matching_subscribers, unspecified_error,
-		implementation_specific_error, not_authorized,
-		topic_name_invalid, packet_id_in_use,
-		quota_exceeded, payload_format_invalid
-	};
-	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
-	return std::make_pair(valid_codes, len);
+inline std::ostream& operator<<(std::ostream& os, const error& err) {
+	os << get_error_code_category().name() << ":" << static_cast<int>(err);
+	return os;
 }
 
-template <
-	category cat,
-	std::enable_if_t<
-		cat == category::pubrel || cat == category::pubcomp, bool
-	> = true
->
-std::pair<reason_code*, size_t> valid_codes() {
-	static reason_code valid_codes[] = {
-		success, packet_id_not_found
-	};
-	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
-	return std::make_pair(valid_codes, len);
-}
-
-template <
-	category cat,
-	std::enable_if_t<cat == category::suback, bool> = true
->
-std::pair<reason_code*, size_t> valid_codes() {
-	static reason_code valid_codes[] = {
-		granted_qos_0, granted_qos_1, granted_qos_2,
-		unspecified_error, implementation_specific_error,
-		not_authorized, topic_filter_invalid,
-		packet_id_in_use, quota_exceeded,
-		shared_subscriptions_not_supported,
-		subscription_ids_not_supported,
-		wildcard_subscriptions_not_supported
-	};
-	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
-	return std::make_pair(valid_codes, len);
-}
-
-template <
-	category cat,
-	std::enable_if_t<cat == category::unsuback, bool> = true
->
-std::pair<reason_code*, size_t> valid_codes() {
-	static reason_code valid_codes[] = {
-		success, no_subscription_existed,
-		unspecified_error, implementation_specific_error,
-		not_authorized, topic_filter_invalid,
-		packet_id_in_use
-	};
-	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
-	return std::make_pair(valid_codes, len);
-}
-
-template <
-	category cat,
-	std::enable_if_t<cat == category::disconnect, bool> = true
->
-std::pair<reason_code*, size_t> valid_codes() {
-	static reason_code valid_codes[] = {
-		normal_disconnection, unspecified_error,
-		malformed_packet, protocol_error,
-		implementation_specific_error, not_authorized,
-		server_busy, server_shutting_down,
-		keep_alive_timeout, session_taken_over,
-		topic_filter_invalid, topic_name_invalid,
-		receive_maximum_exceeded, topic_alias_invalid,
-		packet_too_large, message_rate_too_high,
-		quota_exceeded, administrative_action,
-		payload_format_invalid, retain_not_supported,
-		qos_not_supported, use_another_server,
-		server_moved, shared_subscriptions_not_supported,
-		connection_rate_exceeded, maximum_connect_time,
-		subscription_ids_not_supported,
-		wildcard_subscriptions_not_supported
-	};
-	static size_t len = sizeof(valid_codes) / sizeof(reason_code);
-	return std::make_pair(valid_codes, len);
-}
-
-
-} // end namespace detail
-} // end namespace reason_codes
-
-
-template <reason_codes::category cat>
-std::optional<reason_code> to_reason_code(uint8_t code) {
-	auto [ptr, len] = reason_codes::detail::valid_codes<cat>();
-	auto it = std::lower_bound(ptr, ptr + len, reason_code(code));
-
-	if (it->value() == code)
-		return *it;
-	return std::nullopt;
-}
+} // end namespace connection
 
 } // end namespace async_mqtt5
 
@@ -640,7 +332,36 @@ namespace boost::system {
 template <>
 struct is_error_code_enum <async_mqtt5::client::error> : std::true_type {};
 
+template <>
+struct is_error_code_enum <async_mqtt5::connection::error> : std::true_type {};
+
 } // end namespace boost::system
 
+namespace async_mqtt5 {
+
+inline bool is_not_recoverable(boost::system::error_code ec) {
+	using namespace connection;
+	return ec == boost::asio::error::no_recovery ||
+		ec == error::tls_handshake_error ||
+		ec == error::websocket_handshake_error ||
+		ec == error::malformed_packet ||
+		ec == error::implementation_specific_error ||
+		ec == error::unsupported_protocol_version ||
+		ec == error::client_identifier_not_valid ||
+		ec == error::bad_username_or_password ||
+		ec == error::not_authorized ||
+		ec == error::banned ||
+		ec == error::bad_authentication_method ||
+		ec == error::topic_name_invalid ||
+		ec == error::packet_too_large ||
+		ec == error::quota_exceeded ||
+		ec == error::payload_format_invalid ||
+		ec == error::retain_not_supported ||
+		ec == error::qos_not_supported ||
+		ec == error::use_another_server ||
+		ec == error::server_moved;
+}
+
+} // end namespace async_mqtt5
 
 #endif // !ASYNC_MQTT5_ERROR_HPP

@@ -4,15 +4,16 @@
 #include <vector>
 
 #include <async_mqtt5/error.hpp>
+#include <async_mqtt5/reason_codes.hpp>
 
 using namespace async_mqtt5;
 
 BOOST_AUTO_TEST_SUITE(error/*, *boost::unit_test::disabled()*/)
 
-BOOST_AUTO_TEST_CASE(client_ec_to_string) {
-	// Ensure that all branches of the switch/case are covered
+struct client_error_codes {
+	const client::client_ec_category& cat = client::get_error_code_category();
 
-	std::vector<client::error> ecs = {
+	const std::vector<client::error> ecs = {
 		client::error::malformed_packet,
 		client::error::packet_too_large,
 		client::error::session_expired,
@@ -25,11 +26,13 @@ BOOST_AUTO_TEST_CASE(client_ec_to_string) {
 		client::error::subscription_identifier_not_available,
 		client::error::shared_subscription_not_available
 	};
+};
 
-	const client::client_ec_category& cat = client::get_error_code_category();
+BOOST_FIXTURE_TEST_CASE(client_ec_to_string, client_error_codes) {
+	// Ensure that all branches of the switch/case are covered
 	BOOST_TEST(cat.name());
 
-	constexpr auto default_output = "Unknown client error.";
+	constexpr auto default_output = "Unknown client error";
 	for (auto ec : ecs)
 		BOOST_TEST(cat.message(static_cast<int>(ec)) != default_output);
 
@@ -37,28 +40,83 @@ BOOST_AUTO_TEST_CASE(client_ec_to_string) {
 	BOOST_TEST(cat.message(1) == default_output);
 }
 
-BOOST_AUTO_TEST_CASE(client_ec_to_stream) {
-	std::ostringstream stream;
-	stream << client::error::invalid_topic;
-	BOOST_TEST(stream.str() == client_error_to_string(client::error::invalid_topic));
+BOOST_FIXTURE_TEST_CASE(client_ec_to_stream, client_error_codes) {
+	for (auto ec : ecs) {
+		std::ostringstream stream;
+		stream << ec;
+		std::string expected = std::string(cat.name()) + ":" +
+			std::to_string(static_cast<int>(ec));
+		BOOST_TEST(stream.str() == expected);
+	}
 }
 
-BOOST_AUTO_TEST_CASE(reason_code_to_string) {
-	// Ensure that all branches of the switch/case are covered
-	using namespace reason_codes;
+struct connection_error_codes {
+	const connection::connection_ec_category& cat = connection::get_error_code_category();
 
-	std::vector<reason_code> rcs = {
+	const std::vector<connection::error> ecs = {
+		connection::error::success,
+		connection::error::tls_handshake_error,
+		connection::error::websocket_handshake_error,
+		connection::error::unspecified_error,
+		connection::error::malformed_packet,
+		connection::error::protocol_error,
+		connection::error::implementation_specific_error,
+		connection::error::unsupported_protocol_version,
+		connection::error::client_identifier_not_valid,
+		connection::error::bad_username_or_password,
+		connection::error::not_authorized,
+		connection::error::server_unavailable,
+		connection::error::server_busy,
+		connection::error::banned,
+		connection::error::bad_authentication_method,
+		connection::error::topic_name_invalid,
+		connection::error::packet_too_large,
+		connection::error::quota_exceeded,
+		connection::error::payload_format_invalid,
+		connection::error::retain_not_supported,
+		connection::error::qos_not_supported,
+		connection::error::use_another_server,
+		connection::error::server_moved,
+		connection::error::connection_rate_exceeded
+	};
+};
+
+BOOST_FIXTURE_TEST_CASE(connection_ec_to_string, connection_error_codes) {
+	// Ensure that all branches of the switch/case are covered
+	BOOST_TEST(cat.name());
+
+	constexpr auto default_output = "Unknown connection error";
+	for (auto ec : ecs)
+		BOOST_TEST(cat.message(static_cast<int>(ec)) != default_output);
+
+	// default branch
+	BOOST_TEST(cat.message(3) == default_output);
+}
+
+BOOST_FIXTURE_TEST_CASE(connection_ec_to_stream, connection_error_codes) {
+	for (auto ec : ecs) {
+		std::ostringstream stream;
+		stream << ec;
+		std::string expected = std::string(cat.name()) + ":" +
+			std::to_string(static_cast<int>(ec));
+		BOOST_TEST(stream.str() == expected);
+	}
+}
+
+using namespace reason_codes;
+struct client_reason_codes {
+	const std::vector<reason_code> rcs = {
 		empty, success, normal_disconnection,
 		granted_qos_0, granted_qos_1, granted_qos_2,
 		disconnect_with_will_message, no_matching_subscribers,
 		no_subscription_existed, continue_authentication, reauthenticate,
 		unspecified_error, malformed_packet, protocol_error,
 		implementation_specific_error, unsupported_protocol_version,
-		client_id_not_valid,bad_username_or_password,
+		client_identifier_not_valid,bad_username_or_password,
 		not_authorized, server_unavailable, server_busy, banned,
 		server_shutting_down, bad_authentication_method, keep_alive_timeout,
-		session_taken_over, topic_filter_invalid,topic_name_invalid,
-		packet_id_in_use, packet_id_not_found, receive_maximum_exceeded,
+		session_taken_over, topic_filter_invalid, topic_name_invalid,
+		packet_identifier_in_use, packet_identifier_not_found, receive_maximum_exceeded,
 		topic_alias_invalid, packet_too_large, message_rate_too_high,
 		quota_exceeded, administrative_action, payload_format_invalid,
 		retain_not_supported, qos_not_supported, use_another_server,
@@ -66,7 +124,10 @@ BOOST_AUTO_TEST_CASE(reason_code_to_string) {
 		maximum_connect_time, subscription_ids_not_supported,
 		wildcard_subscriptions_not_supported
 	};
+};
 
+BOOST_FIXTURE_TEST_CASE(reason_code_to_string, client_reason_codes) {
+	// Ensure that all branches of the switch/case are covered
 	BOOST_TEST(rcs.size() == 46u);
 
 	constexpr auto default_output = "Invalid reason code";
@@ -79,10 +140,12 @@ BOOST_AUTO_TEST_CASE(reason_code_to_string) {
 	);
 }
 
-BOOST_AUTO_TEST_CASE(reason_code_to_stream) {
-	std::ostringstream stream;
-	stream << reason_codes::success;
-	BOOST_TEST(stream.str() == reason_codes::success.message());
+BOOST_FIXTURE_TEST_CASE(reason_code_to_stream, client_reason_codes) {
+	for (const auto& rc : rcs) {
+		std::ostringstream stream;
+		stream << rc;
+		BOOST_TEST(stream.str() == rc.message());
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END();

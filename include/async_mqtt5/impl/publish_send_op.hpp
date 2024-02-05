@@ -5,6 +5,7 @@
 #include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/error.hpp>
+#include <async_mqtt5/reason_codes.hpp>
 #include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/detail/cancellable_handler.hpp>

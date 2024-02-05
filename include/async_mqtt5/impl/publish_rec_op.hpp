@@ -9,6 +9,7 @@
 #include <boost/asio/recycling_allocator.hpp>
 
 #include <async_mqtt5/error.hpp>
+#include <async_mqtt5/reason_codes.hpp>
 #include <async_mqtt5/property_types.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
