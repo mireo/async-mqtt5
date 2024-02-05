@@ -27,16 +27,21 @@ BOOST_AUTO_TEST_CASE(client_ec_to_string) {
 	};
 
 	const client::client_ec_category& cat = client::get_error_code_category();
-	BOOST_CHECK_NO_THROW(cat.name());
+	BOOST_TEST(cat.name());
 
 	constexpr auto default_output = "Unknown client error.";
 	for (auto ec : ecs)
-		BOOST_CHECK(cat.message(static_cast<int>(ec)) != default_output);
+		BOOST_TEST(cat.message(static_cast<int>(ec)) != default_output);
 
 	// default branch
-	BOOST_CHECK(cat.message(1) == default_output);
+	BOOST_TEST(cat.message(1) == default_output);
 }
 
+BOOST_AUTO_TEST_CASE(client_ec_to_stream) {
+	std::ostringstream stream;
+	stream << client::error::invalid_topic;
+	BOOST_TEST(stream.str() == client_error_to_string(client::error::invalid_topic));
+}
 
 BOOST_AUTO_TEST_CASE(reason_code_to_string) {
 	// Ensure that all branches of the switch/case are covered
@@ -62,14 +67,14 @@ BOOST_AUTO_TEST_CASE(reason_code_to_string) {
 		wildcard_subscriptions_not_supported
 	};
 
-	BOOST_CHECK_EQUAL(rcs.size(), 46u);
+	BOOST_TEST(rcs.size() == 46u);
 
 	constexpr auto default_output = "Invalid reason code";
 	for (const auto& rc: rcs) 
-		BOOST_CHECK(rc.message() != "Invalid reason code");
+		BOOST_TEST(rc.message() != "Invalid reason code");
 
 	// default branch
-	BOOST_CHECK(
+	BOOST_TEST(
 		reason_code(0x05, reason_codes::category::suback).message() == default_output
 	);
 }
@@ -77,7 +82,7 @@ BOOST_AUTO_TEST_CASE(reason_code_to_string) {
 BOOST_AUTO_TEST_CASE(reason_code_to_stream) {
 	std::ostringstream stream;
 	stream << reason_codes::success;
-	BOOST_CHECK_EQUAL(stream.str(), reason_codes::success.message());
+	BOOST_TEST(stream.str() == reason_codes::success.message());
 }
 
 BOOST_AUTO_TEST_SUITE_END();

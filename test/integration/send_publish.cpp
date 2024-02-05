@@ -201,6 +201,34 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_pubrel, shared_test_data) {
 	);
 }
 
+BOOST_FIXTURE_TEST_CASE(fail_to_receive_pubcomp, shared_test_data) {
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos2)
+			.complete_with(success, after(1ms))
+			.reply_with(pubrec, after(2ms))
+		.expect(pubrel)
+			.complete_with(success, after(1ms))
+		.send(fail, after(100ms))
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(pubrel)
+			.complete_with(success, after(1ms))
+			.reply_with(pubcomp, after(2ms));
+
+	run_test<qos_e::exactly_once>(
+		std::move(broker_side),
+		[](error_code ec, reason_code rc, pubcomp_props) {
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
+		}
+	);
+}
+
 BOOST_FIXTURE_TEST_CASE(receive_malformed_puback, shared_test_data) {
 	// packets
 	auto publish_qos1_dup = encoders::encode_publish(

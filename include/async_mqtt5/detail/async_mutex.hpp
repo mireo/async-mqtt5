@@ -183,7 +183,7 @@ private:
 			});
 	}
 
-	// Executes operation immediatelly if mutex is not locked
+	// Executes operation immediately if mutex is not locked
 	// or queues it for later execution otherwise. In both cases
 	// the operation will be executed in a manner equivalent
 	// to asio::post to avoid recursion.
