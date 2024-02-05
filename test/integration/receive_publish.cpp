@@ -2,6 +2,7 @@
 
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
 
@@ -18,11 +19,6 @@ BOOST_AUTO_TEST_SUITE(receive_publish/*, *boost::unit_test::disabled()*/)
 struct shared_test_data {
 	error_code success {};
 	error_code fail = asio::error::not_connected;
-
-	connect_props cprops = allow_big_packets_cprops();
-	const std::string connect_with_cprops = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 60, false, cprops, std::nullopt
-	);
 
 	const std::string connect = encoders::encode_connect(
 		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
@@ -49,20 +45,14 @@ struct shared_test_data {
 	const std::string pubrec = encoders::encode_pubrec(1, uint8_t(0x00), {});
 	const std::string pubrel = encoders::encode_pubrel(1, uint8_t(0x00), {});
 	const std::string pubcomp = encoders::encode_pubcomp(1, uint8_t(0x00), {});
-
-
-private:
-	connect_props allow_big_packets_cprops() {
-		connect_props c_props;
-		c_props[prop::maximum_packet_size] = 10'000'000;
-		return c_props;
-	}
 };
 
 using test::after;
 using namespace std::chrono;
 
-void run_test(test::msg_exchange broker_side) {
+void run_test(
+	test::msg_exchange broker_side, connect_props cprops = {}
+) {
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
 
@@ -75,18 +65,17 @@ void run_test(test::msg_exchange broker_side) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
+		.connect_properties(cprops)
 		.async_run(asio::detached);
 
 	c.async_receive([&handlers_called, &c](
 			error_code ec, std::string rec_topic, std::string rec_payload, publish_props
 		){
 			++handlers_called;
-
 			auto data = shared_test_data();
 			BOOST_TEST(!ec);
 			BOOST_TEST(data.topic == rec_topic);
 			BOOST_TEST(data.payload == rec_payload);
-
 			c.cancel();
 		}
 	);
@@ -95,7 +84,6 @@ void run_test(test::msg_exchange broker_side) {
 	BOOST_TEST(handlers_called == expected_handlers_called);
 	BOOST_TEST(broker.received_all_expected());
 }
-
  
 BOOST_FIXTURE_TEST_CASE(receive_publish_qos0, shared_test_data) {
 	test::msg_exchange broker_side;
@@ -166,6 +154,36 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_publish, shared_test_data) {
 }
 
 BOOST_FIXTURE_TEST_CASE(receive_malformed_pubrel, shared_test_data) {
+	// packets
+	auto malformed_pubrel = std::string { 98, 6, 0, 1, 0, 2, 31, 1 };
+
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::malformed_packet.value(),
+		test::dprops_with_reason_string("Malformed PUBREL received: cannot decode")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(publish_qos2, after(10ms))
+		.expect(pubrec)
+			.complete_with(success, after(1ms))
+			.reply_with(malformed_pubrel, after(2ms))
+		.expect(disconnect)
+			.complete_with(success, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(pubrel, after(100ms))
+		.expect(pubcomp)
+			.complete_with(success, after(1ms));
+
+	run_test(std::move(broker_side));
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_invalid_rc_pubrel, shared_test_data) {
 	// packets
 	auto malformed_pubrel = encoders::encode_pubrel(1, uint8_t(0x04), {});
 
@@ -299,15 +317,18 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_pubcomp, shared_test_data) {
 }
 
 BOOST_FIXTURE_TEST_CASE(receive_big_publish, shared_test_data) {
-	const int expected_handlers_called = 1;
-	int handlers_called = 0;
-
 	// data
+	connect_props cprops;
+	cprops[prop::maximum_packet_size] = 10'000'000;
+
 	publish_props big_props;
 	for (int i = 0; i < 100; i++)
 		big_props[prop::user_property].push_back(std::string(65534, 'u'));
 
 	// packets
+	auto connect_big_packets = encoders::encode_connect(
+		"", std::nullopt, std::nullopt, 60, false, cprops, std::nullopt
+	);
 	auto big_publish = encoders::encode_publish(
 		1, topic, payload,
 		qos_e::at_most_once, retain_e::no, dup_e::no,
@@ -316,10 +337,37 @@ BOOST_FIXTURE_TEST_CASE(receive_big_publish, shared_test_data) {
 
 	test::msg_exchange broker_side;
 	broker_side
-		.expect(connect_with_cprops)
+		.expect(connect_big_packets)
 			.complete_with(success, after(1ms))
 			.reply_with(connack, after(2ms))
 		.send(big_publish, after(1s));
+
+	run_test(std::move(broker_side), cprops);
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_buffer_overflow, shared_test_data) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms));
+
+	std::vector<std::string> buffers;
+	buffers.reserve(65536);
+
+	for (int i = 0; i < 65536; ++i)
+		buffers.push_back(
+			encoders::encode_publish(
+				0, "topic_" + std::to_string(i),
+				"payload", qos_e::at_most_once,
+				retain_e::no, dup_e::no, {}
+			)
+		);
+
+	broker_side.send(boost::algorithm::join(buffers, ""), after(20ms));
 
 	asio::io_context ioc;
 	auto executor = ioc.get_executor();
@@ -330,21 +378,25 @@ BOOST_FIXTURE_TEST_CASE(receive_big_publish, shared_test_data) {
 	using client_type = mqtt_client<test::test_stream>;
 	client_type c(executor, "");
 	c.brokers("127.0.0.1")
-		.connect_properties(cprops)
 		.async_run(asio::detached);
 
-	c.async_receive([&](
-		error_code ec, std::string topic_, std::string payload_, publish_props pprops
-		) {
-			handlers_called++;
-
-			BOOST_TEST(!ec);
-			BOOST_TEST(topic == topic_);
-			BOOST_TEST(payload == payload_);
-			BOOST_TEST(pprops[prop::user_property].size() == 100u);
-
-			c.cancel();
-		});
+	asio::steady_timer timer(executor);
+	timer.expires_after(7s);
+	timer.async_wait(
+		[&](error_code) {
+			c.async_receive([&](
+					error_code ec, std::string rec_topic,
+					std::string rec_payload, publish_props
+				){
+					++handlers_called;
+					BOOST_TEST(!ec);
+					BOOST_TEST("topic_1" == rec_topic);
+					BOOST_TEST(payload == rec_payload);
+					c.cancel();
+				}
+			);
+		}
+	);
 
 	ioc.run();
 	BOOST_TEST(handlers_called == expected_handlers_called);

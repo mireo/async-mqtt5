@@ -203,7 +203,7 @@ BOOST_FIXTURE_TEST_CASE(receive_byte_by_byte, shared_test_data) {
 
 	for (size_t i = 0; i < publish.size(); i++)
 		broker_side.send(
-			std::string { publish[i] }, after(std::chrono::milliseconds(i + 5))
+			std::string { publish[i] }, after(std::chrono::milliseconds(i + 7))
 		);
 
 	auto verify_fun = [&](

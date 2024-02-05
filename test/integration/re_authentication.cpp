@@ -133,7 +133,8 @@ BOOST_FIXTURE_TEST_CASE(malformed_auth_rc, shared_test_data) {
 		.expect(auth_challenge)
 			.complete_with(success, after(2ms))
 			.reply_with(malformed_auth, after(4ms))
-		.expect(disconnect);
+		.expect(disconnect)
+			.complete_with(success, after(2ms));
 
 	run_test(std::move(broker_side), test::test_authenticator());
 }
@@ -159,7 +160,29 @@ BOOST_FIXTURE_TEST_CASE(mismatched_auth_method, shared_test_data) {
 		.expect(auth_challenge)
 			.complete_with(success, after(2ms))
 			.reply_with(mismatched_auth_response, after(4ms))
-		.expect(disconnect);
+		.expect(disconnect)
+			.complete_with(success, after(2ms));
+
+	run_test(std::move(broker_side), test::test_authenticator());
+}
+
+BOOST_FIXTURE_TEST_CASE(malformed_auth_received, shared_test_data) {
+	auto malformed_auth = std::string { -16, 3, 24, 15, 1, 0 };
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::malformed_packet.value(),
+		test::dprops_with_reason_string("Malformed AUTH received: cannot decode")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(1ms))
+		.expect(auth_challenge)
+			.complete_with(success, after(2ms))
+			.reply_with(malformed_auth, after(4ms))
+		.expect(disconnect)
+			.complete_with(success, after(2ms));
 
 	run_test(std::move(broker_side), test::test_authenticator());
 }
@@ -178,7 +201,8 @@ BOOST_FIXTURE_TEST_CASE(async_auth_fail, shared_test_data) {
 		.expect(auth_challenge)
 			.complete_with(success, after(2ms))
 			.reply_with(auth_response, after(4ms))
-		.expect(disconnect);
+		.expect(disconnect)
+			.complete_with(success, after(2ms));
 
 	run_test(
 		std::move(broker_side),
@@ -201,7 +225,8 @@ BOOST_FIXTURE_TEST_CASE(unexpected_auth, shared_test_data) {
 			.complete_with(success, after(0ms))
 			.reply_with(connack, after(1ms))
 		.send(auth_challenge, after(50ms))
-		.expect(disconnect);
+		.expect(disconnect)
+			.complete_with(success, after(2ms));
 
 	run_test(
 		std::move(broker_side)

@@ -28,7 +28,7 @@ void run_malformed_props_test(const disconnect_props& dprops) {
 
 	auto handler = [&handlers_called](error_code ec) {
 		++handlers_called;
-		BOOST_CHECK(ec == client::error::malformed_packet);
+		BOOST_TEST(ec == client::error::malformed_packet);
 	};
 
 	detail::disconnect_ctx ctx;
@@ -40,7 +40,7 @@ void run_malformed_props_test(const disconnect_props& dprops) {
 	.perform();
 
 	ioc.run_for(std::chrono::milliseconds(500));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_TEST(handlers_called == expected_handlers_called);
 }
 
 
@@ -85,9 +85,9 @@ BOOST_AUTO_TEST_CASE(omit_props) {
 		reason_codes::normal_disconnection.value(), disconnect_props {}
 	);
 
-	test::msg_exchange broker_side;
 	error_code success {};
 
+	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect)
 			.complete_with(success, after(0ms))
@@ -113,14 +113,14 @@ BOOST_AUTO_TEST_CASE(omit_props) {
 			disconnect_rc_e::normal_disconnection, props,
 			[&](error_code ec) {
 				handlers_called++;
-				BOOST_CHECK(!ec);
+				BOOST_TEST(!ec);
 			}
 		);
 	});
 
 	ioc.run_for(2s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

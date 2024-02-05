@@ -50,7 +50,7 @@ void setup_cancel_op_test_case(
 			signal.slot(),
 			[&handlers_called](error_code ec) {
 				handlers_called++;
-				BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
+				BOOST_TEST(ec == asio::error::operation_aborted);
 			}
 		)
 	);
@@ -69,7 +69,7 @@ void setup_cancel_op_test_case(
 			signal.slot(),
 			[&handlers_called](error_code ec) {
 				handlers_called++;
-				BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
+				BOOST_TEST(ec == asio::error::operation_aborted);
 			}
 		)
 	);
@@ -90,9 +90,9 @@ void setup_cancel_op_test_case(
 				error_code ec, std::string t, std::string p, publish_props
 			) {
 					handlers_called++;
-					BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-					BOOST_CHECK_EQUAL(t, "");
-					BOOST_CHECK_EQUAL(p, "");
+					BOOST_TEST(ec == asio::error::operation_aborted);
+					BOOST_TEST(t == "");
+					BOOST_TEST(p == "");
 			}
 		)
 	);
@@ -114,9 +114,9 @@ void setup_cancel_op_test_case(
 				error_code ec, std::vector<reason_code> rcs, unsuback_props
 			) {
 				handlers_called++;
-				BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-				BOOST_ASSERT(rcs.size() == 1);
-				BOOST_CHECK(rcs[0] == reason_codes::empty);
+				BOOST_TEST(ec == asio::error::operation_aborted);
+				BOOST_TEST_REQUIRE(rcs.size() == 1u);
+				BOOST_TEST(rcs[0] == reason_codes::empty);
 			}
 		)
 	);
@@ -138,9 +138,9 @@ void setup_cancel_op_test_case(
 				error_code ec, std::vector<reason_code> rcs, suback_props
 			) {
 				handlers_called++;
-				BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-				BOOST_ASSERT(rcs.size() == 1);
-				BOOST_CHECK(rcs[0] == reason_codes::empty);
+				BOOST_TEST(ec == asio::error::operation_aborted);
+				BOOST_TEST_REQUIRE(rcs.size() == 1u);
+				BOOST_TEST(rcs[0] == reason_codes::empty);
 			}
 		)
 	);
@@ -307,24 +307,24 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data, *boost::unit_tes
 			auto [ec, rc, props] = co_await c.async_publish<qos_e::at_least_once>(
 				topic, payload, retain_e::no, publish_props {}, use_nothrow_awaitable
 			);
-			BOOST_CHECK(!ec);
-			BOOST_CHECK(!rc);
+			BOOST_TEST(!ec);
+			BOOST_TEST(!rc);
 
 			c.cancel();
 
 			auto [cec, crc, cprops] = co_await c.async_publish<qos_e::at_least_once>(
 				topic, payload, retain_e::no, publish_props {}, use_nothrow_awaitable
 			);
-			BOOST_CHECK_EQUAL(cec, asio::error::operation_aborted);
-			BOOST_CHECK_EQUAL(crc, reason_codes::empty);
+			BOOST_TEST(cec == asio::error::operation_aborted);
+			BOOST_TEST(crc == reason_codes::empty);
 
 			c.async_run(asio::detached);
 
 			auto [rec, rrc, rprops] = co_await c.async_publish<qos_e::at_least_once>(
 				topic, payload, retain_e::no, publish_props {}, use_nothrow_awaitable
 			);
-			BOOST_CHECK(!rec);
-			BOOST_CHECK(!rrc);
+			BOOST_TEST(!rec);
+			BOOST_TEST(!rrc);
 
 			co_await c.async_disconnect(use_nothrow_awaitable);
 			co_return;
@@ -333,7 +333,7 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data, *boost::unit_tes
 	);
 
 	ioc.run();
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(broker.received_all_expected());
 }
 
 #endif

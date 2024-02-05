@@ -24,8 +24,8 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
 
 	auto handler = [&handlers_called](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
-		BOOST_CHECK(ec == client::error::pid_overrun);
-		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
+		BOOST_TEST(ec == client::error::pid_overrun);
+		BOOST_TEST(rc == reason_codes::empty);
 	};
 
 	detail::publish_send_op<
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
 		);
 
 	ioc.run_for(std::chrono::milliseconds(500));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_TEST(handlers_called == expected_handlers_called);
 }
 
 void run_test(
@@ -54,8 +54,8 @@ void run_test(
 	auto handler = [&handlers_called, expected_ec](error_code ec, reason_code rc, puback_props) {
 		++handlers_called;
 
-		BOOST_CHECK(ec == expected_ec);
-		BOOST_CHECK_EQUAL(rc, reason_codes::empty);
+		BOOST_TEST(ec == expected_ec);
+		BOOST_TEST(rc == reason_codes::empty);
 	};
 
 	detail::publish_send_op<
@@ -64,7 +64,7 @@ void run_test(
 	.perform(topic_name, payload, retain_e::yes, pprops);
 
 	ioc.run_for(std::chrono::milliseconds(500));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_TEST(handlers_called == expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_CASE(invalid_topic_name_1) {

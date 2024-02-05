@@ -88,8 +88,8 @@ void run_test(
 		);
 
 	ioc.run_for(2s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_FIXTURE_TEST_CASE(send_publish_qos0, shared_test_data) {
@@ -206,6 +206,44 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_puback, shared_test_data) {
 	auto publish_qos1_dup = encoders::encode_publish(
 		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::yes, {}
 	);
+	auto malformed_puback = std::string { 64, 6, 0, 1, 0, 2, 31, 1 };
+
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::malformed_packet.value(),
+		test::dprops_with_reason_string("Malformed PUBACK: cannot decode")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos1)
+			.complete_with(success, after(1ms))
+			.reply_with(malformed_puback, after(2ms))
+		.expect(disconnect)
+			.complete_with(success, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos1_dup)
+			.complete_with(success, after(1ms))
+			.reply_with(puback, after(2ms));
+
+	run_test<qos_e::at_least_once>(
+		std::move(broker_side),
+		[](error_code ec, reason_code rc, puback_props) {
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
+		}
+	);
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_invalid_rc_puback, shared_test_data) {
+	// packets
+	auto publish_qos1_dup = encoders::encode_publish(
+		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::yes, {}
+	);
 	auto malformed_puback = encoders::encode_puback(1, uint8_t(0x04), {});
 
 	auto disconnect = encoders::encode_disconnect(
@@ -240,6 +278,48 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_puback, shared_test_data) {
 }
 
 BOOST_FIXTURE_TEST_CASE(receive_malformed_pubrec, shared_test_data) {
+	// packets
+	auto publish_qos2_dup = encoders::encode_publish(
+		1, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::yes, {}
+	);
+
+	auto malformed_pubrec = std::string { 80, 6, 0, 1, 0, 2, 31, 1 };
+
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::malformed_packet.value(),
+		test::dprops_with_reason_string("Malformed PUBREC: cannot decode")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos2)
+			.complete_with(success, after(1ms))
+			.reply_with(malformed_pubrec, after(2ms))
+		.expect(disconnect)
+			.complete_with(success, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos2_dup)
+			.complete_with(success, after(1ms))
+			.reply_with(pubrec, after(2ms))
+		.expect(pubrel)
+			.complete_with(success, after(1ms))
+			.reply_with(pubcomp, after(2ms));
+
+	run_test<qos_e::exactly_once>(
+		std::move(broker_side),
+		[](error_code ec, reason_code rc, pubcomp_props) {
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
+		}
+	);
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_invalid_rc_pubrec, shared_test_data) {
 	// packets
 	auto publish_qos2_dup = encoders::encode_publish(
 		1, topic, payload, qos_e::exactly_once, retain_e::no, dup_e::yes, {}
@@ -282,6 +362,44 @@ BOOST_FIXTURE_TEST_CASE(receive_malformed_pubrec, shared_test_data) {
 }
 
 BOOST_FIXTURE_TEST_CASE(receive_malformed_pubcomp, shared_test_data) {
+	// packets
+	auto malformed_pubcomp = std::string { 112, 6, 0, 1, 0, 2, 31, 1 };
+
+	auto disconnect = encoders::encode_disconnect(
+		reason_codes::malformed_packet.value(),
+		test::dprops_with_reason_string("Malformed PUBCOMP: cannot decode")
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos2)
+			.complete_with(success, after(1ms))
+			.reply_with(pubrec, after(2ms))
+		.expect(pubrel)
+			.complete_with(success, after(1ms))
+			.reply_with(malformed_pubcomp, after(2ms))
+		.expect(disconnect)
+			.complete_with(success, after(1ms))
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(pubrel)
+			.complete_with(success, after(1ms))
+			.reply_with(pubcomp, after(2ms));
+
+	run_test<qos_e::exactly_once>(
+		std::move(broker_side),
+		[](error_code ec, reason_code rc, pubcomp_props) {
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
+		}
+	);
+}
+
+BOOST_FIXTURE_TEST_CASE(receive_invalid_rc_pubcomp, shared_test_data) {
 	// packets
 	auto malformed_pubcomp = encoders::encode_pubcomp(1, uint8_t(0x04), {});
 

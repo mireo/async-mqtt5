@@ -86,7 +86,7 @@ enum class error : int {
 	subscription_identifier_not_available,
 
 	/** The Server does not support Shared Subscriptions. */
-	shared_subscription_not_available,
+	shared_subscription_not_available
 };
 
 
@@ -120,6 +120,11 @@ inline std::string client_error_to_string(error err) {
 		default:
 			return "Unknown client error.";
 	}
+}
+
+inline std::ostream& operator<<(std::ostream& os, const client::error& err) {
+	os << client_error_to_string(err);
+	return os;
 }
 
 struct client_ec_category : public boost::system::error_category {
