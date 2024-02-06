@@ -362,6 +362,7 @@ public:
 		_rec_channel.close();
 		_replies.cancel_unanswered();
 		_async_sender.cancel();
+		_stream.cancel();
 		_stream.close();
 
 		asio::get_associated_cancellation_slot(_run_handler).clear();

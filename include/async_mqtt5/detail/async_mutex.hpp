@@ -160,10 +160,14 @@ public:
 			_waiting.pop_front();
 			if (!op) continue;
 			op.get_cancellation_slot().clear();
-			auto ex = asio::get_associated_executor(op, _ex);
-			asio::require(ex, asio::execution::blocking.possibly)
-				.execute([op = std::move(op)]() mutable {
-					std::move(op)(asio::error::operation_aborted);
+			asio::require(_ex, asio::execution::blocking.never)
+				.execute([ex = _ex, op = std::move(op)]() mutable {
+					auto opex = asio::get_associated_executor(op, ex);
+					opex.execute(
+						[op = std::move(op)]() mutable {
+							op(asio::error::operation_aborted);
+						}
+					);
 				});
 		}
 	}
@@ -178,7 +182,9 @@ private:
 			.execute([ex = _ex, op = std::move(op)]() mutable {
 				auto opex = asio::get_associated_executor(op, ex);
 				opex.execute(
-					[op = std::move(op)]() mutable { op(error_code{}); }
+					[op = std::move(op)]() mutable {
+						op(error_code {});
+					}
 				);
 			});
 	}

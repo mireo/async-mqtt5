@@ -181,7 +181,9 @@ public:
 private:
 	void complete(error_code ec) {
 		get_cancellation_slot().clear();
-		_owner._conn_mtx.unlock();
+
+		if (ec != asio::error::operation_aborted)
+			_owner._conn_mtx.unlock();
 
 		std::move(_handler)(ec);
 	}

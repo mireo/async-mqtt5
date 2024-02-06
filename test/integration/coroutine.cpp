@@ -123,7 +123,6 @@ BOOST_AUTO_TEST_CASE(tcp_client_check) {
 		[&](boost::system::error_code ec) {
 			BOOST_TEST_WARN(ec, "Failed to receive all the expected replies!");
 			c.cancel();
-			ioc.stop();
 		}
 	);
 
@@ -159,7 +158,6 @@ BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
 		[&](boost::system::error_code ec) {
 			BOOST_TEST_WARN(ec, "Failed to receive all the expected replies!");
 			c.cancel();
-			ioc.stop();
 		}
 	);
 
@@ -195,7 +193,6 @@ BOOST_AUTO_TEST_CASE(openssl_tls_client_check) {
 		[&](boost::system::error_code ec) {
 			BOOST_TEST_WARN(ec, "Failed to receive all the expected replies!");
 			c.cancel();
-			ioc.stop();
 		}
 	);
 
@@ -233,7 +230,6 @@ BOOST_AUTO_TEST_CASE(websocket_tls_client_check) {
 		[&](boost::system::error_code ec) {
 			BOOST_TEST_WARN(ec, "Failed to receive all the expected replies!");
 			c.cancel();
-			ioc.stop();
 		}
 	);
 

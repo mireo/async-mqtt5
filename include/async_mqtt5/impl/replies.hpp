@@ -162,7 +162,7 @@ public:
 	void cancel_unanswered() {
 		auto ua = std::move(_handlers);
 		for (auto& h : ua)
-			h.complete(asio::error::operation_aborted);
+			h.complete_post(_ex, asio::error::operation_aborted);
 	}
 
 	bool any_expired() {

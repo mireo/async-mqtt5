@@ -28,8 +28,7 @@ enum operation_type {
 };
 
 enum cancel_type {
-	ioc_stop = 1,
-	client_cancel,
+	client_cancel = 1,
 	signal_emit
 };
 
@@ -49,7 +48,7 @@ void setup_cancel_op_test_case(
 		asio::bind_cancellation_slot(
 			signal.slot(),
 			[&handlers_called](error_code ec) {
-				handlers_called++;
+				++handlers_called;
 				BOOST_TEST(ec == asio::error::operation_aborted);
 			}
 		)
@@ -68,7 +67,7 @@ void setup_cancel_op_test_case(
 		asio::bind_cancellation_slot(
 			signal.slot(),
 			[&handlers_called](error_code ec) {
-				handlers_called++;
+				++handlers_called;
 				BOOST_TEST(ec == asio::error::operation_aborted);
 			}
 		)
@@ -89,10 +88,10 @@ void setup_cancel_op_test_case(
 			[&handlers_called](
 				error_code ec, std::string t, std::string p, publish_props
 			) {
-					handlers_called++;
-					BOOST_TEST(ec == asio::error::operation_aborted);
-					BOOST_TEST(t == "");
-					BOOST_TEST(p == "");
+				++handlers_called; 
+				BOOST_TEST(ec == asio::error::operation_aborted);
+				BOOST_TEST(t == "");
+				BOOST_TEST(p == "");
 			}
 		)
 	);
@@ -113,7 +112,7 @@ void setup_cancel_op_test_case(
 			[&handlers_called](
 				error_code ec, std::vector<reason_code> rcs, unsuback_props
 			) {
-				handlers_called++;
+				++handlers_called;
 				BOOST_TEST(ec == asio::error::operation_aborted);
 				BOOST_TEST_REQUIRE(rcs.size() == 1u);
 				BOOST_TEST(rcs[0] == reason_codes::empty);
@@ -137,7 +136,7 @@ void setup_cancel_op_test_case(
 			[&handlers_called](
 				error_code ec, std::vector<reason_code> rcs, suback_props
 			) {
-				handlers_called++;
+				++handlers_called;
 				BOOST_TEST(ec == asio::error::operation_aborted);
 				BOOST_TEST_REQUIRE(rcs.size() == 1u);
 				BOOST_TEST(rcs[0] == reason_codes::empty);
@@ -150,38 +149,30 @@ template<test::cancel_type c_type, test::operation_type op_type>
 void run_cancel_op_test() {
 	using namespace test;
 
-	constexpr int expected_handlers_called = c_type == ioc_stop ? 0 : 1;
+	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
 
 	asio::io_context ioc;
+	asio::cancellation_signal signal;
 	client_type c(ioc, "");
 	c.brokers("127.0.0.1");
 
-	asio::cancellation_signal signal;
 	setup_cancel_op_test_case<op_type>(c, signal, handlers_called);
 
 	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(std::chrono::milliseconds(10));
+	timer.expires_after(std::chrono::milliseconds(100));
 	timer.async_wait([&](auto) {
-		if constexpr (c_type == ioc_stop)
-			ioc.stop();
-		else if constexpr (c_type == client_cancel)
+		if constexpr (c_type == client_cancel)
 			c.cancel();
 		else if constexpr (c_type == signal_emit)
 			signal.emit(asio::cancellation_type_t::terminal);
 	});
 
-
-	ioc.run_for(std::chrono::seconds(1));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	ioc.run();
+	BOOST_TEST(handlers_called == expected_handlers_called);
 }
 
 BOOST_AUTO_TEST_SUITE(cancellation/*, *boost::unit_test::disabled()*/)
-
-// hangs
-BOOST_AUTO_TEST_CASE(ioc_stop_async_run, *boost::unit_test::disabled()) {
-	run_cancel_op_test<test::ioc_stop, test::async_run>();
-}
 
 BOOST_AUTO_TEST_CASE(client_cancel_async_run) {
 	run_cancel_op_test<test::client_cancel, test::async_run>();
@@ -191,22 +182,12 @@ BOOST_AUTO_TEST_CASE(signal_emit_async_run) {
 	run_cancel_op_test<test::signal_emit, test::async_run>();
 }
 
-// hangs
-BOOST_AUTO_TEST_CASE(ioc_stop_async_publish, *boost::unit_test::disabled()) {
-	run_cancel_op_test<test::ioc_stop, test::publish>();
-}
-
 BOOST_AUTO_TEST_CASE(client_cancel_async_publish) {
 	run_cancel_op_test<test::client_cancel, test::publish>();
 }
 
 BOOST_AUTO_TEST_CASE(signal_emit_async_publish) {
 	run_cancel_op_test<test::signal_emit, test::publish>();
-}
-
-// hangs after ping changes
-BOOST_AUTO_TEST_CASE(ioc_stop_async_receive, *boost::unit_test::disabled()) {
-	run_cancel_op_test<test::ioc_stop, test::receive>();
 }
 
 BOOST_AUTO_TEST_CASE(client_cancel_async_receive) {
@@ -218,22 +199,12 @@ BOOST_AUTO_TEST_CASE(signal_emit_async_receive, *boost::unit_test::disabled()) {
 	run_cancel_op_test<test::signal_emit, test::receive>();
 }
 
-// hangs
-BOOST_AUTO_TEST_CASE(ioc_stop_async_subscribe, *boost::unit_test::disabled()) {
-	run_cancel_op_test<test::ioc_stop, test::subscribe>();
-}
-
 BOOST_AUTO_TEST_CASE(client_cancel_async_subscribe) {
 	run_cancel_op_test<test::client_cancel, test::subscribe>();
 }
 
 BOOST_AUTO_TEST_CASE(signal_emit_async_subscribe) {
 	run_cancel_op_test<test::signal_emit, test::subscribe>();
-}
-
-// hangs
-BOOST_AUTO_TEST_CASE(ioc_stop_async_unsubscribe, *boost::unit_test::disabled()) {
-	run_cancel_op_test<test::ioc_stop, test::unsubscribe>();
 }
 
 BOOST_AUTO_TEST_CASE(client_cancel_async_unsubscribe) {

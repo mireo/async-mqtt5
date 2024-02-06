@@ -94,13 +94,14 @@ public:
 	void cancel() {
 		error_code ec;
 		lowest_layer(*_stream_ptr).cancel(ec);
+		_conn_mtx.cancel();
+		_connect_timer.cancel();
 	}
 
 	void close() {
 		error_code ec;
 		shutdown(asio::ip::tcp::socket::shutdown_both);
 		lowest_layer(*_stream_ptr).close(ec);
-		_connect_timer.cancel();
 	}
 
 	void shutdown(asio::ip::tcp::socket::shutdown_type what) {

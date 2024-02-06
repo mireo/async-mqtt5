@@ -5,6 +5,7 @@
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/buffer.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
@@ -44,6 +45,13 @@ public:
 
 	void complete(error_code ec) {
 		std::move(_handler)(ec);
+	}
+
+	void complete_post(const asio::any_io_executor& ex, error_code ec) {
+		asio::post(
+			ex,
+			asio::prepend(std::move(_handler), ec)
+		);
 	}
 
 	auto get_executor() {
@@ -140,7 +148,7 @@ public:
 	void cancel() {
 		auto ops = std::move(_write_queue);
 		for (auto& op : ops)
-			op.complete(asio::error::operation_aborted);
+			op.complete_post(_svc.get_executor(), asio::error::operation_aborted);
 	}
 
 	void resend() {

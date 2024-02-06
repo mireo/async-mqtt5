@@ -52,6 +52,8 @@ public:
 		_test_broker = &asio::use_service<test_broker>(_ex.context());
 	}
 
+	void cancel(error_code&) {}
+
 	void close(error_code& ec) {
 		disconnect();
 		ec = {};
@@ -246,6 +248,10 @@ public:
 
 	void open(const protocol_type& p, error_code& ec) {
 		_impl->open(p, ec);
+	}
+
+	void cancel(error_code& ec) {
+		_impl->cancel(ec);
 	}
 
 	void close(error_code& ec) {
