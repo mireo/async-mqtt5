@@ -267,14 +267,14 @@ private:
 
 		_svc._replies.clear_fast_replies();
 
-		auto ex = write_queue.front().get_executor();
 		auto alloc = write_queue.front().get_allocator();
+		auto ex = write_queue.front().get_executor();
 		_svc._stream.async_write(
 			buffers,
-			asio::bind_executor(
-				ex,
-				asio::bind_allocator(
-					alloc,
+			asio::bind_allocator(
+				alloc,
+				asio::bind_executor(
+					ex,
 					asio::prepend(std::ref(*this), std::move(write_queue))
 				)
 			)
