@@ -67,7 +67,11 @@ public:
 	}
 
 	void operator()(on_locked, typename Owner::stream_ptr s, error_code ec) {
-		if (ec == asio::error::operation_aborted || !_owner.is_open())
+		if (ec == asio::error::operation_aborted)
+			// cancelled without acquiring the lock (by calling client.cancel())
+			return std::move(_handler)(ec);
+			
+		if (!_owner.is_open())
 			return complete(asio::error::operation_aborted);
 
 		if (s != _owner._stream_ptr)
@@ -182,8 +186,7 @@ private:
 	void complete(error_code ec) {
 		get_cancellation_slot().clear();
 
-		if (ec != asio::error::operation_aborted)
-			_owner._conn_mtx.unlock();
+		_owner._conn_mtx.unlock();
 
 		std::move(_handler)(ec);
 	}
