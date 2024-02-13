@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-<!--
-    Copyright (c) 2023 Mireo
-    
-    Distributed under the Boost Software License, Version 1.0. (See accompanying
-    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
--->
-
 <xsl:output method="text"/>
 <xsl:strip-space elements="*"/>
 <xsl:preserve-space elements="para"/>
@@ -26,12 +19,7 @@
   Anything in a "detail" namespace is skipped.
 -->
 <xsl:template match="/doxygen">
-<xsl:text>[/
-    /Copyright (c) 2023 Mireo
-    /
-    /Distributed under the Boost Software License, Version 1.0. (See accompanying
-    /file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-/]
+<xsl:text>
 
 [section:ref Reference]
 [xinclude quickref.xml]

@@ -1,10 +1,3 @@
-[/
-    Copyright (c) 2023 Mireo
-   
-    Distributed under the Boost Software License, Version 1.0. (See accompanying
-    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-]
-
 [section:network_connection Establishing a network connection with different protocols ]
 The __MQTT__ protocol requires the underlying transport protocol that ensures 
 orderly, lossless transmission of byte streams between the Client and Server in both directions.

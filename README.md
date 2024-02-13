@@ -51,8 +51,6 @@ You can compile the example below with the following command line on Linux:
 
 Usage and API
 ---------
-Detailed documentation is available [here](https://spacetime.mireo.com/async-mqtt5/).
-
 The following example illustrates a simple scenario of configuring a Client and publishing a
 "Hello World!" Application Message with `QoS` 0. 
 

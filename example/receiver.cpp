@@ -15,10 +15,10 @@
 namespace asio = boost::asio;
 
 asio::awaitable<void> client_receiver(asio::io_context& ioc) {
-	// Initialise the ``__Client__``, establish connection to the Broker over TCP.
+	// Initialise the Client, establish connection to the Broker over TCP.
 	async_mqtt5::mqtt_client<asio::ip::tcp::socket> client(ioc, "");
 
-	// Configure the``__Client__``.
+	// Configure the Client.
 	// It is mandatory to call brokers() and async_run() to configure the Brokers to connect to and start the Client.
 	client.brokers("mqtt.broker", 1883) // Broker that we want to connect to. 1883 is the default TCP port.
 		.async_run(asio::detached); // Start the client.
@@ -44,7 +44,7 @@ asio::awaitable<void> client_receiver(asio::io_context& ioc) {
 	// Before attempting to receive an Application Message from the Topic we just subscribed to,
 	// it is advisable to verify that the subscription succeeded.
 	// It is not recommended to call mqtt_client::async_receive if you do not have any
-	// Subscription established as the corresponding handler will never be invoked.
+	// subscription established as the corresponding handler will never be invoked.
 	if (!sub_codes[0])
 		auto [topic, payload, publish_props] = co_await client.async_receive(asio::use_awaitable);
 		// Receive more messages...
@@ -79,6 +79,6 @@ int main() {
 	ioc.run();
 }
 
-//]
-
 #endif
+
+//]
