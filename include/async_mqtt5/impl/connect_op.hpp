@@ -381,8 +381,6 @@ public:
 
 private:
 	void complete(error_code ec) {
-		get_cancellation_slot().clear();
-
 		std::move(_handler)(ec);
 	}
 

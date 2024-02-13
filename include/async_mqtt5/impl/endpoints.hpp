@@ -102,14 +102,10 @@ public:
 
 private:
 	void complete(error_code ec, epoints eps, authority_path ap) {
-		get_cancellation_slot().clear();
-
 		std::move(_handler)(ec, std::move(eps), std::move(ap));
 	}
 
 	void complete_post(error_code ec, epoints eps, authority_path ap) {
-		get_cancellation_slot().clear();
-
 		asio::post(
 			_owner.get_executor(),
 			asio::prepend(

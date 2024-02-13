@@ -61,8 +61,6 @@ public:
 	}
 
 	void operator()(on_timer, error_code ec) {
-		get_cancellation_slot().clear();
-
 		if (ec == asio::error::operation_aborted || !_svc_ptr->is_open())
 			return;
 
@@ -81,8 +79,6 @@ public:
 	}
 
 	void operator()(on_disconnect, error_code ec) {
-		get_cancellation_slot().clear();
-
 		if (!ec)
 			perform();
 	}

@@ -67,8 +67,6 @@ public:
 	}
 
 	void operator()(on_timer, error_code) {
-		get_cancellation_slot().clear();
-
 		if (
 			_cancellation_state.cancelled() == asio::cancellation_type::terminal ||
 			!_svc_ptr->is_open()
@@ -95,8 +93,6 @@ public:
 	}
 
 	void operator()(on_pingreq, error_code ec) {
-		get_cancellation_slot().clear();
-
 		if (
 			_cancellation_state.cancelled() == asio::cancellation_type::terminal ||
 			ec == asio::error::no_recovery
