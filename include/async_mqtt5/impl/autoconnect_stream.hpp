@@ -81,6 +81,10 @@ public:
 		_endpoints.brokers(std::move(hosts), default_port);
 	}
 
+	void clone_endpoints(const autoconnect_stream& other) {
+		_endpoints.clone_servers(other._endpoints);
+	}
+
 	bool is_open() const noexcept {
 		return lowest_layer(*_stream_ptr).is_open();
 	}

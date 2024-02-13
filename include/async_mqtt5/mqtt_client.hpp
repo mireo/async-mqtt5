@@ -46,8 +46,8 @@ private:
 	using client_service_type = detail::client_service<
 		stream_type, tls_context_type
 	>;
-	using clisvc_ptr = std::shared_ptr<client_service_type>;
-	clisvc_ptr _svc_ptr;
+	using impl_type = std::shared_ptr<client_service_type>;
+	impl_type _impl;
 
 public:
 	/**
@@ -62,7 +62,7 @@ public:
 		const std::string& cnf,
 		TlsContext tls_context = {}
 	) :
-		_svc_ptr(std::make_shared<client_service_type>(
+		_impl(std::make_shared<client_service_type>(
 			ex, cnf, std::move(tls_context)
 		))
 	{}
@@ -109,8 +109,8 @@ public:
 	 * \details Cancels this client first. Moved-from client can only be destructed.
 	 */
 	mqtt_client& operator=(mqtt_client&& other) noexcept {
-		cancel();
-		_svc_ptr = std::move(other._svc_ptr);
+		_impl->cancel();
+		_impl = std::move(other._impl);
 		return *this;
 	}
 
@@ -120,14 +120,15 @@ public:
 	 * \details Automatically calls \ref mqtt_client::cancel.
 	 */
 	~mqtt_client() {
-		if (_svc_ptr) cancel();
+		if (_impl)
+			_impl->cancel();
 	}
 
 	/**
 	 * \brief Get the executor associated with the object.
 	 */
 	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
+		return _impl->get_executor();
 	}
 
 
@@ -149,7 +150,7 @@ public:
 	>
 	decltype(auto) tls_context()
 	{
-		return _svc_ptr->tls_context();
+		return _impl->tls_context();
 	}
 
 	/**
@@ -178,16 +179,16 @@ public:
 	decltype(auto) async_run(CompletionToken&& token) {
 		using Signature = void(error_code);
 
-		auto initiation = [] (auto handler, const clisvc_ptr& svc_ptr) {
-			svc_ptr->run(std::move(handler));
+		auto initiation = [] (auto handler, const impl_type& impl) {
+			impl->run(std::move(handler));
 
-			detail::ping_op { svc_ptr }.perform();
-			detail::read_message_op { svc_ptr }.perform();
-			detail::sentry_op { svc_ptr }.perform();
+			detail::ping_op { impl }.perform();
+			detail::read_message_op { impl }.perform();
+			detail::sentry_op { impl }.perform();
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			initiation, token, _svc_ptr
+			initiation, token, _impl
 		);
 	}
 
@@ -201,7 +202,9 @@ public:
 	 * The Client cannot be used before calling \ref mqtt_client::async_run again.
 	 */
 	void cancel() {
-		_svc_ptr->cancel();
+		auto impl = _impl;
+		_impl = impl->dup();
+		impl->cancel();
 	}
 
 	/**
@@ -217,7 +220,7 @@ public:
 	 * before the \ref async_run function is invoked again.
 	 */
 	mqtt_client& will(will will) {
-		_svc_ptr->will(std::move(will));
+		_impl->will(std::move(will));
 		return *this;
 	}
 
@@ -236,7 +239,7 @@ public:
 		std::string client_id,
 		std::string username = "", std::string password = ""
 	) {
-		_svc_ptr->credentials(
+		_impl->credentials(
 			std::move(client_id),
 			std::move(username), std::move(password)
 		);
@@ -271,7 +274,7 @@ public:
 	 *
 	 */
 	mqtt_client& brokers(std::string hosts, uint16_t default_port = 1883) {
-		_svc_ptr->brokers(std::move(hosts), default_port);
+		_impl->brokers(std::move(hosts), default_port);
 		return *this;
 	}
 
@@ -294,7 +297,7 @@ public:
 		std::enable_if_t<detail::is_authenticator<Authenticator>, bool> = true
 	>
 	mqtt_client& authenticator(Authenticator&& authenticator) {
-		_svc_ptr->authenticator(std::forward<Authenticator>(authenticator));
+		_impl->authenticator(std::forward<Authenticator>(authenticator));
 		return *this;
 	}
 
@@ -318,7 +321,7 @@ public:
 	 *
 	 */
 	mqtt_client& keep_alive(uint16_t seconds) {
-		_svc_ptr->keep_alive(seconds);
+		_impl->keep_alive(seconds);
 		return *this;
 	}
 
@@ -328,7 +331,7 @@ public:
 	 * \see See \__CONNECT_PROPS\__ for all eligible properties.
 	 */
 	mqtt_client& connect_properties(connect_props props) {
-		_svc_ptr->connect_properties(std::move(props));
+		_impl->connect_properties(std::move(props));
 		return *this;
 	}
 
@@ -350,7 +353,7 @@ public:
 		std::integral_constant<prop::property_type, p> prop,
 		prop::value_type_t<p> value
 	) {
-		_svc_ptr->connect_property(prop) = value;
+		_impl->connect_property(prop) = value;
 		return *this;
 	}
 
@@ -361,7 +364,7 @@ public:
 	 * \note If \ref authenticator was not called, this method does nothing.
 	 */
 	void re_authenticate() {
-		detail::re_auth_op { _svc_ptr }.perform();
+		detail::re_auth_op { _impl }.perform();
 	}
 
 	/**
@@ -385,7 +388,7 @@ public:
 	const auto& connack_property(
 		std::integral_constant<prop::property_type, p> prop
 	) const {
-		return _svc_ptr->connack_property(prop);
+		return _impl->connack_property(prop);
 	}
 
 	/**
@@ -394,7 +397,7 @@ public:
 	 * \see See \__CONNACK_PROPS\__ for all eligible properties.
 	 */
 	const connack_props& connack_properties() const {
-		return _svc_ptr->connack_properties();
+		return _impl->connack_properties();
 	}
 
 	/**
@@ -477,11 +480,11 @@ public:
 		auto initiation = [] (
 			auto handler, std::string topic, std::string payload,
 			retain_e retain, const publish_props& props,
-			const clisvc_ptr& svc_ptr
+			const impl_type& impl
 		) {
 			detail::publish_send_op<
 				client_service_type, decltype(handler), qos_type
-			> { svc_ptr, std::move(handler) }
+			> { impl, std::move(handler) }
 				.perform(
 					std::move(topic), std::move(payload),
 					retain, props
@@ -490,7 +493,7 @@ public:
 
 		return asio::async_initiate<CompletionToken, Signature>(
 			initiation, token,
-			std::move(topic), std::move(payload), retain, props, _svc_ptr
+			std::move(topic), std::move(payload), retain, props, _impl
 		);
 	}
 
@@ -555,14 +558,14 @@ public:
 
 		auto initiation = [] (
 			auto handler, const std::vector<subscribe_topic>& topics,
-			const subscribe_props& props, const clisvc_ptr& impl
+			const subscribe_props& props, const impl_type& impl
 		) {
 			detail::subscribe_op { impl, std::move(handler) }
 				.perform(topics, props);
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			initiation, token, topics, props, _svc_ptr
+			initiation, token, topics, props, _impl
 		);
 	}
 
@@ -684,14 +687,14 @@ public:
 		auto initiation = [](
 			auto handler,
 			const std::vector<std::string>& topics,
-			const unsubscribe_props& props,	const clisvc_ptr& impl
+			const unsubscribe_props& props,	const impl_type& impl
 		) {
 			detail::unsubscribe_op { impl, std::move(handler) }
 				.perform(topics, props);
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			initiation, token, topics, props, _svc_ptr
+			initiation, token, topics, props, _impl
 		);
 	}
 
@@ -797,7 +800,7 @@ public:
 	template <typename CompletionToken>
 	decltype(auto) async_receive(CompletionToken&& token) {
 		// Sig = void (error_code, std::string, std::string, publish_props)
-		return _svc_ptr->async_channel_receive(
+		return _impl->async_channel_receive(
 			std::forward<CompletionToken>(token)
 		);
 	}
@@ -851,9 +854,11 @@ public:
 		disconnect_rc_e reason_code, const disconnect_props& props,
 		CompletionToken&& token
 	) {
+		auto impl = _impl;
+		_impl = impl->dup();
 		return detail::async_disconnect(
 			detail::disconnect_rc_e(static_cast<uint8_t>(reason_code)),
-			props, true, _svc_ptr,
+			props, true, impl,
 			std::forward<CompletionToken>(token)
 		);
 	}

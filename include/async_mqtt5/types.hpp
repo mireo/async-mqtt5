@@ -323,9 +323,8 @@ public:
 		_qos(qos), _retain(retain)
 	{}
 
-	// just to make sure that we don't accidentally make a copy
 	/// Copy constructor.
-	will(const will&) = delete;
+	will(const will&) = default;
 
 	/// Move constructor.
 	will(will&&) noexcept = default;

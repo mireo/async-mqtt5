@@ -149,6 +149,10 @@ public:
 		: _resolver(ex), _connect_timer(timer)
 	{}
 
+	void clone_servers(const endpoints& other) {
+		_servers = other._servers;
+	}
+
 	using executor_type = asio::ip::tcp::resolver::executor_type;
 	// NOTE: asio::ip::basic_resolver returns executor by value
 	executor_type get_executor() {

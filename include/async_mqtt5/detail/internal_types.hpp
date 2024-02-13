@@ -75,6 +75,15 @@ struct mqtt_ctx {
 	connack_props ca_props;
 	session_state state;
 	any_authenticator authenticator;
+
+	mqtt_ctx() = default;
+
+	mqtt_ctx(const mqtt_ctx& other) :
+		creds(other.creds), will_msg(other.will_msg),
+		keep_alive(other.keep_alive), co_props(other.co_props),
+		ca_props {}, state {},
+		authenticator(other.authenticator)
+	{}
 };
 
 struct disconnect_ctx {

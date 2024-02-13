@@ -243,7 +243,7 @@ using namespace std::chrono;
 
 constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
-BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data, *boost::unit_test::disabled()) {
+BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
 	// packets
 	auto disconnect = encoders::encode_disconnect(uint8_t(0x00), {});
 

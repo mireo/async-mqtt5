@@ -84,7 +84,7 @@ public:
 
 class any_authenticator {
 	std::string _method;
-	std::unique_ptr<detail::auth_fun_base> _auth_fun;
+	std::shared_ptr<detail::auth_fun_base> _auth_fun;
 
 public:
 	any_authenticator() = default;

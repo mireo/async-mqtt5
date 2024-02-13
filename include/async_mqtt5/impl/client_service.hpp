@@ -36,10 +36,15 @@ class stream_context<
 	using tls_context_type = TlsContext;
 
 	mqtt_ctx _mqtt_context;
-	tls_context_type _tls_context;
+	std::shared_ptr<tls_context_type> _tls_context_ptr;
+
 public:
 	explicit stream_context(TlsContext tls_context) :
-		_tls_context(std::move(tls_context))
+		_tls_context_ptr(std::make_shared<tls_context_type>(std::move(tls_context)))
+	{}
+
+	stream_context(const stream_context& other) :
+		_mqtt_context(other._mqtt_context), _tls_context_ptr(other._tls_context_ptr)
 	{}
 
 	auto& mqtt_context() {
@@ -51,7 +56,7 @@ public:
 	}
 
 	auto& tls_context() {
-		return _tls_context;
+		return *_tls_context_ptr;
 	}
 
 	auto& session_state() {
@@ -115,6 +120,9 @@ class stream_context<
 	mqtt_ctx _mqtt_context;
 public:
 	explicit stream_context(std::monostate) {}
+	stream_context(const stream_context& other) :
+		_mqtt_context(other._mqtt_context)
+	{}
 
 	auto& mqtt_context() {
 		return _mqtt_context;
@@ -231,6 +239,17 @@ private:
 
 	asio::any_completion_handler<void(error_code)> _run_handler;
 
+	client_service(const client_service& other) :
+		_executor(other._executor), _stream_context(other._stream_context),
+		_stream(_executor, _stream_context),
+		_replies(_executor),
+		_async_sender(*this),
+		_active_span(_read_buff.cend(), _read_buff.cend()),
+		_rec_channel(_executor, std::numeric_limits<size_t>::max())
+	{
+		_stream.clone_endpoints(other._stream);
+	}
+
 public:
 
 	client_service(
@@ -249,6 +268,10 @@ public:
 
 	executor_type get_executor() const noexcept {
 		return _executor;
+	}
+
+	auto dup() const {
+		return std::shared_ptr<client_service>(new client_service(*this));
 	}
 
 	template <
