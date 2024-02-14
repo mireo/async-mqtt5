@@ -7,7 +7,7 @@ This section lists all possible __SUBSCRIBE__ Properties and describes their usa
 
 [table:subscribe_props SUBSCRIBE properties
 	[[Identifier] [Value type] [Description]]
-	[[subscription_identifier] [`uint32_t`] [Identifier of the Subscription in range of 1 to 268,435,455.]]
+	[[subscription_identifier] [`int32_t`] [Identifier of the Subscription in range of 1 to 268,435,455.]]
 	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
 		This property can be used to send subscription related properties from the Client to the Server. 
 		The meaning of these properties is not defined by the specification ]]
@@ -24,7 +24,7 @@ The following example shows how to set a Property value:
 
 [!c++]
 	async_mqtt5::subscribe_props props;
-	props[async_mqtt5::prop::subscription_identifier] = 1234u;
+	props[async_mqtt5::prop::subscription_identifier] = 1234;
 
 The following example shows how to retrieve a Property value:
 
@@ -32,7 +32,7 @@ The following example shows how to retrieve a Property value:
 except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
 
 [!c++]
-	std::optional<uint32_t> sub_id = props[async_mqtt5::prop::subscription_identifier];
+	std::optional<int32_t> sub_id = props[async_mqtt5::prop::subscription_identifier];
 	if (sub_id.has_value())
 		// subscription identifier property was previously set
 	else

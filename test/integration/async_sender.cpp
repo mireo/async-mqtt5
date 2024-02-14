@@ -117,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE(throttling, shared_test_data) {
 	int handlers_called = 0;
 
 	connack_props props;
-	props[prop::receive_maximum] = int16_t(1);
+	props[prop::receive_maximum] = uint16_t(1);
 
 	//packets
 	auto connack_rm = encoders::encode_connack(

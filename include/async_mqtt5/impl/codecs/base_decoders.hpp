@@ -210,7 +210,7 @@ struct verbatim_parser : x3::parser<verbatim_parser> {
 constexpr auto verbatim_ = verbatim_parser{};
 
 struct varint_parser : x3::parser<varint_parser> {
-	using attribute_type = uint32_t;
+	using attribute_type = int32_t;
 	static bool const has_attribute = true;
 
 	template <typename It, typename Ctx, typename RCtx, typename Attr>
@@ -225,7 +225,7 @@ struct varint_parser : x3::parser<varint_parser> {
 		if (iter == last)
 			return false;
 
-		uint32_t result = 0; unsigned bit_shift = 0;
+		int32_t result = 0; unsigned bit_shift = 0;
 
 		for (; iter != last && bit_shift < sizeof(int32_t) * 7; ++iter) {
 			auto val = *iter;
@@ -361,11 +361,6 @@ bool parse_to_prop(
 			rv = x3::byte_.parse(iter, last, ctx, rctx, attr);
 			prop = attr;
 		}
-		if constexpr (std::is_same_v<value_type, int16_t>) {
-			int16_t attr;
-			rv = x3::big_word.parse(iter, last, ctx, rctx, attr);
-			prop = attr;
-		}
 		if constexpr (std::is_same_v<value_type, uint16_t>) {
 			uint16_t attr;
 			rv = x3::big_word.parse(iter, last, ctx, rctx, attr);
@@ -373,12 +368,12 @@ bool parse_to_prop(
 		}
 		if constexpr (std::is_same_v<value_type, int32_t>) {
 			int32_t attr;
-			rv = x3::big_dword.parse(iter, last, ctx, rctx, attr);
+			rv = basic::varint_.parse(iter, last, ctx, rctx, attr);
 			prop = attr;
 		}
 		if constexpr (std::is_same_v<value_type, uint32_t>) {
 			uint32_t attr;
-			rv = basic::varint_.parse(iter, last, ctx, rctx, attr);
+			rv = x3::big_dword.parse(iter, last, ctx, rctx, attr);
 			prop = attr;
 		}
 		if constexpr (std::is_same_v<value_type, std::string>) {
@@ -420,7 +415,7 @@ public:
 		if (iter == last)
 			return true;
 
-		uint32_t props_length;
+		int32_t props_length;
 		if (!basic::varint_.parse(iter, last, ctx, rctx, props_length))
 			return false;
 

@@ -8,9 +8,9 @@ This section lists all possible [reflink2 will Will] Properties and describes th
 
 [table:will_props Will properties
 	[[Identifier] [Value type] [Description]]
-	[[will_delay_interval] [`int32_t`] [The delay in seconds that need to pass before Server publishes the Client's Will Message.]]
+	[[will_delay_interval] [`uint32_t`] [The delay in seconds that need to pass before Server publishes the Client's Will Message.]]
 	[[payload_format_indicator] [`uint8_t`] [Value of 0 indicates that the Will Message is in unspecified bytes. Value of 1 indicates that the Will Message is UTF-8 Encoded Character Data.]]
-	[[message_expiry_interval] [`int32_t`] [The lifetime of the Will Message in seconds. It is send as Publication Expiry Interval when it is published.]]
+	[[message_expiry_interval] [`uint32_t`] [The lifetime of the Will Message in seconds. It is send as Publication Expiry Interval when it is published.]]
 	[[content_type] [`std::string`] [A UTF-8 Encoded String describing the content of the Will Message.]]
 	[[response_topic] [`std::string`] [A UTF-8 Encoded String which is used as the Topic Name for a response message.]]
 	[[correlation_data] [`std::string`] [Binary Data used by the sender of the Request Message to identify which request the Response Message is for when it is received.]]

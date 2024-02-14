@@ -20,9 +20,9 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	uint16_t keep_alive = 60;
 	bool clean_start = true;
 	// connect properties
-	int32_t session_expiry_interval = 29;
-	int16_t receive_max = 100;
-	int32_t maximum_packet_size = 20000;
+	uint32_t session_expiry_interval = 29;
+	uint16_t receive_max = 100;
+	uint32_t maximum_packet_size = 20000;
 	uint16_t topic_alias_max = 1200;
 	uint8_t request_response_information = 1;
 	uint8_t request_problem_information = 0;
@@ -34,9 +34,9 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	std::string will_topic = "will_topic";
 	std::string will_message = "will_message";
 	// will properties
-	int32_t will_delay_interval = 200;
+	uint32_t will_delay_interval = 200;
 	uint8_t will_payload_format_indicator = 0;
-	int32_t will_message_expiry_interval = 2000;
+	uint32_t will_message_expiry_interval = 2000;
 	std::string_view will_content_type = "will content type";
 	std::string_view will_response_topic = "response_topic";
 	std::string_view will_correlation_data = "correlation data";
@@ -124,11 +124,11 @@ BOOST_AUTO_TEST_CASE(test_connack) {
 	uint8_t session_present = 1;
 	uint8_t reason_code = reason_codes::server_busy.value();
 
-	int32_t session_expiry_interval = 20;
-	int16_t receive_maximum = 2000;
+	uint32_t session_expiry_interval = 20;
+	uint16_t receive_maximum = 2000;
 	uint8_t max_qos = 2;
 	uint8_t retain_available = 0;
-	int32_t maximum_packet_sz = 1024;
+	uint32_t maximum_packet_sz = 1024;
 	std::string assigned_client_id = "client_id";
 	uint16_t topic_alias_max = 128;
 	std::string reason_string = "some reason string";
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(test_connack) {
 	uint8_t wildcard_sub = 1;
 	uint8_t sub_id = 1;
 	uint8_t shared_sub = 0;
-	int16_t server_keep_alive = 25;
+	uint16_t server_keep_alive = 25;
 	std::string response_information = "info";
 	std::string server_reference = "srv";
 	std::string authentication_method = "method";
@@ -206,13 +206,13 @@ BOOST_AUTO_TEST_CASE(test_publish) {
 	std::string_view payload = "This is some payload I am publishing!";
 
 	uint8_t payload_format_indicator = 1;
-	int32_t message_expiry_interval = 70;
-	int16_t topic_alias = 16;
+	uint32_t message_expiry_interval = 70;
+	uint16_t topic_alias = 16;
 	std::string response_topic = "topic/response";
 	std::string correlation_data = "correlation data";
 	std::string publish_prop_1 = "key";
 	std::string publish_prop_2 = "val";
-	uint32_t subscription_identifier = 123456;
+	int32_t subscription_identifier = 123456;
 	std::string content_type = "application/octet-stream";
 
 	publish_props pprops;
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE(test_pubcomp) {
 
 BOOST_AUTO_TEST_CASE(test_subscribe) {
 	//testing variables
-	uint32_t sub_id = 1'234'567;
+	int32_t sub_id = 1'234'567;
 	std::string user_property_1 = "SUBSCRIBE user prop";
 	std::string user_property_2 = "SUBSCRIBE user prop val";
 
@@ -601,7 +601,7 @@ BOOST_AUTO_TEST_CASE(test_disconnect) {
 	// testing variables
 	uint8_t reason_code = 0x04;
 
-	int32_t session_expiry_interval = 50;
+	uint32_t session_expiry_interval = 50;
 	std::string reason_string = "a reason";
 	std::string user_property_1 = "DISCONNECT user prop";
 	std::string user_property_2 = "DISCONNECT user prop val";

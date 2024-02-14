@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(client_functions) {
 	tcp_client.connect_properties(std::move(co_props));
 
 	tcp_client.connect_property(prop::session_expiry_interval, 40);
-	tcp_client.connect_property(prop::receive_maximum, int16_t(10123));
+	tcp_client.connect_property(prop::receive_maximum, uint16_t(10123));
 	tcp_client.connect_property(prop::maximum_packet_size, 103);
 	tcp_client.connect_property(prop::topic_alias_maximum, uint16_t(12345));
 	tcp_client.connect_property(prop::request_response_information, uint8_t(1));

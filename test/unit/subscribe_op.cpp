@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(large_subscription_id) {
 	cprops[prop::subscription_identifier_available] = uint8_t(1);
 
 	subscribe_props sprops;
-	sprops[prop::subscription_identifier] = std::numeric_limits<uint32_t>::max();
+	sprops[prop::subscription_identifier] = std::numeric_limits<int32_t>::max();
 
 	run_test(client::error::malformed_packet, "topic", sprops, cprops);
 }

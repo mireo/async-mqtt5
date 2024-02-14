@@ -7,11 +7,11 @@ This section lists all possible __CONNACK__ Properties and describes their usage
 
 [table:connack_props CONNACK properties
 	[[Identifier] [Value type] [Description]]
-	[[session_expiry_interval] [`int32_t`] [Represents the Session Expiry Internal in seconds.]]
-	[[receive_maximum] [`int16_t`] [The maximum number of QoS 1 and QoS 2 publications that the Server is willing to process concurrently.]]
+	[[session_expiry_interval] [`uint32_t`] [Represents the Session Expiry Internal in seconds.]]
+	[[receive_maximum] [`uint16_t`] [The maximum number of QoS 1 and QoS 2 publications that the Server is willing to process concurrently.]]
 	[[maximum_qos] [`uint8_t`] [The highest QoS the Server supports.]]
 	[[retain_available] [`uint8_t`] [A value of 0 means that retained message are not supported. A value of 1 means they are supported.]]
-	[[maximum_packet_size] [`int32_t`] [The maximum __PACKET_SIZE__ in bytes as defined by the specification that the Server is willing to accept.]]
+	[[maximum_packet_size] [`uint32_t`] [The maximum __PACKET_SIZE__ in bytes as defined by the specification that the Server is willing to accept.]]
 	[[assigned_client_identifier] [`std::string`] [The Client Identifier which was assigned by the Server because a zero length Client Identifier was found in the __CONNECT__ packet]]
 	[[topic_alias_maximum] [`uint16_t`] [The highest value that the Server will accept as a Topic Alias sent by the Client.]]
 	[[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
@@ -23,7 +23,7 @@ This section lists all possible __CONNACK__ Properties and describes their usage
 		A value of 1 means they are supported. If not present, they are supported.]]
 	[[shared_subscription_available] [`uint8_t`] [A value of 0 means that Shared Subscriptions are not supported. 
 		A value of 1 means they are supported. If not present, they are supported.]]
-	[[server_keep_alive] [`int16_t`] [The Keep Alive time assigned by the Server.]]
+	[[server_keep_alive] [`uint16_t`] [The Keep Alive time assigned by the Server.]]
 	[[response_information] [`std::string`] [A UTF-8 Encoded String which is used as the basis for creating a Response Topic.]]
 	[[server_reference] [`std::string`] [A UTF-8 Encoded String which can be used by the Client to identfy another Server to use.]]
 	[[authentication_method] [`std::string`] [A UTF-8 Encoded String containing the name of the authentication method used for extended authentication.]]

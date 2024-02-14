@@ -8,13 +8,13 @@ This section lists all possible __PUBLISH__ Properties and describes their usage
 [table:publish_props PUBLISH properties
 	[[Identifier] [Value type] [Description]]
 	[[payload_format_indicator] [`uint8_t`] [Value of 0 indicates that the Payload is in unspecified bytes. Value of 1 indicates that the Payload is UTF-8 Encoded Character Data.]]
-	[[message_expiry_interval] [`int32_t`] [The lifetime of the Application Message in seconds.]]
-	[[topic_alias] [`int16_t`] [Two Byte integer representing the Topic Alias, an integer value that is used to identify the Topic instead of using the Topic Name.]]
+	[[message_expiry_interval] [`uint32_t`] [The lifetime of the Application Message in seconds.]]
+	[[topic_alias] [`uint16_t`] [Two Byte integer representing the Topic Alias, an integer value that is used to identify the Topic instead of using the Topic Name.]]
 	[[response_topic] [`std::string`] [A UTF-8 Encoded String which is used as the Topic Name for a response message.]]
 	[[correlation_data] [`std::string`] [Binary Data used by the sender of the Request Message to identify which request the Response Message is for when it is received.]]
 	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
 		The meaning of these properties is not defined by the specification.]]
-	[[subscription_identifier] [`uint32_t`] [Identifier of the Subscription in range of 1 to 268,435,455.]]
+	[[subscription_identifier] [`int32_t`] [Identifier of the Subscription in range of 1 to 268,435,455.]]
 	[[content_type] [`std::string`] [A UTF-8 Encoded String describing the content of the Application Message.]]
 ]
 
@@ -39,7 +39,7 @@ The following example shows how to retrieve a Property value:
 except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
 
 [!c++]
-	std::optional<int16_t> topic_alias = props[async_mqtt5::prop::topic_alias];
+	std::optional<uint16_t> topic_alias = props[async_mqtt5::prop::topic_alias];
 	if (topic_alias.has_value())
 		// topic alias property was previously set
 	else
