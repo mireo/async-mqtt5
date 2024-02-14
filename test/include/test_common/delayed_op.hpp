@@ -70,6 +70,12 @@ public:
 
 	template <typename CompletionHandler>
 	void operator()(on_timer, CompletionHandler&& h, error_code ec) {
+		// The timer places a handler into the cancellation slot
+		// and does not clear it. Therefore, we need to clear it explicitly
+		// to properly remove the corresponding cancellation signal
+		// in the test_broker.
+		get_cancellation_slot().clear();
+
 		auto bh = std::apply(
 			[h = std::move(h)](auto&&... args) mutable {
 				return asio::append(std::move(h), std::move(args)...);
