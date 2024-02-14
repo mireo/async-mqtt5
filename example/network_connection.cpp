@@ -12,7 +12,7 @@ void tcp_setup() {
 	boost::asio::io_context ioc;
 
 	// Use ``__TCP_SOCKET__`` as the underlying stream.
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc, "");
+	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
 }
 
 //]
@@ -77,7 +77,7 @@ void ssl_setup() {
 	async_mqtt5::mqtt_client<
 		boost::asio::ssl::stream<boost::asio::ip::tcp::socket>,
 		boost::asio::ssl::context
-	> client(ioc, "", std::move(context));
+	> client(ioc, std::move(context));
 }
 //]
 
@@ -96,7 +96,7 @@ void websocket_tcp_setup() {
 	// Use ``[beastreflink boost__beast__websocket__stream websocket::stream<__TCP_SOCKET__>]`` as the underlying stream.
 	async_mqtt5::mqtt_client<
 		boost::beast::websocket::stream<boost::asio::ip::tcp::socket>
-	> client(ioc, "");
+	> client(ioc);
 }
 
 //]
@@ -167,7 +167,7 @@ void websocket_tls_setup() {
 	async_mqtt5::mqtt_client<
 		boost::beast::websocket::stream<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>,
 		boost::asio::ssl::context
-	> client(ioc, "", std::move(context));
+	> client(ioc, std::move(context));
 }
 
 //]

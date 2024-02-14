@@ -26,11 +26,11 @@ class test_service : public async_mqtt5::detail::client_service<StreamType, TlsC
 	connack_props _test_props;
 public:
 	test_service(const asio::any_io_executor ex)
-		: base(ex, {}), _ex(ex)
+		: base(ex), _ex(ex)
 	{}
 
 	test_service(const asio::any_io_executor ex, connack_props props)
-		: base(ex, {}), _ex(ex), _test_props(std::move(props))
+		: base(ex), _ex(ex), _test_props(std::move(props))
 	{}
 
 	template <typename BufferType, typename CompletionToken>
@@ -67,8 +67,8 @@ template <
 >
 class overrun_client : public async_mqtt5::detail::client_service<StreamType, TlsContext> {
 public:
-	overrun_client(const asio::any_io_executor& ex, const std::string& cnf) :
-		async_mqtt5::detail::client_service<StreamType, TlsContext>(ex, cnf)
+	overrun_client(const asio::any_io_executor& ex) :
+		async_mqtt5::detail::client_service<StreamType, TlsContext>(ex)
 	{}
 
 	uint16_t allocate_pid() {

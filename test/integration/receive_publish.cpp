@@ -63,7 +63,7 @@ void run_test(
 	);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
 		.connect_properties(cprops)
 		.async_run(asio::detached);
@@ -376,7 +376,7 @@ BOOST_FIXTURE_TEST_CASE(receive_buffer_overflow, shared_test_data) {
 	);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1")
 		.async_run(asio::detached);
 

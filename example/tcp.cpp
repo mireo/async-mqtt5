@@ -15,7 +15,7 @@ void publish_qos0_tcp() {
 
 	using stream_type = asio::ip::tcp::socket;
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	connect_props props;
 	props[prop::maximum_packet_size] = 1024;
@@ -47,7 +47,7 @@ void publish_qos1_tcp() {
 
 	using stream_type = asio::ip::tcp::socket;
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("test-qos1-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)
@@ -74,7 +74,7 @@ void publish_qos2_tcp() {
 
 	using stream_type = asio::ip::tcp::socket;
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("test-qos2-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)
@@ -102,7 +102,7 @@ void subscribe_and_receive_tcp(int num_receive) {
 
 	using stream_type = asio::ip::tcp::socket;
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("test-subscriber-tcp", "", "")
 		.brokers("emqtt.mireo.local", 1883)

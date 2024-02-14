@@ -20,7 +20,7 @@ void publish_qos0_websocket_tcp() {
 	>;
 
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("test-qos0-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)
@@ -50,7 +50,7 @@ void publish_qos1_websocket_tcp() {
 	>;
 
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("test-qos1-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)
@@ -81,7 +81,7 @@ void publish_qos2_websocket_tcp() {
 	>;
 
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("test-qos2-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)
@@ -113,7 +113,7 @@ void subscribe_and_receive_websocket_tcp(int num_receive) {
 	>;
 
 	using client_type = mqtt_client<stream_type>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("test-subscriber-websocket-tcp", "", "")
 		.brokers("emqtt.mireo.local/mqtt", 8083)

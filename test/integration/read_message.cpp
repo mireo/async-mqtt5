@@ -53,7 +53,7 @@ void test_receive_malformed_packet(
 	);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
 		.async_run(asio::detached);
 
@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
 	);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
 		.async_run(asio::detached);
 
@@ -173,7 +173,7 @@ void run_receive_test(
 	);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
 		.async_run(asio::detached);
 

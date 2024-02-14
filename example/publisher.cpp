@@ -16,7 +16,7 @@ namespace asio = boost::asio;
 
 asio::awaitable<void> client_publisher(asio::io_context& ioc) {
 	// Initialise the Client, establish connection to the Broker over TCP.
-	async_mqtt5::mqtt_client<asio::ip::tcp::socket> client(ioc, "");
+	async_mqtt5::mqtt_client<asio::ip::tcp::socket> client(ioc);
 
 	// Configure the Client.
 	// It is mandatory to call brokers() and async_run() to configure the Brokers to connect to and start the Client.

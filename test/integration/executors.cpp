@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(async_run) {
 	auto strand = asio::make_strand(ioc);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1")
 		.async_run(asio::bind_executor(
 			strand,

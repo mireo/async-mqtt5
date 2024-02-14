@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
 
 	asio::io_context ioc;
 	using client_service_type = test::overrun_client<asio::ip::tcp::socket>;
-	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor(), "");
+	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
 
 	auto handler = [&handlers_called](error_code ec, std::vector<reason_code> rcs, unsuback_props) {
 		++handlers_called;

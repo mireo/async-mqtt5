@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 	threads.reserve(thread_num - 1);
 
 	// Make an instance of mqtt_client. Establish a TCP connection with the Broker.
-	client_type c(ioc.get_executor(), "");
+	client_type c(ioc.get_executor());
 
 	c.credentials("test-client", "", "")
 		.brokers("mqtt.broker", 1883)

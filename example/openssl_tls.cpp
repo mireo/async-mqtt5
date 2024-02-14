@@ -65,7 +65,7 @@ void publish_qos0_openssl_tls() {
 	tls_context.set_verify_mode(asio::ssl::verify_peer);
 
 	using client_type = mqtt_client<stream_type, decltype(tls_context)>;
-	client_type c(ioc, "", std::move(tls_context));
+	client_type c(ioc, std::move(tls_context));
 
 	c.credentials("test-qos0-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)
@@ -98,7 +98,7 @@ void publish_qos1_openssl_tls() {
 	tls_context.set_verify_mode(asio::ssl::verify_peer);
 
 	using client_type = mqtt_client<stream_type, decltype(tls_context)>;
-	client_type c(ioc, "", std::move(tls_context));
+	client_type c(ioc, std::move(tls_context));
 
 	c.credentials("test-qos1-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)
@@ -133,7 +133,7 @@ void publish_qos2_openssl_tls() {
 	tls_context.set_verify_mode(asio::ssl::verify_peer);
 
 	using client_type = mqtt_client<stream_type, decltype(tls_context)>;
-	client_type c(ioc, "", std::move(tls_context));
+	client_type c(ioc, std::move(tls_context));
 
 	c.credentials("test-qos2-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)
@@ -168,7 +168,7 @@ void subscribe_and_receive_openssl_tls(int num_receive) {
 	tls_context.set_verify_mode(asio::ssl::verify_peer);
 
 	using client_type = mqtt_client<stream_type, decltype(tls_context)>;
-	client_type c(ioc, "", std::move(tls_context));
+	client_type c(ioc, std::move(tls_context));
 
 	c.credentials("test-subscriber-openssl-tls", "", "")
 		.brokers("emqtt.mireo.local", 8883)

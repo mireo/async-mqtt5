@@ -54,16 +54,14 @@ public:
 	 * \brief Constructs a Client with given parameters.
 	 *
 	 * \param ex An executor that will be associated with the Client.
-	 * \param cnf 
 	 * \param tls_context A context object used in TLS/SLL connection.
 	 */
 	explicit mqtt_client(
 		const executor_type& ex,
-		const std::string& cnf,
 		TlsContext tls_context = {}
 	) :
 		_impl(std::make_shared<client_service_type>(
-			ex, cnf, std::move(tls_context)
+			ex, std::move(tls_context)
 		))
 	{}
 
@@ -72,7 +70,6 @@ public:
 	 *
 	 * \tparam \__ExecutionContext\__ Type of a concrete execution context.
 	 * \param context Execution context whose executor will be associated with the Client.
-	 * \param cnf 
 	 * \param tls_context A context object used in TLS/SLL connection.
 	 *
 	 * \par Precondition
@@ -89,10 +86,9 @@ public:
 	>
 	explicit mqtt_client(
 		ExecutionContext& context,
-		const std::string& cnf,
 		TlsContext tls_context = {}
 	) :
-		mqtt_client(context.get_executor(), cnf, std::move(tls_context))
+		mqtt_client(context.get_executor(), std::move(tls_context))
 	{}
 
 	/**

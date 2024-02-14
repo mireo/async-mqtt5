@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(async_traits) {
 BOOST_AUTO_TEST_CASE(client_functions) {
 	asio::io_context ioc;
 
-	mqtt_client<tcp_layer> tcp_client(ioc, "");
+	mqtt_client<tcp_layer> tcp_client(ioc);
 	tcp_client.authenticator(good_authenticator());
 
 	connack_props ca_props;
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(client_functions) {
 	asio::ssl::context ctx(asio::ssl::context::tls_client);
 	mqtt_client<
 		tls_layer, asio::ssl::context
-	> tls_client(ioc.get_executor(), "", std::move(ctx));
+	> tls_client(ioc.get_executor(), std::move(ctx));
 	tls_client.tls_context();
 }
 

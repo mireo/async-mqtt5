@@ -67,7 +67,7 @@ int main() {
 	boost::asio::io_context ioc;
 
 	using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
-	client_type c(ioc, "");
+	client_type c(ioc);
 
 	c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
 		.brokers("<your-mqtt-broker>", 1883)

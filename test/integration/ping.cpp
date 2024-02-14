@@ -56,7 +56,7 @@ void run_test(
 	);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
 		.keep_alive(keep_alive)
 		.async_run(asio::detached);

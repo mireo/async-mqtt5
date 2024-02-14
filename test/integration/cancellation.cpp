@@ -154,7 +154,7 @@ void run_cancel_op_test() {
 
 	asio::io_context ioc;
 	asio::cancellation_signal signal;
-	client_type c(ioc, "");
+	client_type c(ioc);
 	c.brokers("127.0.0.1");
 
 	setup_cancel_op_test_case<op_type>(c, signal, handlers_called);
@@ -271,7 +271,7 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
 
 	co_spawn(ioc,
 		[&]() -> asio::awaitable<void> {
-			mqtt_client<test::test_stream> c(ioc, "");
+			mqtt_client<test::test_stream> c(ioc);
 			c.brokers("127.0.0.1,127.0.0.1", 1883) // to avoid reconnect backoff
 				.async_run(asio::detached);
 

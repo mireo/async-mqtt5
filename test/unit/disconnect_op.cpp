@@ -25,7 +25,6 @@ void run_malformed_props_test(const disconnect_props& dprops) {
 	using client_service_type = test::test_service<asio::ip::tcp::socket>;
 	auto svc_ptr = std::make_shared<client_service_type>(ioc.get_executor());
 
-
 	auto handler = [&handlers_called](error_code ec) {
 		++handlers_called;
 		BOOST_TEST(ec == client::error::malformed_packet);
@@ -102,7 +101,7 @@ BOOST_AUTO_TEST_CASE(omit_props) {
 	);
 
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor, "");
+	client_type c(executor);
 	c.brokers("127.0.0.1")
 		.async_run(asio::detached);
 

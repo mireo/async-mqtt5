@@ -254,7 +254,6 @@ public:
 
 	client_service(
 		const executor_type& ex,
-		const std::string& /* cnf */,
 		tls_context_type tls_context = {}
 	) :
 		_executor(ex),
