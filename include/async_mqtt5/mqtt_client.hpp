@@ -349,7 +349,7 @@ public:
 		std::integral_constant<prop::property_type, p> prop,
 		prop::value_type_t<p> value
 	) {
-		_svc_ptr->connect_property(prop, std::move(value));
+		_impl->connect_property(prop, std::move(value));
 		return *this;
 	}
 

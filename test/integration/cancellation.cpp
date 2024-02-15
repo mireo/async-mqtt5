@@ -161,7 +161,7 @@ void run_cancel_op_test() {
 
 	asio::steady_timer timer(c.get_executor());
 	timer.expires_after(std::chrono::milliseconds(100));
-	timer.async_wait([&](auto) {
+	timer.async_wait([&](error_code) {
 		if constexpr (c_type == client_cancel)
 			c.cancel();
 		else if constexpr (c_type == signal_emit)

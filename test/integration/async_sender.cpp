@@ -242,7 +242,7 @@ BOOST_FIXTURE_TEST_CASE(prioritize_disconnect, shared_test_data) {
 				++handlers_called;
 
 				BOOST_TEST(ec == asio::error::operation_aborted);
-				BOOST_ASSERT(rcs.size() == 1);
+				BOOST_TEST_REQUIRE(rcs.size() == 1u);
 				BOOST_TEST(rcs[0] == reason_codes::empty);
 			}
 		);

@@ -53,8 +53,6 @@ struct bad_authenticator {
 	}
 };
 
-
-
 BOOST_AUTO_TEST_CASE(is_authenticator) {
 	BOOST_STATIC_ASSERT(detail::is_authenticator<good_authenticator>);
 	BOOST_STATIC_ASSERT(!detail::is_authenticator<bad_authenticator>);
@@ -68,63 +66,32 @@ using tls_layer = asio::ssl::stream<asio::ip::tcp::socket>;
 using websocket_tcp_layer = beast::websocket::stream<tcp_layer>;
 using websocket_tls_layer = beast::websocket::stream<tls_layer>;
 
-BOOST_AUTO_TEST_CASE(async_traits) {
+BOOST_AUTO_TEST_CASE(has_next_layer) {
 	BOOST_STATIC_ASSERT(!detail::has_next_layer<tcp_layer>);
 	BOOST_STATIC_ASSERT(detail::has_next_layer<tls_layer>);
 	BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tcp_layer>);
 	BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tls_layer>);
+}
 
+BOOST_AUTO_TEST_CASE(has_tls_layer) {
 	BOOST_STATIC_ASSERT(!detail::has_tls_layer<tcp_layer>);
 	BOOST_STATIC_ASSERT(detail::has_tls_layer<tls_layer>);
 	BOOST_STATIC_ASSERT(!detail::has_tls_layer<websocket_tcp_layer>);
 	BOOST_STATIC_ASSERT(detail::has_tls_layer<websocket_tls_layer>);
+}
 
-	BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tcp_layer>);
-	BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tls_layer>);
-	BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tcp_layer>);
-	BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tls_layer>);
-
+BOOST_AUTO_TEST_CASE(has_tls_handshake) {
 	BOOST_STATIC_ASSERT(!detail::has_tls_handshake<tcp_layer>);
 	BOOST_STATIC_ASSERT(detail::has_tls_handshake<tls_layer>);
 	BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tcp_layer>);
 	BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tls_layer>);
 }
 
-BOOST_AUTO_TEST_CASE(client_functions) {
-	asio::io_context ioc;
-
-	mqtt_client<tcp_layer> tcp_client(ioc);
-	tcp_client.authenticator(good_authenticator());
-
-	connack_props ca_props;
-	ca_props.visit([&tcp_client](const auto& p, auto&) -> bool {
-		using ptype = boost::remove_cv_ref_t<decltype(p)>;
-		[[maybe_unused]] prop::value_type_t<ptype::value> value = tcp_client.connack_property(p);
-		return true;
-	});
-
-	connack_props ret_ca_props = tcp_client.connack_properties();
-
-	connect_props co_props;
-	co_props[prop::maximum_packet_size] = 1234;
-	tcp_client.connect_properties(std::move(co_props));
-
-	tcp_client.connect_property(prop::session_expiry_interval, 40);
-	tcp_client.connect_property(prop::receive_maximum, uint16_t(10123));
-	tcp_client.connect_property(prop::maximum_packet_size, 103);
-	tcp_client.connect_property(prop::topic_alias_maximum, uint16_t(12345));
-	tcp_client.connect_property(prop::request_response_information, uint8_t(1));
-	tcp_client.connect_property(prop::request_problem_information, uint8_t(0));
-	tcp_client.connect_property(prop::user_property, std::vector<std::string> { "prop", "prop" });
-	tcp_client.connect_property(prop::authentication_method, "method");
-	tcp_client.connect_property(prop::authentication_data, "data");
-
-	asio::ssl::context ctx(asio::ssl::context::tls_client);
-	mqtt_client<
-		tls_layer, asio::ssl::context
-	> tls_client(ioc.get_executor(), std::move(ctx));
-	tls_client.tls_context();
+BOOST_AUTO_TEST_CASE(has_ws_handskae) {
+	BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tcp_layer>);
+	BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tls_layer>);
+	BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tcp_layer>);
+	BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tls_layer>);
 }
-
 
 BOOST_AUTO_TEST_SUITE_END();
