@@ -153,13 +153,12 @@ public:
 			return complete(client::error::malformed_packet, 0, {}, {});
 		}
 
-		auto recv_size = static_cast<size_t>(
-			_svc.connect_property(prop::maximum_packet_size).value_or(max_recv_size)
-		);
-		if (*varlen > recv_size - std::distance(_data_span.first(), first))
+		auto recv_size = _svc.connect_property(prop::maximum_packet_size)
+			.value_or(max_recv_size);
+		if (static_cast<uint32_t>(*varlen) > recv_size - std::distance(_data_span.first(), first))
 			return complete(client::error::malformed_packet, 0, {}, {});
 
-		if (static_cast<uint32_t>(std::distance(first, _data_span.last())) < *varlen)
+		if (std::distance(first, _data_span.last()) < *varlen)
 			return perform(asio::transfer_at_least(1));
 
 		_data_span.remove_prefix(
