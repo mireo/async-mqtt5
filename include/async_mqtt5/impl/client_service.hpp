@@ -71,26 +71,32 @@ public:
 		_mqtt_context.will_msg = std::move(will);
 	}
 
-	template <typename Prop>
-	const auto& connack_property(Prop p) const {
-		return _mqtt_context.ca_props[p];
+	template <prop::property_type p>
+	const auto& connack_property(
+		std::integral_constant<prop::property_type, p> prop
+	) const {
+		return _mqtt_context.ca_props[prop];
 	}
 
 	const auto& connack_properties() const {
 		return _mqtt_context.ca_props;
 	}
 
-	template <typename Prop>
-	const auto& connect_property(Prop p) const {
-		return _mqtt_context.co_props[p];
+	template <prop::property_type p>
+	const auto& connect_property(
+		std::integral_constant<prop::property_type, p> prop
+	) const {
+		return _mqtt_context.co_props[prop];
 	}
 
-	template <typename Prop>
-	auto& connect_property(Prop p) {
-		return _mqtt_context.co_props[p];
+	template <prop::property_type p>
+	auto& connect_property(
+		std::integral_constant<prop::property_type, p> prop
+	) {
+		return _mqtt_context.co_props[prop];
 	}
 
-	void connect_propertiess(connect_props props) {
+	void connect_properties(connect_props props) {
 		_mqtt_context.co_props = std::move(props);
 	}
 
@@ -144,23 +150,29 @@ public:
 		_mqtt_context.will_msg = std::move(will);
 	}
 
-	template <typename Prop>
-	const auto& connack_property(Prop p) const {
-		return _mqtt_context.ca_props[p];
+	template <prop::property_type p>
+	const auto& connack_property(
+		std::integral_constant<prop::property_type, p> prop
+	) const {
+		return _mqtt_context.ca_props[prop];
 	}
 
 	const auto& connack_properties() const {
 		return _mqtt_context.ca_props;
 	}
 
-	template <typename Prop>
-	const auto& connect_property(Prop p) const {
-		return _mqtt_context.co_props[p];
+	template <prop::property_type p>
+	const auto& connect_property(
+		std::integral_constant<prop::property_type, p> prop
+	) const {
+		return _mqtt_context.co_props[prop];
 	}
 
-	template <typename Prop>
-	auto& connect_property(Prop p) {
-		return _mqtt_context.co_props[p];
+	template <prop::property_type p>
+	auto& connect_property(
+		std::integral_constant<prop::property_type, p> prop
+	) {
+		return _mqtt_context.co_props[prop];
 	}
 
 	void connect_properties(connect_props props) {
@@ -323,14 +335,20 @@ public:
 			_stream_context.mqtt_context().keep_alive = seconds;
 	}
 
-	template <typename Prop>
-	const auto& connect_property(Prop p) const {
-		return _stream_context.connect_property(p);
+	template <prop::property_type p>
+	const auto& connect_property(
+		std::integral_constant<prop::property_type, p> prop
+	) const {
+		return _stream_context.connect_property(prop);
 	}
 
-	template <typename Prop>
-	auto& connect_property(Prop p) {
-		return _stream_context.connect_property(p);
+	template <prop::property_type p>
+	void connect_property(
+		std::integral_constant<prop::property_type, p> prop,
+		prop::value_type_t<p> value
+	){
+		if (!is_open())
+			_stream_context.connect_property(prop) = value;
 	}
 
 	void connect_properties(connect_props props) {
@@ -338,9 +356,11 @@ public:
 			_stream_context.connect_properties(std::move(props));
 	}
 
-	template <typename Prop>
-	const auto& connack_property(Prop p) const {
-		return _stream_context.connack_property(p);
+	template <prop::property_type p>
+	const auto& connack_property(
+		std::integral_constant<prop::property_type, p> prop
+	) const {
+		return _stream_context.connack_property(prop);
 	}
 
 	const auto& connack_properties() const {

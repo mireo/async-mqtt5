@@ -282,6 +282,10 @@ class will : public will_props {
 public:
 	/**
 	 * \brief Constructs an empty Will Message.
+	 *
+	 * \attention Do not use!
+	 * An empty Will Message results in an empty Topic Name which is not valid.
+	 * Internal uses only.
 	 */
 	will() = default;
 
