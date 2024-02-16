@@ -360,7 +360,7 @@ private:
 	error_code validate_props(const publish_props& props) const {
 		constexpr uint16_t default_topic_alias_max = 0;
 
-		auto topic_alias = props[prop::topic_alias];
+		const auto& topic_alias = props[prop::topic_alias];
 		if (topic_alias) {
 			auto topic_alias_max = _svc_ptr->connack_property(prop::topic_alias_maximum)
 				.value_or(default_topic_alias_max);
@@ -371,14 +371,14 @@ private:
 				return client::error::malformed_packet;
 		}
 
-		auto response_topic = props[prop::response_topic];
+		const auto& response_topic = props[prop::response_topic];
 		if (
 			response_topic &&
 			validate_topic_name(*response_topic) != validation_result::valid
 		)
 			return client::error::malformed_packet;
 
-		auto user_properties = props[prop::user_property];
+		const auto& user_properties = props[prop::user_property];
 		for (const auto& user_property: user_properties)
 			if (!is_valid_string_pair(user_property))
 				return client::error::malformed_packet;
@@ -386,7 +386,7 @@ private:
 		if (!props[prop::subscription_identifier].empty())
 			return client::error::malformed_packet;
 
-		auto content_type = props[prop::content_type];
+		const auto& content_type = props[prop::content_type];
 		if (
 			content_type &&
 			validate_mqtt_utf8(*content_type) != validation_result::valid

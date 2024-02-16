@@ -123,14 +123,14 @@ public:
 
 private:
 	static error_code validate_disconnect(const disconnect_props& props) {
-		auto reason_string = props[prop::reason_string];
+		const auto& reason_string = props[prop::reason_string];
 		if (
 			reason_string &&
 			validate_mqtt_utf8(*reason_string) != validation_result::valid
 		)
 			return client::error::malformed_packet;
 
-		auto user_properties = props[prop::user_property];
+		const auto& user_properties = props[prop::user_property];
 		for (const auto& user_property: user_properties)
 			if (!is_valid_string_pair(user_property))
 				return client::error::malformed_packet;

@@ -219,12 +219,12 @@ private:
 	}
 
 	error_code validate_props(const subscribe_props& props) const {
-		auto user_properties = props[prop::user_property];
+		const auto& user_properties = props[prop::user_property];
 		for (const auto& user_property: user_properties)
 			if (!is_valid_string_pair(user_property))
 				return client::error::malformed_packet;
 
-		auto sub_id = props[prop::subscription_identifier];
+		const auto& sub_id = props[prop::subscription_identifier];
 		if (!sub_id.has_value())
 			return error_code {};
 

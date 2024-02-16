@@ -177,7 +177,7 @@ private:
 			if (validate_topic_filter(topic) != validation_result::valid)
 				return client::error::invalid_topic;
 
-		auto user_properties = props[prop::user_property];
+		const auto& user_properties = props[prop::user_property];
 		for (const auto& user_property: user_properties)
 			if (!is_valid_string_pair(user_property))
 				return client::error::malformed_packet;

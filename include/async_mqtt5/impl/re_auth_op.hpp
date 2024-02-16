@@ -62,7 +62,7 @@ public:
 				disconnect_rc_e::protocol_error
 			);
 
-		const auto& [rc, auth_props] = auth_message;
+		const auto& [rc, props] = auth_message;
 		auto auth_rc = to_reason_code<reason_codes::category::auth>(rc);
 		if (!auth_rc.has_value())
 			return on_auth_fail(
@@ -70,7 +70,7 @@ public:
 				disconnect_rc_e::malformed_packet
 			);
 
-		auto server_auth_method = auth_props[prop::authentication_method];
+		const auto& server_auth_method = props[prop::authentication_method];
 		if (!server_auth_method || *server_auth_method != _auth.method())
 			return on_auth_fail(
 				"Malformed AUTH received: wrong authentication method",
@@ -79,7 +79,7 @@ public:
 
 		auto auth_step = auth_rc == reason_codes::success ?
 			auth_step_e::server_final : auth_step_e::server_challenge;
-		auto data = auth_props[prop::authentication_data].value_or("");
+		auto data = props[prop::authentication_data].value_or("");
 
 		return _auth.async_auth(
 			auth_step, std::move(data),
