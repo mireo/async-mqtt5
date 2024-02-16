@@ -125,6 +125,82 @@ BOOST_FIXTURE_TEST_CASE(receive_publish_qos2, shared_test_data) {
 	run_test(std::move(broker_side));
 }
 
+BOOST_FIXTURE_TEST_CASE(receive_publish_properties, shared_test_data) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	publish_props pprops;
+
+	pprops[prop::payload_format_indicator] = uint8_t(0);
+	pprops[prop::message_expiry_interval] = 102u;
+	pprops[prop::content_type] = "content/type";
+	pprops[prop::response_topic] = "response/topic";
+	pprops[prop::correlation_data] = std::string {
+		static_cast<char>(0x00), static_cast<char>(0x01), static_cast<char>(0xFF)
+	};
+	pprops[prop::subscription_identifier] = { 40, 41, 42 };
+	pprops[prop::topic_alias] = uint16_t(103);
+	pprops[prop::user_property] = { { "name1", "value1" }, { "name2", "value2 "} };
+
+	auto publish = encoders::encode_publish(
+		1, topic, payload,
+		qos_e::at_most_once, retain_e::no, dup_e::no,
+		pprops
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.send(publish, after(10ms));
+
+	asio::io_context ioc;
+	auto executor = ioc.get_executor();
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
+
+	using client_type = mqtt_client<test::test_stream>;
+	client_type c(executor);
+	c.brokers("127.0.0.1")
+		.async_run(asio::detached);
+
+	c.async_receive([&handlers_called, &pprops, &c](
+			error_code ec, std::string rec_topic, std::string rec_payload,
+			publish_props rec_pprops
+		){
+			++handlers_called;
+			auto data = shared_test_data();
+			BOOST_TEST(!ec);
+			BOOST_TEST(data.topic == rec_topic);
+			BOOST_TEST(data.payload == rec_payload);
+			BOOST_TEST(*pprops[prop::payload_format_indicator]
+				== *rec_pprops[prop::payload_format_indicator]);
+			BOOST_TEST(*pprops[prop::message_expiry_interval]
+				== *rec_pprops[prop::message_expiry_interval]);
+			BOOST_TEST(*pprops[prop::content_type]
+				== *rec_pprops[prop::content_type]);
+			BOOST_TEST(*pprops[prop::response_topic]
+				== *rec_pprops[prop::response_topic]);
+			BOOST_TEST(*pprops[prop::correlation_data]
+				== *rec_pprops[prop::correlation_data]);
+			BOOST_TEST(pprops[prop::subscription_identifier]
+				== rec_pprops[prop::subscription_identifier]);
+			BOOST_TEST(*pprops[prop::topic_alias]
+				== *rec_pprops[prop::topic_alias]);
+			BOOST_TEST(pprops[prop::user_property]
+				== rec_pprops[prop::user_property]);
+			c.cancel();
+		}
+	);
+
+	ioc.run();
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
+}
+
+
 BOOST_FIXTURE_TEST_CASE(receive_malformed_publish, shared_test_data) {
 	// packets
 	auto malformed_publish = encoders::encode_publish(
@@ -322,8 +398,10 @@ BOOST_FIXTURE_TEST_CASE(receive_big_publish, shared_test_data) {
 	cprops[prop::maximum_packet_size] = 10'000'000;
 
 	publish_props big_props;
-	for (int i = 0; i < 100; i++)
-		big_props[prop::user_property].push_back(std::string(65534, 'u'));
+	for (int i = 0; i < 50; i++)
+		big_props[prop::user_property].emplace_back(
+			std::string(65534, 'u'), std::string(65534, 'v')
+		);
 
 	// packets
 	auto connect_big_packets = encoders::encode_connect(

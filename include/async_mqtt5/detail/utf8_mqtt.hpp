@@ -94,6 +94,13 @@ inline validation_result validate_mqtt_utf8(std::string_view str) {
 	return validate_impl(str, is_valid_string_size, is_utf8);
 }
 
+inline bool is_valid_string_pair(
+	const std::pair<std::string, std::string>& str_pair
+) {
+	return validate_mqtt_utf8(str_pair.first) == validation_result::valid &&
+		validate_mqtt_utf8(str_pair.second) == validation_result::valid;
+}
+
 } // namespace async_mqtt5::detail
 
 #endif //ASYNC_MQTT5_UTF8_MQTT_HPP

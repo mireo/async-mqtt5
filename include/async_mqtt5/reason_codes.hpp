@@ -41,8 +41,8 @@ public:
 /// \cond INTERNAL
 	constexpr reason_code() : _code(0xff) {}
 
-	constexpr reason_code(uint8_t code, reason_codes::category cat)
-		: _code(code), _category(cat)
+	constexpr reason_code(uint8_t code, reason_codes::category cat) :
+		_code(code), _category(cat)
 	{}
 
 	constexpr explicit reason_code(uint8_t code) : _code(code) {}

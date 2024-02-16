@@ -8,7 +8,7 @@ This section lists all possible __UNSUBACK__ Properties and describes their usag
 [table:unsuback_props UNSUBACK properties
 	[[Identifier] [Value type] [Description]]
 	[[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
-	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
+	[[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
 		This property may be used to provide additional diagnostic or other information. ]]
 ]
 
@@ -17,6 +17,9 @@ After obtaining an instance of `async_mqtt5::unsuback_props`, the subscript oper
 
 The Identifiers listed in the table above are available within the `async_mqtt5::prop` namespace for Property access.
 
+[note When accessing a property value, the subscript operator will return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property`, where it will return an instance of `std::vector<std::pair<std::string, std::string>>`.]
+
 [h4 Example]
 
 The following example shows how to set a Property value:
@@ -24,11 +27,9 @@ The following example shows how to set a Property value:
 [!c++]
 	async_mqtt5::unsuback_props props;
 	props[async_mqtt5::prop::reason_string] = "Some reason...";
+	props[async_mqtt5::prop::user_property].emplace_back("name", "value");
 
 The following example shows how to retrieve a Property value:
-
-[note When retrieving a property value, the subscript operator will return a `std::optional` of the value type for all properties,
-except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
 
 [!c++]
 	std::optional<std::string> reason_string = props[async_mqtt5::prop::reason_string];
@@ -36,5 +37,11 @@ except for `async_mqtt5::prop::user_property`, where it will return an instance 
 		// reason string property was previously set
 	else
 		// reason string property was not set
+	
+	std::vector<std::pair<std::string, std::string>>& user_props = props[async_mqtt5::prop::user_property];
+	if (!user_props.empty())
+		// user property was previously set
+	else
+		// user property was not set
 
 [endsect]

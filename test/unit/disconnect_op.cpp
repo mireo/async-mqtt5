@@ -50,9 +50,16 @@ BOOST_AUTO_TEST_CASE(malformed_reason_string) {
 	run_malformed_props_test(dprops);
 }
 
-BOOST_AUTO_TEST_CASE(malformed_user_property) {
+BOOST_AUTO_TEST_CASE(malformed_user_property_key) {
 	disconnect_props dprops;
-	dprops[prop::user_property].push_back(std::string { 0x01 });
+	dprops[prop::user_property].emplace_back(std::string { 0x01 }, "value");
+
+	run_malformed_props_test(dprops);
+}
+
+BOOST_AUTO_TEST_CASE(malformed_user_property_value) {
+	disconnect_props dprops;
+	dprops[prop::user_property].emplace_back("key", std::string { 0x01 });
 
 	run_malformed_props_test(dprops);
 }

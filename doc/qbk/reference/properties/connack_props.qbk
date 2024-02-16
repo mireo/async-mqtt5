@@ -15,7 +15,7 @@ This section lists all possible __CONNACK__ Properties and describes their usage
 	[[assigned_client_identifier] [`std::string`] [The Client Identifier which was assigned by the Server because a zero length Client Identifier was found in the __CONNECT__ packet]]
 	[[topic_alias_maximum] [`uint16_t`] [The highest value that the Server will accept as a Topic Alias sent by the Client.]]
 	[[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
-	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
+	[[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
 		The meaning of these properties is not defined by the specification.]]
 	[[wildcard_subscription_available] [`uint8_t`] [A value of 0 means that Wildcard Subscriptions are not supported. 
 		A value of 1 means they are supported. If not present, they are supported.]]
@@ -35,6 +35,9 @@ After obtaining an instance of `async_mqtt5::connack_props`, the subscript opera
 
 The Identifiers listed in the table above are available within the `async_mqtt5::prop` namespace for Property access.
 
+[note When accessing a property value, the subscript operator will return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property`, where it will return an instance of `std::vector<std::pair<std::string, std::string>>`.]
+
 [h4 Example]
 
 The following example shows how to set a Property value:
@@ -43,11 +46,9 @@ The following example shows how to set a Property value:
 	async_mqtt5::connack_props props;
 	props[async_mqtt5::prop::maximum_packet_size] = 65535;
 	props[async_mqtt5::prop::assigned_client_identifier] = "ClientID";
+	props[async_mqtt5::prop::user_property].emplace_back("name", "value");
 	
 The following example shows how to retrieve a Property value:
-
-[note When retrieving a property value, the subscript operator will return a `std::optional` of the value type for all properties,
-except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
 
 [!c++]
 	std::optional<std::string> auth_method = props[async_mqtt5::prop::authentication_method];
@@ -55,5 +56,11 @@ except for `async_mqtt5::prop::user_property`, where it will return an instance 
 		// authentication method property was previously set
 	else
 		// authentication method property was not set
+	
+	std::vector<std::pair<std::string, std::string>>& user_props = props[async_mqtt5::prop::user_property];
+	if (!user_props.empty())
+		// user property was previously set
+	else
+		// user property was not set
 
 [endsect]

@@ -105,14 +105,14 @@ BOOST_AUTO_TEST_CASE(invalid_topic_filter_6) {
 
 BOOST_AUTO_TEST_CASE(malformed_user_property_1) {
 	subscribe_props sprops;
-	sprops[prop::user_property].push_back(std::string(10, char(0x01)));
+	sprops[prop::user_property].emplace_back("key", std::string(10, char(0x01)));
 
 	run_test(client::error::malformed_packet, "topic", sprops);
 }
 
 BOOST_AUTO_TEST_CASE(malformed_user_property_2) {
 	subscribe_props sprops;
-	sprops[prop::user_property].push_back(std::string(75000, 'a'));
+	sprops[prop::user_property].emplace_back("key", std::string(75000, 'a'));
 
 	run_test(client::error::malformed_packet, "topic", sprops);
 }

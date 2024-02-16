@@ -7,6 +7,8 @@
 #include <type_traits>
 #include <vector>
 
+#include <boost/container/small_vector.hpp>
+
 namespace async_mqtt5::prop {
 
 enum property_type : uint8_t {
@@ -39,8 +41,48 @@ enum property_type : uint8_t {
 	shared_subscription_available_t = 0x2a
 };
 
+class alignas(8) subscription_identifiers :
+	public boost::container::small_vector<int32_t, 1>
+{
+	using base_type = boost::container::small_vector<int32_t, 1>;
+
+public:
+	using base_type::base_type;
+	subscription_identifiers(int32_t val) : base_type { val } {}
+
+	bool has_value() const noexcept {
+		return !empty();
+	}
+
+	int32_t& operator*() noexcept {
+		return front();
+	}
+
+	int32_t operator*() const noexcept {
+		return front();
+	}
+
+	void emplace(int32_t val = 0) {
+		*this = val;
+	}
+
+	int32_t value() const {
+		return front();
+	}
+
+	int32_t value_or(int32_t default_val) const noexcept {
+		return empty() ? default_val : front();
+	}
+
+	void reset() noexcept {
+		clear();
+	}
+};
+
 template <property_type p>
 struct property_traits;
+
+using user_property_value_t = std::vector<std::pair<std::string, std::string>>;
 
 #define DEF_PROPERTY_TRAIT(Pname, Ptype) \
 template <> \
@@ -55,7 +97,7 @@ DEF_PROPERTY_TRAIT(message_expiry_interval, std::optional<uint32_t>);
 DEF_PROPERTY_TRAIT(content_type, std::optional<std::string>);
 DEF_PROPERTY_TRAIT(response_topic, std::optional<std::string>);
 DEF_PROPERTY_TRAIT(correlation_data, std::optional<std::string>);
-DEF_PROPERTY_TRAIT(subscription_identifier, std::optional<int32_t>);
+DEF_PROPERTY_TRAIT(subscription_identifier, subscription_identifiers);
 DEF_PROPERTY_TRAIT(session_expiry_interval, std::optional<uint32_t>);
 DEF_PROPERTY_TRAIT(assigned_client_identifier, std::optional<std::string>);
 DEF_PROPERTY_TRAIT(server_keep_alive, std::optional<uint16_t>);
@@ -72,7 +114,7 @@ DEF_PROPERTY_TRAIT(topic_alias_maximum, std::optional<uint16_t>);
 DEF_PROPERTY_TRAIT(topic_alias, std::optional<uint16_t>);
 DEF_PROPERTY_TRAIT(maximum_qos, std::optional<uint8_t>);
 DEF_PROPERTY_TRAIT(retain_available, std::optional<uint8_t>);
-DEF_PROPERTY_TRAIT(user_property, std::vector<std::string>);
+DEF_PROPERTY_TRAIT(user_property, user_property_value_t);
 DEF_PROPERTY_TRAIT(maximum_packet_size, std::optional<uint32_t>);
 DEF_PROPERTY_TRAIT(wildcard_subscription_available, std::optional<uint8_t>);
 DEF_PROPERTY_TRAIT(subscription_identifier_available, std::optional<uint8_t>);

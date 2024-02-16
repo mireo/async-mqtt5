@@ -320,84 +320,26 @@ std::string& operator<<(std::string& s, T&& t) {
 
 } // end namespace basic
 
-namespace detail {
-
-namespace pp = async_mqtt5::prop;
-
-template <pp::property_type p, std::size_t I, typename Tuple>
-constexpr bool match_v = std::is_same_v<
-	std::integral_constant<pp::property_type, p>,
-	typename std::tuple_element_t<I, Tuple>::key
->;
-
-template <
-	pp::property_type p, typename Tuple,
-	typename Idxs = std::make_index_sequence<std::tuple_size_v<Tuple>>
->
-struct type_index;
-
-template <
-	pp::property_type p, template <typename...> typename Tuple,
-	typename... Args, std::size_t... Is
->
-struct type_index<p, Tuple<Args...>, std::index_sequence<Is...>> :
-	std::integral_constant<
-		std::size_t, ((Is * match_v<p, Is, Tuple<Args...>>)+... + 0)
-	>
-{
-	static_assert(
-		1 == (match_v<p, Is, Tuple<Args...>> + ... + 0),
-		"T doesn't appear once in tuple"
-	);
-};
-
-} // end namespace detail
-
 namespace prop {
 
 namespace pp = async_mqtt5::prop;
 
-template <pp::property_type p, typename T>
-struct prop_encoder_type {
-	using key = std::integral_constant<pp::property_type, p>;
-	using value = T;
-};
-
-using encoder_types = std::tuple<
-	prop_encoder_type<pp::shared_subscription_available_t, basic::int_def<uint8_t>>,
-	prop_encoder_type<pp::payload_format_indicator_t, basic::int_def<uint8_t>>,
-	prop_encoder_type<pp::message_expiry_interval_t, basic::int_def<uint32_t>>,
-	prop_encoder_type<pp::content_type_t, basic::utf8_def>,
-	prop_encoder_type<pp::response_topic_t, basic::utf8_def>,
-	prop_encoder_type<pp::correlation_data_t, basic::utf8_def>,
-	prop_encoder_type<pp::subscription_identifier_t, basic::int_def<basic::varint_t>>,
-	prop_encoder_type<pp::session_expiry_interval_t, basic::int_def<uint32_t>>,
-	prop_encoder_type<pp::assigned_client_identifier_t, basic::utf8_def>,
-	prop_encoder_type<pp::server_keep_alive_t, basic::int_def<uint16_t>>,
-	prop_encoder_type<pp::authentication_method_t, basic::utf8_def>,
-	prop_encoder_type<pp::authentication_data_t, basic::utf8_def>,
-	prop_encoder_type<pp::request_problem_information_t, basic::int_def<uint8_t>>,
-	prop_encoder_type<pp::will_delay_interval_t, basic::int_def<uint32_t>>,
-	prop_encoder_type<pp::request_response_information_t, basic::int_def<uint8_t>>,
-	prop_encoder_type<pp::response_information_t, basic::utf8_def>,
-	prop_encoder_type<pp::server_reference_t, basic::utf8_def>,
-	prop_encoder_type<pp::reason_string_t, basic::utf8_def>,
-	prop_encoder_type<pp::receive_maximum_t, basic::int_def<uint16_t>>,
-	prop_encoder_type<pp::topic_alias_maximum_t, basic::int_def<uint16_t>>,
-	prop_encoder_type<pp::topic_alias_t, basic::int_def<uint16_t>>,
-	prop_encoder_type<pp::maximum_qos_t, basic::int_def<uint8_t>>,
-	prop_encoder_type<pp::retain_available_t, basic::int_def<uint8_t>>,
-	prop_encoder_type<pp::user_property_t, basic::utf8_def>,
-	prop_encoder_type<pp::maximum_packet_size_t, basic::int_def<uint32_t>>,
-	prop_encoder_type<pp::wildcard_subscription_available_t, basic::int_def<uint8_t>>,
-	prop_encoder_type<pp::subscription_identifier_available_t, basic::int_def<uint8_t>>
->;
-
-template <pp::property_type p>
-constexpr auto encoder_for_prop = typename std::tuple_element_t<
-	detail::type_index<p, encoder_types>::value, encoder_types
->::value {};
-
+template <typename T>
+auto encoder_for_prop_value(const T& val) {
+	if constexpr (std::is_same_v<T, uint8_t>)
+		return basic::int_def<uint8_t>{}(val);
+	else if constexpr (std::is_same_v<T, uint16_t>)
+		return basic::int_def<uint16_t>{}(val);
+	else if constexpr (std::is_same_v<T, int32_t>)
+		return basic::int_def<basic::varint_t>{}(val);
+	else if constexpr (std::is_same_v<T, uint32_t>)
+		return basic::int_def<uint32_t>{}(val);
+	else if constexpr (std::is_same_v<T, std::string>)
+		return basic::utf8_def{}(val);
+	else if constexpr (is_pair<T>)
+		return encoder_for_prop_value(val.first) &
+			encoder_for_prop_value(val.second);
+}
 
 template <typename T, pp::property_type p, typename Enable = void>
 class prop_val;
@@ -409,10 +351,8 @@ class prop_val<
 	T, p,
 	std::enable_if_t<!is_vector<T> && is_optional<T>>
 > : public basic::encoder {
-	 // T is always std::optional
-	using opt_type = typename boost::remove_cv_ref_t<T>::value_type;
 	// allows T to be reference type to std::optional
-	static inline std::optional<opt_type> nulltype;
+	static inline boost::remove_cv_ref_t<T> nulltype;
 	T _val;
 public:
 	prop_val(T val) : _val(val) {
@@ -422,16 +362,14 @@ public:
 
 	size_t byte_size() const {
 		if (!_val) return 0;
-		auto sval = encoder_for_prop<p>(_val);
-		return 1 + sval.byte_size();
+		return 1 + encoder_for_prop_value(*_val).byte_size();
 	}
 
 	std::string& encode(std::string& s) const {
 		if (!_val)
 			return s;
 		s.push_back(p);
-		auto sval = encoder_for_prop<p>(_val);
-		return sval.encode(s);
+		return encoder_for_prop_value(*_val).encode(s);
 	}
 };
 
@@ -440,7 +378,7 @@ template <
 >
 class prop_val<
 	T, p,
-	std::enable_if_t<is_vector<T>>
+	std::enable_if_t<is_vector<T> || is_small_vector<T>>
 > : public basic::encoder {
 	// allows T to be reference type to std::vector
 	static inline boost::remove_cv_ref_t<T> nulltype;
@@ -456,16 +394,8 @@ public:
 		if (_val.empty()) return 0;
 
 		size_t total_size = 0;
-		for (size_t i = 0; i < _val.size() && i + 1 < _val.size(); i += 2) {
-			auto skey = encoder_for_prop<p>(_val[i]);
-			size_t key_size = skey.byte_size();
-
-			auto sval = encoder_for_prop<p>(_val[i + 1]);
-			size_t val_size = sval.byte_size();
-
-			if (key_size && val_size)
-				total_size += 1 + key_size + val_size;
-		}
+		for (const auto& elem : _val)
+			total_size += 1 + encoder_for_prop_value(elem).byte_size();
 
 		return total_size;
 	}
@@ -474,14 +404,9 @@ public:
 		if (_val.empty())
 			return s;
 
-		for (size_t i = 0; i < _val.size() && i + 1 < _val.size(); i += 2) {
+		for (const auto& elem: _val) {
 			s.push_back(p);
-
-			auto skey = encoder_for_prop<p>(_val[i]);
-			skey.encode(s);
-
-			auto sval = encoder_for_prop<p>(_val[i + 1]);
-			sval.encode(s);
+			encoder_for_prop_value(elem).encode(s);
 		}
 
 		return s;

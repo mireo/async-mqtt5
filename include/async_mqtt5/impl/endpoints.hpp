@@ -141,8 +141,8 @@ class endpoints {
 
 public:
 	template <typename Executor>
-	endpoints(Executor ex, asio::steady_timer& timer)
-		: _resolver(ex), _connect_timer(timer)
+	endpoints(Executor ex, asio::steady_timer& timer) :
+		_resolver(ex), _connect_timer(timer)
 	{}
 
 	void clone_servers(const endpoints& other) {

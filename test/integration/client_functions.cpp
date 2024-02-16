@@ -191,7 +191,8 @@ struct shared_connect_prop_test_data : shared_test_data {
 	const uint16_t topic_alias_maximum = 12345;
 	const uint8_t request_response_information = 1;
 	const uint8_t request_problem_information = 0;
-	const std::vector<std::string> user_properties = std::vector<std::string>{ "key", "val" };
+	const std::vector<std::pair<std::string, std::string>> user_properties =
+		{ { "key", "val" } };
 
 	connect_props cprops = create_connect_props();
 
@@ -300,7 +301,8 @@ struct shared_connack_prop_test_data {
 	const std::string assigned_client_id = "client_id";
 	const uint16_t topic_alias_max = 128;
 	const std::string reason_string = "reason string";
-	const std::vector<std::string> user_properties = std::vector<std::string>{ "key", "val" };
+	const std::vector<std::pair<std::string, std::string>> user_properties =
+		{ { "key", "val" } };
 	const uint8_t wildcard_sub = 1;
 	const uint8_t sub_id = 1;
 	const uint8_t shared_sub = 0;

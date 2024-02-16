@@ -545,16 +545,12 @@ BOOST_FIXTURE_TEST_CASE(send_big_publish, shared_test_data) {
 	const std::string big_topic = std::string(65534, 't');
 	const std::string big_payload = std::string(65534, 'p');
 
-	publish_props big_props;
-	for (int i = 0; i < 1; i++)
-		big_props[prop::user_property].push_back(std::string(65534, 'u'));
-
 	// packets
 	auto allow_big_connack = encoders::encode_connack(false, uint8_t(0x00), cprops);
 	auto big_publish = encoders::encode_publish(
 		1, big_topic, big_payload,
 		qos_e::at_least_once, retain_e::no, dup_e::no,
-		big_props
+		publish_props{}
 	);
 	auto pingreq = encoders::encode_pingreq();
 	auto pingresp = encoders::encode_pingresp();
@@ -590,7 +586,7 @@ BOOST_FIXTURE_TEST_CASE(send_big_publish, shared_test_data) {
 		.async_run(asio::detached);
 
 	c.async_publish<qos_e::at_least_once>(
-		big_topic, big_payload, retain_e::no, big_props,
+		big_topic, big_payload, retain_e::no, publish_props{},
 		[&handlers_called, &c](error_code ec, reason_code rc, puback_props) {
 			++handlers_called;
 

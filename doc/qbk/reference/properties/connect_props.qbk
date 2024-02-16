@@ -15,7 +15,7 @@ This section lists all possible __CONNECT__ Properties and describes their usage
 	[[request_problem_information] [`uint8_t`] [The value of 0 signals that the Server MAY return a Reason String or User Properties on a __CONNACK__ or __DISCONNECT__ packet, 
 		but MUST NOT send them on any packet other than __PUBLISH__, __CONNACK__, or __DISCONNECT__. 
 		If the value is 1, the Server MAY return a Reason String or User Properties where it is allowed.]]
-	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
+	[[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
 		The meaning of these properties is not defined by the specification.]]
 	[[authentication_method] [`std::string`] [A UTF-8 Encoded String containing the name of the authentication method used for extended authentication.]]
 	[[authentication_data] [`std::string`] [Binary Data containing authentication data. The contents of the data are defined by the authentication method.]]
@@ -26,6 +26,9 @@ After obtaining an instance of `async_mqtt5::connect_props`, the subscript opera
 
 The Identifiers listed in the table above are available within the `async_mqtt5::prop` namespace for Property access.
 
+[note When accessing a property value, the subscript operator will return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property`, where it will return an instance of `std::vector<std::pair<std::string, std::string>>`.]
+
 [h4 Example]
 
 The following example shows how to set a Property value:
@@ -34,11 +37,9 @@ The following example shows how to set a Property value:
 	async_mqtt5::connect_props props;
 	props[async_mqtt5::prop::session_expiry_interval] = 1200;
 	props[async_mqtt5::prop::receive_maximum] = uint16_t(100);
+	props[async_mqtt5::prop::user_property].emplace_back("name", "value");
 
 The following example shows how to retrieve a Property value:
-
-[note When retrieving a property value, the subscript operator will return a `std::optional` of the value type for all properties,
-except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
 
 [!c++]
 	std::optional<std::string> auth_method = props[async_mqtt5::prop::authentication_method];
@@ -46,5 +47,11 @@ except for `async_mqtt5::prop::user_property`, where it will return an instance 
 		// authentication method property was previously set
 	else
 		// authentication method property was not set
+	
+	std::vector<std::pair<std::string, std::string>>& user_props = props[async_mqtt5::prop::user_property];
+	if (!user_props.empty())
+		// user property was previously set
+	else
+		// user property was not set
 
 [endsect]

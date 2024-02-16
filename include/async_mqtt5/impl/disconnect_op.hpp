@@ -131,8 +131,8 @@ private:
 			return client::error::malformed_packet;
 
 		auto user_properties = props[prop::user_property];
-		for (const auto& user_prop: user_properties)
-			if (validate_mqtt_utf8(user_prop) != validation_result::valid)
+		for (const auto& user_property: user_properties)
+			if (!is_valid_string_pair(user_property))
 				return client::error::malformed_packet;
 		return error_code {};
 	}

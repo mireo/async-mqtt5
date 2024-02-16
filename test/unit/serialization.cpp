@@ -50,8 +50,7 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	cprops[prop::topic_alias_maximum] = topic_alias_max;
 	cprops[prop::request_response_information] = request_response_information;
 	cprops[prop::request_problem_information] = request_problem_information;
-	cprops[prop::user_property].emplace_back(user_property_1);
-	cprops[prop::user_property].emplace_back(user_property_2);
+	cprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 	cprops[prop::authentication_method] = auth_method;
 	cprops[prop::authentication_data] = auth_data;
 
@@ -62,8 +61,7 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	w[prop::content_type] = will_content_type;
 	w[prop::response_topic] = will_response_topic;
 	w[prop::correlation_data] = will_correlation_data;
-	w[prop::user_property].emplace_back(will_user_property_1);
-	w[prop::user_property].emplace_back(will_user_property_2);
+	w[prop::user_property].emplace_back(will_user_property_1, will_user_property_2);
 	std::optional<will> will_opt { std::move(w) };
 
 	auto msg = encoders::encode_connect(
@@ -96,9 +94,9 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	BOOST_CHECK_EQUAL(*cprops_[prop::topic_alias_maximum], topic_alias_max);
 	BOOST_CHECK_EQUAL(*cprops_[prop::request_response_information], request_response_information);
 	BOOST_CHECK_EQUAL(*cprops_[prop::request_problem_information], request_problem_information);
-	BOOST_ASSERT(cprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(cprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].second, user_property_2);
 	BOOST_CHECK_EQUAL(*cprops_[prop::authentication_method], auth_method);
 	BOOST_CHECK_EQUAL(*cprops_[prop::authentication_data], auth_data);
 
@@ -114,9 +112,9 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 	BOOST_CHECK_EQUAL(*(*w_)[prop::content_type], will_content_type);
 	BOOST_CHECK_EQUAL(*(*w_)[prop::response_topic], will_response_topic);
 	BOOST_CHECK_EQUAL(*(*w_)[prop::correlation_data], will_correlation_data);
-	BOOST_ASSERT((*w_)[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL((*w_)[prop::user_property][0], will_user_property_1);
-	BOOST_CHECK_EQUAL((*w_)[prop::user_property][1], will_user_property_2);
+	BOOST_ASSERT((*w_)[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL((*w_)[prop::user_property][0].first, will_user_property_1);
+	BOOST_CHECK_EQUAL((*w_)[prop::user_property][0].second, will_user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_connack) {
@@ -152,8 +150,7 @@ BOOST_AUTO_TEST_CASE(test_connack) {
 	cprops[prop::assigned_client_identifier] = assigned_client_id;
 	cprops[prop::topic_alias_maximum] = topic_alias_max;
 	cprops[prop::reason_string] = reason_string;
-	cprops[prop::user_property].push_back(user_property_1);
-	cprops[prop::user_property].push_back(user_property_2);
+	cprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 	cprops[prop::wildcard_subscription_available] = wildcard_sub;
 	cprops[prop::subscription_identifier_available] = sub_id;
 	cprops[prop::shared_subscription_available] = shared_sub;
@@ -186,9 +183,9 @@ BOOST_AUTO_TEST_CASE(test_connack) {
 	BOOST_CHECK_EQUAL(*cprops_[prop::assigned_client_identifier], assigned_client_id);
 	BOOST_CHECK_EQUAL(*cprops_[prop::topic_alias_maximum], topic_alias_max);
 	BOOST_CHECK_EQUAL(*cprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(cprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(cprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].second, user_property_2);
 	BOOST_CHECK_EQUAL(*cprops_[prop::wildcard_subscription_available], wildcard_sub);
 	BOOST_CHECK_EQUAL(*cprops_[prop::subscription_identifier_available], sub_id);
 	BOOST_CHECK_EQUAL(*cprops_[prop::shared_subscription_available], shared_sub);
@@ -221,9 +218,8 @@ BOOST_AUTO_TEST_CASE(test_publish) {
 	pprops[prop::topic_alias] = topic_alias;
 	pprops[prop::response_topic] = response_topic;
 	pprops[prop::correlation_data] = correlation_data;
-	pprops[prop::user_property].emplace_back(publish_prop_1);
-	pprops[prop::user_property].emplace_back(publish_prop_2);
-	pprops[prop::subscription_identifier] = subscription_identifier;
+	pprops[prop::user_property].emplace_back(publish_prop_1, publish_prop_2);
+	pprops[prop::subscription_identifier].push_back(subscription_identifier);
 	pprops[prop::content_type] = content_type;
 
 	auto msg = encoders::encode_publish(
@@ -252,10 +248,11 @@ BOOST_AUTO_TEST_CASE(test_publish) {
 	BOOST_CHECK_EQUAL(*pprops_[prop::topic_alias], topic_alias);
 	BOOST_CHECK_EQUAL(*pprops_[prop::response_topic], response_topic);
 	BOOST_CHECK_EQUAL(*pprops_[prop::correlation_data], correlation_data);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0], publish_prop_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][1], publish_prop_2);
-	BOOST_CHECK_EQUAL(*pprops_[prop::subscription_identifier], subscription_identifier);
+	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, publish_prop_1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, publish_prop_2);
+	BOOST_ASSERT(pprops_[prop::subscription_identifier].size() == 1);
+	BOOST_CHECK_EQUAL(pprops_[prop::subscription_identifier][0], subscription_identifier);
 	BOOST_CHECK_EQUAL(*pprops_[prop::content_type], content_type);
 }
 
@@ -297,8 +294,7 @@ BOOST_AUTO_TEST_CASE(test_puback) {
 
 	puback_props pprops;
 	pprops[prop::reason_string] = reason_string;
-	pprops[prop::user_property].emplace_back(user_property_1);
-	pprops[prop::user_property].emplace_back(user_property_2);
+	pprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_puback(packet_id, reason_code, pprops);
 
@@ -318,9 +314,9 @@ BOOST_AUTO_TEST_CASE(test_puback) {
 	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pubrec) {
@@ -334,8 +330,7 @@ BOOST_AUTO_TEST_CASE(test_pubrec) {
 
 	pubrec_props pprops;
 	pprops[prop::reason_string] = reason_string;
-	pprops[prop::user_property].emplace_back(user_property_1);
-	pprops[prop::user_property].emplace_back(user_property_2);
+	pprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_pubrec(packet_id, reason_code, pprops);
 
@@ -355,9 +350,9 @@ BOOST_AUTO_TEST_CASE(test_pubrec) {
 	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pubrel) {
@@ -371,8 +366,7 @@ BOOST_AUTO_TEST_CASE(test_pubrel) {
 
 	pubrel_props pprops;
 	pprops[prop::reason_string] = reason_string;
-	pprops[prop::user_property].emplace_back(user_property_1);
-	pprops[prop::user_property].emplace_back(user_property_2);
+	pprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_pubrel(packet_id, reason_code, pprops);
 
@@ -392,9 +386,9 @@ BOOST_AUTO_TEST_CASE(test_pubrel) {
 	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pubcomp) {
@@ -408,8 +402,7 @@ BOOST_AUTO_TEST_CASE(test_pubcomp) {
 
 	pubcomp_props pprops;
 	pprops[prop::reason_string] = reason_string;
-	pprops[prop::user_property].emplace_back(user_property_1);
-	pprops[prop::user_property].emplace_back(user_property_2);
+	pprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_pubcomp(packet_id, reason_code, pprops);
 
@@ -429,9 +422,9 @@ BOOST_AUTO_TEST_CASE(test_pubcomp) {
 	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(reason_code_, reason_code);
 	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_subscribe) {
@@ -447,8 +440,7 @@ BOOST_AUTO_TEST_CASE(test_subscribe) {
 
 	subscribe_props sprops;
 	sprops[prop::subscription_identifier] = sub_id;
-	sprops[prop::user_property].push_back(user_property_1);
-	sprops[prop::user_property].push_back(user_property_2);
+	sprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	std::vector<subscribe_topic> filters {
 		{
@@ -484,9 +476,9 @@ BOOST_AUTO_TEST_CASE(test_subscribe) {
 
 	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*sprops_[prop::subscription_identifier], sub_id);
-	BOOST_ASSERT(sprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(sprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_suback) {
@@ -500,8 +492,7 @@ BOOST_AUTO_TEST_CASE(test_suback) {
 
 	suback_props sprops;
 	sprops[prop::reason_string] = reason_string;
-	sprops[prop::user_property].push_back(user_property_1);
-	sprops[prop::user_property].push_back(user_property_2);
+	sprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_suback(packet_id, reason_codes, sprops);
 
@@ -521,9 +512,9 @@ BOOST_AUTO_TEST_CASE(test_suback) {
 
 	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*sprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(sprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(sprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_unsubscribe) {
@@ -535,8 +526,7 @@ BOOST_AUTO_TEST_CASE(test_unsubscribe) {
 	std::string user_property_2 = "UNSUBSCRIBE user prop val";
 
 	unsubscribe_props uprops;
-	uprops[prop::user_property].push_back(user_property_1);
-	uprops[prop::user_property].push_back(user_property_2);
+	uprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_unsubscribe(packet_id, topics, uprops);
 
@@ -555,9 +545,9 @@ BOOST_AUTO_TEST_CASE(test_unsubscribe) {
 	BOOST_CHECK(topics_ == topics);
 
 	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_ASSERT(uprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(uprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_unsuback) {
@@ -571,8 +561,7 @@ BOOST_AUTO_TEST_CASE(test_unsuback) {
 
 	unsuback_props uprops;
 	uprops[prop::reason_string] = reason_string;
-	uprops[prop::user_property].push_back(user_property_1);
-	uprops[prop::user_property].push_back(user_property_2);
+	uprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_unsuback(packet_id, reason_codes, uprops);
 
@@ -592,9 +581,9 @@ BOOST_AUTO_TEST_CASE(test_unsuback) {
 
 	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*uprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(uprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(uprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_disconnect) {
@@ -610,8 +599,7 @@ BOOST_AUTO_TEST_CASE(test_disconnect) {
 	disconnect_props dprops;
 	dprops[prop::session_expiry_interval] = session_expiry_interval;
 	dprops[prop::reason_string] = reason_string;
-	dprops[prop::user_property].emplace_back(user_property_1);
-	dprops[prop::user_property].emplace_back(user_property_2);
+	dprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 	dprops[prop::server_reference] = server_reference;
 
 	auto msg = encoders::encode_disconnect(reason_code, dprops);
@@ -630,9 +618,9 @@ BOOST_AUTO_TEST_CASE(test_disconnect) {
 	dprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
 	BOOST_CHECK_EQUAL(*dprops_[prop::session_expiry_interval], session_expiry_interval);
 	BOOST_CHECK_EQUAL(*dprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(dprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(dprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(dprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(dprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(dprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(dprops_[prop::user_property][0].second, user_property_2);
 	BOOST_CHECK_EQUAL(*dprops_[prop::server_reference], server_reference);
 }
 
@@ -651,8 +639,7 @@ BOOST_AUTO_TEST_CASE(test_auth) {
 	aprops[prop::authentication_method] = authentication_method;
 	aprops[prop::authentication_data] = authentication_data;
 	aprops[prop::reason_string] = reason_string;
-	aprops[prop::user_property].emplace_back(user_property_1);
-	aprops[prop::user_property].emplace_back(user_property_2);
+	aprops[prop::user_property].emplace_back(user_property_1, user_property_2);
 
 	auto msg = encoders::encode_auth(reason_code, aprops);
 
@@ -671,9 +658,9 @@ BOOST_AUTO_TEST_CASE(test_auth) {
 	BOOST_CHECK_EQUAL(*aprops_[prop::authentication_method], authentication_method);
 	BOOST_CHECK_EQUAL(*aprops_[prop::authentication_data], authentication_data);
 	BOOST_CHECK_EQUAL(*aprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(aprops_[prop::user_property].size() == 2);
-	BOOST_CHECK_EQUAL(aprops_[prop::user_property][0], user_property_1);
-	BOOST_CHECK_EQUAL(aprops_[prop::user_property][1], user_property_2);
+	BOOST_ASSERT(aprops_[prop::user_property].size() == 1);
+	BOOST_CHECK_EQUAL(aprops_[prop::user_property][0].first, user_property_1);
+	BOOST_CHECK_EQUAL(aprops_[prop::user_property][0].second, user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pingreq) {
@@ -692,8 +679,7 @@ BOOST_AUTO_TEST_CASE(test_pingresp) {
 
 BOOST_AUTO_TEST_CASE(empty_user_property) {
 	publish_props pprops;
-	pprops[prop::user_property].emplace_back("");
-	pprops[prop::user_property].emplace_back("");
+	pprops[prop::user_property].emplace_back("", "");
 
 	auto msg = encoders::encode_publish(
 		1, "topic", "payload",
@@ -712,69 +698,9 @@ BOOST_AUTO_TEST_CASE(empty_user_property) {
 	const auto& [topic_, packet_id_, flags, pprops_, payload_] = *rv;
 
 	auto user_props_ = pprops_[prop::user_property];
-	BOOST_ASSERT(user_props_.size() == 2);
-	BOOST_CHECK_EQUAL(user_props_[0], "");
-	BOOST_CHECK_EQUAL(user_props_[1], "");
-}
-
-BOOST_AUTO_TEST_CASE(omit_invalid_user_property) {
-	// testing variables
-	std::string_view user_property_1 = "key";
-	std::string_view user_property_2 = "val";
-	std::string_view user_property_3 = "lone key";
-
-	publish_props pprops;
-	pprops[prop::user_property].emplace_back(user_property_1);
-	pprops[prop::user_property].emplace_back(user_property_2);
-	pprops[prop::user_property].emplace_back(user_property_3);
-
-	auto msg = encoders::encode_publish(
-		1, "topic", "payload",
-		qos_e::at_least_once, retain_e::yes, dup_e::no,
-		pprops
-	);
-
-	byte_citer it = msg.cbegin(), last = msg.cend();
-	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
-
-	const auto& [control_byte, remain_length] = *header;
-	auto rv = decoders::decode_publish(control_byte, remain_length, it);
-	BOOST_ASSERT(rv);
-
-	const auto& [topic_, packet_id_, flags, pprops_, payload_] = *rv;
-
-	auto user_props_ = pprops_[prop::user_property];
-	BOOST_ASSERT(user_props_.size() == 2);
-	BOOST_CHECK_EQUAL(user_props_[0], user_property_1);
-	BOOST_CHECK_EQUAL(user_props_[1], user_property_2);
-}
-
-BOOST_AUTO_TEST_CASE(omit_all_user_property) {
-	// testing variables
-	std::string_view user_property_1 = "key";
-
-	publish_props pprops;
-	pprops[prop::user_property].emplace_back(user_property_1);
-
-	auto msg = encoders::encode_publish(
-		1, "topic", "payload",
-		qos_e::at_least_once, retain_e::yes, dup_e::no,
-		pprops
-	);
-
-	byte_citer it = msg.cbegin(), last = msg.cend();
-	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
-
-	const auto& [control_byte, remain_length] = *header;
-	auto rv = decoders::decode_publish(control_byte, remain_length, it);
-	BOOST_ASSERT(rv);
-
-	const auto& [topic_, packet_id_, flags, pprops_, payload_] = *rv;
-
-	auto user_props_ = pprops_[prop::user_property];
-	BOOST_CHECK(user_props_.size() == 0);
+	BOOST_ASSERT(user_props_.size() == 1);
+	BOOST_CHECK_EQUAL(user_props_[0].first, "");
+	BOOST_CHECK_EQUAL(user_props_[0].second, "");
 }
 
 BOOST_AUTO_TEST_CASE(deserialize_user_property) {
@@ -795,9 +721,9 @@ BOOST_AUTO_TEST_CASE(deserialize_user_property) {
 
 	const auto& [reason_code_, pprops_] = *rv;
 	auto user_props_ = pprops_[prop::user_property];
-	BOOST_ASSERT(user_props_.size() == 2);
-	BOOST_CHECK_EQUAL(user_props_[0], "key");
-	BOOST_CHECK_EQUAL(user_props_[1], "val");
+	BOOST_ASSERT(user_props_.size() == 1);
+	BOOST_CHECK_EQUAL(user_props_[0].first, "key");
+	BOOST_CHECK_EQUAL(user_props_[0].second, "val");
 }
 
 BOOST_AUTO_TEST_CASE(deserialize_empty_user_property) {
@@ -818,9 +744,9 @@ BOOST_AUTO_TEST_CASE(deserialize_empty_user_property) {
 
 	const auto& [reason_code_, pprops_] = *rv;
 	auto user_props_ = pprops_[prop::user_property];
-	BOOST_ASSERT(user_props_.size() == 2);
-	BOOST_CHECK_EQUAL(user_props_[0], "");
-	BOOST_CHECK_EQUAL(user_props_[1], "");
+	BOOST_ASSERT(user_props_.size() == 1);
+	BOOST_CHECK_EQUAL(user_props_[0].first, "");
+	BOOST_CHECK_EQUAL(user_props_[0].second, "");
 }
 
 BOOST_AUTO_TEST_CASE(malformed_user_property) {

@@ -100,14 +100,14 @@ BOOST_AUTO_TEST_CASE(invalid_topic_filter_6) {
 
 BOOST_AUTO_TEST_CASE(malformed_user_property_1) {
 	unsubscribe_props uprops;
-	uprops[prop::user_property].push_back(std::string(10, char(0x01)));
+	uprops[prop::user_property].emplace_back("key", std::string(10, char(0x01)));
 
 	run_test(client::error::malformed_packet, "topic", uprops);
 }
 
 BOOST_AUTO_TEST_CASE(malformed_user_property_2) {
 	unsubscribe_props uprops;
-	uprops[prop::user_property].push_back(std::string(75000, 'a'));
+	uprops[prop::user_property].emplace_back("key", std::string(75000, 'a'));
 
 	run_test(client::error::malformed_packet, "topic", uprops);
 }

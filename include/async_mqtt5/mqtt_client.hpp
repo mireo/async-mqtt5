@@ -368,14 +368,15 @@ public:
 	 *
 	 * \details The return type varies according to the property requested.
 	 * For all properties, the return type will be `std::optional` of their respective value type.
-	 * For `async_mqtt5::prop::user_property`, the return type is `std::vector<std::string>`.
+	 * For `async_mqtt5::prop::user_property`, the return type is
+	 * `std::vector<std::pair<std::string, std::string>>`.
 	 *
 	 * \param prop The \__CONNACK_PROPS\__ property value to retrieve.
 	 *
 	 * \par Example
 	 * \code
 	 *	std::optional<std::string> auth_method = client.connack_property(async_mqtt5::prop::authentication_method); // ok
-	 *	std::optional<std::string> c_type = client.connack_property(async_mqtt5::prop::content_type); // does not compile, not a CONNAK prop!
+	 *	std::optional<std::string> c_type = client.connack_property(async_mqtt5::prop::content_type); // does not compile, not a CONNACK prop!
 	 * \endcode
 	 *
 	 * \see See \__CONNACK_PROPS\__ for all eligible properties.

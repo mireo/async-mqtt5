@@ -80,7 +80,14 @@ inline std::string to_readable_props(Props props) {
 			if (v.has_value())
 				stream << *v << " ";
 		if constexpr (is_vector<decltype(v)>)
-			stream << boost::algorithm::join(v, ",");
+			for (size_t i = 0; i < v.size(); i++) {
+				if constexpr (is_pair<decltype(v[i])>)
+					stream << "(" << v[i].first << ", " << v[i].second << ")";
+				else
+					stream << v[i];
+				if (i + 1 < v.size())
+					stream << ", ";
+			}
 		return true;
 	});
 	return stream.str();

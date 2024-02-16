@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(malformed_props_1) {
 
 BOOST_AUTO_TEST_CASE(malformed_props_2) {
 	publish_props pprops;
-	pprops[prop::user_property].push_back(std::string { 0x01 });
+	pprops[prop::user_property].emplace_back(std::string { 0x01 }, "value");
 
 	run_malformed_props_test(pprops);
 }
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(malformed_props_4) {
 
 BOOST_AUTO_TEST_CASE(malformed_props_5) {
 	publish_props pprops;
-	pprops[prop::subscription_identifier] = 300'000'000;
+	pprops[prop::subscription_identifier].push_back(40);
 
 	run_malformed_props_test(pprops);
 }

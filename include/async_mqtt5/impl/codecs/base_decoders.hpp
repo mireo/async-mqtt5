@@ -349,49 +349,38 @@ bool parse_to_prop(
 	It& iter, const It last,
 	const Ctx& ctx, RCtx& rctx, Prop& prop
 ) {
-	using prop_type = decltype(prop);
+	using prop_type = std::remove_reference_t<decltype(prop)>;
 
 	bool rv = false;
-	if constexpr (is_optional<prop_type>) {
-		using value_type =
-			typename std::remove_reference_t<prop_type>::value_type;
 
-		if constexpr (std::is_same_v<value_type, uint8_t>) {
-			uint8_t attr;
-			rv = x3::byte_.parse(iter, last, ctx, rctx, attr);
-			prop = attr;
-		}
-		if constexpr (std::is_same_v<value_type, uint16_t>) {
-			uint16_t attr;
-			rv = x3::big_word.parse(iter, last, ctx, rctx, attr);
-			prop = attr;
-		}
-		if constexpr (std::is_same_v<value_type, int32_t>) {
-			int32_t attr;
-			rv = basic::varint_.parse(iter, last, ctx, rctx, attr);
-			prop = attr;
-		}
-		if constexpr (std::is_same_v<value_type, uint32_t>) {
-			uint32_t attr;
-			rv = x3::big_dword.parse(iter, last, ctx, rctx, attr);
-			prop = attr;
-		}
-		if constexpr (std::is_same_v<value_type, std::string>) {
-			std::string attr;
-			rv = basic::utf8_.parse(iter, last, ctx, rctx, attr);
-			prop.emplace(std::move(attr));
-		}
+	if constexpr (std::is_same_v<prop_type, uint8_t>)
+		rv = x3::byte_.parse(iter, last, ctx, rctx, prop);
+	else if constexpr (std::is_same_v<prop_type, uint16_t>)
+		rv = x3::big_word.parse(iter, last, ctx, rctx, prop);
+	else if constexpr (std::is_same_v<prop_type, int32_t>)
+		rv = basic::varint_.parse(iter, last, ctx, rctx, prop);
+	else if constexpr (std::is_same_v<prop_type, uint32_t>)
+		rv = x3::big_dword.parse(iter, last, ctx, rctx, prop);
+	else if constexpr (std::is_same_v<prop_type, std::string>)
+		rv = basic::utf8_.parse(iter, last, ctx, rctx, prop);
+
+	else if constexpr (is_optional<prop_type>) {
+		typename prop_type::value_type val;
+		rv = parse_to_prop(iter, last, ctx, rctx, val);
+		if (rv) prop.emplace(std::move(val));
 	}
 
-	if constexpr (async_mqtt5::is_vector<prop_type>) {
-		std::string value;
-		// key
-		rv = basic::utf8_.parse(iter, last, ctx, rctx, value);
-		if (rv) prop.push_back(std::move(value));
-		// value
-		rv = basic::utf8_.parse(iter, last, ctx, rctx, value);
+	else if constexpr (is_pair<prop_type>) {
+		rv = parse_to_prop(iter, last, ctx, rctx, prop.first);
+		rv = parse_to_prop(iter, last, ctx, rctx, prop.second);
+	}
+
+	else if constexpr (is_vector<prop_type> || is_small_vector<prop_type>) {
+		typename std::remove_reference_t<prop_type>::value_type value;
+		rv = parse_to_prop(iter, last, ctx, rctx, value);
 		if (rv) prop.push_back(std::move(value));
 	}
+
 	return rv;
 }
 

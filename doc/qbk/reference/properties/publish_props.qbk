@@ -12,9 +12,9 @@ This section lists all possible __PUBLISH__ Properties and describes their usage
 	[[topic_alias] [`uint16_t`] [Two Byte integer representing the Topic Alias, an integer value that is used to identify the Topic instead of using the Topic Name.]]
 	[[response_topic] [`std::string`] [A UTF-8 Encoded String which is used as the Topic Name for a response message.]]
 	[[correlation_data] [`std::string`] [Binary Data used by the sender of the Request Message to identify which request the Response Message is for when it is received.]]
-	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
+	[[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
 		The meaning of these properties is not defined by the specification.]]
-	[[subscription_identifier] [`int32_t`] [Identifier of the Subscription in range of 1 to 268,435,455.]]
+	[[subscription_identifier] [`int32_t`] [Identifier of the matching subscription. If there are multiple matching subscriptions, multiple identifiers may be included.]]
 	[[content_type] [`std::string`] [A UTF-8 Encoded String describing the content of the Application Message.]]
 ]
 
@@ -22,6 +22,11 @@ This section lists all possible __PUBLISH__ Properties and describes their usage
 After obtaining an instance of `async_mqtt5::publish_props`, the subscript operator can be used to access a Property.
 
 The Identifiers listed in the table above are available within the `async_mqtt5::prop` namespace for Property access.
+
+[note When accessing a property value, the subscript operator will return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property` and `async_mqtt5::prop::subscription_identifier`, where it will return an instance of
+`std::vector<std::pair<std::string, std::string>>` and `async_mqtt5::prop::subscription_identifiers` respectively.
+`async_mqtt5::prop::subscription_identifiers` has the interface of `boost::container::small_vector`.]
 
 [h4 Example]
 
@@ -32,11 +37,9 @@ The following example shows how to set a Property value:
 	props[async_mqtt5::prop::payload_format_indicator] = uint8_t(1);
 	props[async_mqtt5::prop::topic_alias] = uint16_t(12);
 	props[async_mqtt5::prop::response_topic] = "response_topic";
+	props[async_mqtt5::prop::subscription_identifier].push_back(40);
 
 The following example shows how to retrieve a Property value:
-
-[note When retrieving a property value, the subscript operator will return a `std::optional` of the value type for all properties,
-except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
 
 [!c++]
 	std::optional<uint16_t> topic_alias = props[async_mqtt5::prop::topic_alias];
@@ -44,5 +47,11 @@ except for `async_mqtt5::prop::user_property`, where it will return an instance 
 		// topic alias property was previously set
 	else
 		// topic alias property was not set
+	
+	async_mqtt5::prop::subscription_identifiers& sub_ids = props[async_mqtt5::prop::subscription_identifier];
+	if (!sub_ids.empty())
+		// subscription identifier property was previously set
+	else
+		// subscription identifier property was not set
 
 [endsect]

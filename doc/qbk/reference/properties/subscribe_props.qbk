@@ -8,7 +8,7 @@ This section lists all possible __SUBSCRIBE__ Properties and describes their usa
 [table:subscribe_props SUBSCRIBE properties
 	[[Identifier] [Value type] [Description]]
 	[[subscription_identifier] [`int32_t`] [Identifier of the Subscription in range of 1 to 268,435,455.]]
-	[[user_property] [`std::vector<std::string>`] [A list of name, value pairs (__UTF8_STRING_PAIR__) defining User Properties. 
+	[[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
 		This property can be used to send subscription related properties from the Client to the Server. 
 		The meaning of these properties is not defined by the specification ]]
 ]
@@ -18,6 +18,11 @@ After obtaining an instance of `async_mqtt5::subscribe_props`, the subscript ope
 
 The Identifiers listed in the table above are available within the `async_mqtt5::prop` namespace for Property access.
 
+[note When accessing a property value, the subscript operator will return a `std::optional` of the value type for all properties,
+except for `async_mqtt5::prop::user_property` and `async_mqtt5::prop::subscription_identifier`, where it will return an instance of
+`std::vector<std::pair<std::string, std::string>>` and `async_mqtt5::prop::subscription_identifiers` respectively.
+`async_mqtt5::prop::subscription_identifiers` has the interface of `std::optional<int32_t>`.]
+
 [h4 Example]
 
 The following example shows how to set a Property value:
@@ -25,17 +30,21 @@ The following example shows how to set a Property value:
 [!c++]
 	async_mqtt5::subscribe_props props;
 	props[async_mqtt5::prop::subscription_identifier] = 1234;
+	props[async_mqtt5::prop::user_property].emplace_back("name", "value");
 
 The following example shows how to retrieve a Property value:
 
-[note When retrieving a property value, the subscript operator will return a `std::optional` of the value type for all properties,
-except for `async_mqtt5::prop::user_property`, where it will return an instance of its value type, `std::vector<std::string>`.]
-
 [!c++]
-	std::optional<int32_t> sub_id = props[async_mqtt5::prop::subscription_identifier];
+	async_mqtt5::prop::subscription_identifiers sub_id = props[async_mqtt5::prop::subscription_identifier];
 	if (sub_id.has_value())
 		// subscription identifier property was previously set
 	else
 		// subscription identifier property was not set
+	
+	std::vector<std::pair<std::string, std::string>>& user_props = props[async_mqtt5::prop::user_property];
+	if (!user_props.empty())
+		// user property was previously set
+	else
+		// user property was not set
 
 [endsect]

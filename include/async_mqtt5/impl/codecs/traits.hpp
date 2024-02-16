@@ -4,6 +4,7 @@
 #include <optional>
 #include <vector>
 
+#include <boost/container/small_vector.hpp>
 #include <boost/range/iterator_range_core.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 
@@ -28,6 +29,21 @@ constexpr bool is_specialization<T<Args...>, T> = true;
 template <typename T>
 constexpr bool is_vector = is_specialization<
 	boost::remove_cv_ref_t<T>, std::vector
+>;
+
+template <typename... Args>
+constexpr std::true_type is_small_vector_impl(
+	boost::container::small_vector_base<Args...> const &
+);
+constexpr std::false_type is_small_vector_impl( ... );
+
+template <typename T>
+constexpr bool is_small_vector =
+	decltype(is_small_vector_impl(std::declval<T>()))::value;
+
+template <typename T>
+constexpr bool is_pair = is_specialization<
+	boost::remove_cv_ref_t<T>, std::pair
 >;
 
 template <typename T>
