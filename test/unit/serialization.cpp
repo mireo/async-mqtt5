@@ -677,6 +677,26 @@ BOOST_AUTO_TEST_CASE(test_pingresp) {
 	BOOST_CHECK_EQUAL(msg, encoded_pingresp);
 }
 
+BOOST_AUTO_TEST_CASE(subscription_identifiers) {
+	// check boost::container::small_vector interface
+	BOOST_ASSERT(is_small_vector<prop::subscription_identifiers>);
+
+	// check optional interface
+	prop::subscription_identifiers sub_ids;
+	sub_ids.emplace(40);
+	BOOST_CHECK(sub_ids);
+	BOOST_CHECK(sub_ids.has_value());
+	BOOST_CHECK_EQUAL(*sub_ids, 40);
+	*sub_ids = 41;
+	BOOST_CHECK_EQUAL(sub_ids.value(), 41);
+	BOOST_CHECK_EQUAL(sub_ids.value_or(-1), 41);
+	sub_ids.reset();
+	BOOST_CHECK(!sub_ids);
+	BOOST_CHECK_EQUAL(sub_ids.value_or(-1), -1);
+	sub_ids.emplace();
+	BOOST_CHECK_EQUAL(*sub_ids, 0);
+}
+
 BOOST_AUTO_TEST_CASE(empty_user_property) {
 	publish_props pprops;
 	pprops[prop::user_property].emplace_back("", "");
