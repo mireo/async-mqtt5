@@ -6,14 +6,37 @@
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/any_completion_handler.hpp>
-
 #include <boost/asio/experimental/parallel_group.hpp>
+
+#include <boost/random/linear_congruential.hpp>
+#include <boost/random/uniform_smallint.hpp>
 
 #include <async_mqtt5/types.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>
 #include <async_mqtt5/impl/connect_op.hpp>
 
 namespace async_mqtt5::detail {
+
+class exponential_backoff {
+	int _curr_exp { 0 };
+
+	static constexpr int _base_mulptilier = 1000;
+	static constexpr int _max_exp = 4;
+
+	// sizeof(_generator) = 8
+	boost::random::rand48 _generator { uint32_t(std::time(0)) };
+	boost::random::uniform_smallint<> _distribution { -500, 500 };
+public:
+	exponential_backoff() = default;
+
+	duration generate() {
+		int exponent = _curr_exp < _max_exp ? _curr_exp++ : _max_exp;
+		int base = 1 << exponent;
+		return std::chrono::milliseconds(
+			base * _base_mulptilier + _distribution(_generator) /* noise */
+		);
+	}
+};
 
 namespace asio = boost::asio;
 
@@ -30,6 +53,8 @@ class reconnect_op {
 	handler_type _handler;
 
 	std::unique_ptr<std::string> _buffer_ptr;
+
+	exponential_backoff _generator;
 
 	using endpoint = asio::ip::tcp::endpoint;
 	using epoints = asio::ip::tcp::resolver::results_type;
@@ -87,7 +112,7 @@ public:
 	}
 
 	void backoff_and_reconnect() {
-		_owner._connect_timer.expires_from_now(std::chrono::seconds(5));
+		_owner._connect_timer.expires_from_now(_generator.generate());
 		_owner._connect_timer.async_wait(
 			asio::prepend(std::move(*this), on_backoff {})
 		);
