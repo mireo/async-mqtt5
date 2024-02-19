@@ -55,15 +55,19 @@ constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 template<typename StreamType, typename TlsContext>
 asio::awaitable<void> sanity_check(mqtt_client<StreamType, TlsContext>& c) {
+	// Note: Older versions of GCC compilers may not handle temporaries
+	// correctly in co_await expressions.
+	// (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=98401)
+	publish_props pub_props;
 	auto [ec_0] = co_await c.template async_publish<qos_e::at_most_once>(
-		"test/mqtt-test", "hello world with qos0!", retain_e::yes, publish_props {},
+		"test/mqtt-test", "hello world with qos0!", retain_e::yes, pub_props,
 		use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!ec_0);
 
 	auto [ec_1, puback_rc, puback_props] = co_await c.template async_publish<qos_e::at_least_once>(
 		"test/mqtt-test", "hello world with qos1!",
-		retain_e::yes, publish_props {},
+		retain_e::yes, pub_props,
 		use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!ec_1);
@@ -71,7 +75,7 @@ asio::awaitable<void> sanity_check(mqtt_client<StreamType, TlsContext>& c) {
 
 	auto [ec_2, pubcomp_rc, pubcomp_props] = co_await c.template async_publish<qos_e::exactly_once>(
 		"test/mqtt-test", "hello world with qos2!",
-		retain_e::yes, publish_props {},
+		retain_e::yes, pub_props,
 		use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!ec_2);
@@ -86,15 +90,17 @@ asio::awaitable<void> sanity_check(mqtt_client<StreamType, TlsContext>& c) {
 		}
 	};
 	
-	auto [sub_ec, sub_codes, sub_props] = co_await c.async_subscribe(
-		sub_topic, subscribe_props {}, use_nothrow_awaitable
+	subscribe_props sub_props;
+	auto [sub_ec, sub_codes, suback_props] = co_await c.async_subscribe(
+		sub_topic, sub_props, use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!sub_ec);
 	if (!sub_codes[0])
 		auto [rec, topic, payload, publish_props] = co_await c.async_receive(use_nothrow_awaitable);
 
-	auto [unsub_ec, unsub_codes, unsub_props] = co_await c.async_unsubscribe(
-		"test/mqtt-test", unsubscribe_props {},
+	unsubscribe_props unsub_props;
+	auto [unsub_ec, unsub_codes, unsuback_props] = co_await c.async_unsubscribe(
+		"test/mqtt-test", unsub_props,
 		use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!unsub_ec);

@@ -228,6 +228,7 @@ struct shared_test_data {
 
 	const std::string topic = "topic";
 	const std::string payload = "payload";
+	const publish_props pub_props;
 
 	const std::string publish_qos1 = encoders::encode_publish(
 		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::no, {}
@@ -275,8 +276,11 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
 			c.brokers("127.0.0.1,127.0.0.1", 1883) // to avoid reconnect backoff
 				.async_run(asio::detached);
 
+			// Note: Older versions of GCC compilers may not handle temporaries
+			// correctly in co_await expressions.
+			// (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=98401)
 			auto [ec, rc, props] = co_await c.async_publish<qos_e::at_least_once>(
-				topic, payload, retain_e::no, publish_props {}, use_nothrow_awaitable
+				topic, payload, retain_e::no, pub_props, use_nothrow_awaitable
 			);
 			BOOST_TEST(!ec);
 			BOOST_TEST(!rc);
@@ -284,7 +288,7 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
 			c.cancel();
 
 			auto [cec, crc, cprops] = co_await c.async_publish<qos_e::at_least_once>(
-				topic, payload, retain_e::no, publish_props {}, use_nothrow_awaitable
+				topic, payload, retain_e::no, pub_props, use_nothrow_awaitable
 			);
 			BOOST_TEST(cec == asio::error::operation_aborted);
 			BOOST_TEST(crc == reason_codes::empty);
@@ -292,7 +296,7 @@ BOOST_FIXTURE_TEST_CASE(rerunning_the_client, shared_test_data) {
 			c.async_run(asio::detached);
 
 			auto [rec, rrc, rprops] = co_await c.async_publish<qos_e::at_least_once>(
-				topic, payload, retain_e::no, publish_props {}, use_nothrow_awaitable
+				topic, payload, retain_e::no, pub_props, use_nothrow_awaitable
 			);
 			BOOST_TEST(!rec);
 			BOOST_TEST(!rrc);
