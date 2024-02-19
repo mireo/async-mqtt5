@@ -4,7 +4,7 @@
 #include <utility>
 
 #include <boost/asio/prepend.hpp>
-#include <boost/asio/experimental/basic_concurrent_channel.hpp>
+#include <boost/asio/experimental/basic_channel.hpp>
 
 #include <async_mqtt5/detail/channel_traits.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
@@ -211,7 +211,7 @@ public:
 	using executor_type = typename stream_type::executor_type;
 private:
 	using tls_context_type = TlsContext;
-	using receive_channel = asio::experimental::basic_concurrent_channel<
+	using receive_channel = asio::experimental::basic_channel<
 		executor_type,
 		channel_traits<>,
 		void (error_code, std::string, std::string, publish_props)
