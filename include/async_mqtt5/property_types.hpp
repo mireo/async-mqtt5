@@ -54,6 +54,10 @@ public:
 		return !empty();
 	}
 
+	explicit operator bool() const noexcept {
+		return !empty();
+	}
+
 	int32_t& operator*() noexcept {
 		return front();
 	}
