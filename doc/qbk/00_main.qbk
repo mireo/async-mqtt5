@@ -46,6 +46,7 @@
 [def __USE_AWAITABLE__ [@boost:/doc/html/boost_asio/reference/use_awaitable.html `boost::asio::use_awaitable`]]
 [def __USE_FUTURE__ [@boost:/doc/html/boost_asio/reference/use_future.html `boost::asio::use_future`]]
 [def __SSL__ [@boost:/doc/html/boost_asio/overview/ssl.html `SSL`]]
+[def __CANCELLATION_TYPE__ [asioreflink cancellation_type cancellation_type]]
 [def __TCP_SOCKET__ [asioreflink ip__tcp/socket ip::tcp::socket]]
 [def __SSL_CONTEXT__ [asioreflink ssl__context ssl::context]]
 [def __SSL_STREAM__ [asioreflink ssl__stream ssl::stream<__TCP_SOCKET__>]]

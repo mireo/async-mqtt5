@@ -170,6 +170,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::asio::error::operation_aborted`\n
+	 *
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_run(CompletionToken&& token) {
@@ -465,6 +469,12 @@ public:
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * 
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+	 *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__PUBLISH\__ packet \n
+	 *
 	 */
 	template <qos_e qos_type, typename CompletionToken>
 	decltype(auto) async_publish(
@@ -542,6 +552,12 @@ public:
 	 *		- \link async_mqtt5::client::error::shared_subscription_not_available \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * 
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+	 *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__SUBSCRIBE\__ packet \n
+	 *
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_subscribe(
@@ -614,6 +630,12 @@ public:
 	 *		- \link async_mqtt5::client::error::shared_subscription_not_available \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * 
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+	 *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__SUBSCRIBE\__ packet \n
+	 *
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_subscribe(
@@ -671,6 +693,12 @@ public:
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * 
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+	 *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__UNSUBSCRIBE\__ packet \n
+	 *
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_unsubscribe(
@@ -739,6 +767,12 @@ public:
 	 *		- \link async_mqtt5::client::error::invalid_topic \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * 
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+	 *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__UNSUBSCRIBE\__ packet \n
+	 *
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_unsubscribe(
@@ -793,6 +827,12 @@ public:
 	 *		- \link async_mqtt5::client::error::session_expired \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * 
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` \n
+	 *		- `cancellation_type::partial` \n
+	 *		- `cancellation_type::total` \n
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_receive(CompletionToken&& token) {
@@ -846,6 +886,11 @@ public:
 	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 * 
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+	 * 
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_disconnect(
@@ -864,7 +909,48 @@ public:
 	 * \brief Disconnect the Client by sending a \__DISCONNECT\__ packet
 	 * with a Reason Code of reason_codes.normal_disconnection.
 	 * This function has terminal effects.
-	 * \copydetails async_disconnect
+	 * 
+	 * \details The Client will attempt to send a \__DISCONNECT\__ packet to the Broker
+	 * with a Reason Code describing the reason for disconnection.
+	 * If the \__DISCONNECT\__ packet is successfully transmitted,
+	 * or if `5 seconds` elapsed without a successful send, the Client will terminate the connection.
+	 *
+	 * \attention This function has terminal effects and will close the Client.
+	 * See \ref mqtt_client::cancel.
+	 *
+	 * \param token Completion token that will be used to produce a
+	 * completion handler. The handler will be invoked when the operation completes.
+	 * On immediate completion, invocation of the handler will be performed in a manner
+	 * equivalent to using \__POST\__.
+	 *
+	 * \par Handler signature
+	 * The handler signature for this operation:
+	 *	\code
+	 *		void (
+	 *			__ERROR_CODE__ // Result of operation.
+	 *		)
+	 *	\endcode
+	 *
+	 *	\par Completion condition
+	 *	The asynchronous operation will complete when one of the following conditions is true:\n
+	 *		- The Client has attempted to send a \__DISCONNECT\__ packet, regardless of whether
+	 *		the sending was successful or not.\n
+	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+	 *
+	 *	\par Error codes
+	 *	The list of all possible error codes that this operation can finish with:\n
+	 *		- `boost::system::errc::errc_t::success`\n
+	 *		- `boost::asio::error::operation_aborted`[footnote
+				This error code can appear if the Client failed to send the \__DISCONNECT\__ packet to the Server.
+				Regardless, the connection to the Server is terminated, and the Client is cancelled.
+			]\n
+	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
+	 *
+	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
+	 *
+	 *	\par Per-Operation Cancellation
+	 *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+	 *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
 	 */
 	template <typename CompletionToken>
 	decltype(auto) async_disconnect(CompletionToken&& token) {
