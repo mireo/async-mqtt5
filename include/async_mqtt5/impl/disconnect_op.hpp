@@ -2,7 +2,10 @@
 #define ASYNC_MQTT5_DISCONNECT_OP_HPP
 
 #include <boost/asio/consign.hpp>
+#include <boost/asio/deferred.hpp>
 #include <boost/asio/prepend.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/experimental/parallel_group.hpp>
 
 #include <async_mqtt5/types.hpp>
 
@@ -45,7 +48,13 @@ public:
 		_svc_ptr(svc_ptr),
 		_context(std::move(context)),
 		_handler(std::move(handler), _svc_ptr->get_executor())
-	{}
+	{
+		auto slot = asio::get_associated_cancellation_slot(_handler);
+		if (slot.is_connected())
+			slot.assign([&svc = *_svc_ptr](asio::cancellation_type_t) {
+				svc.cancel();
+			});
+	}
 
 	disconnect_op(disconnect_op&&) noexcept = default;
 	disconnect_op(const disconnect_op&) = delete;
@@ -146,10 +155,88 @@ private:
 	}
 };
 
+template <typename ClientService, typename Handler>
+class terminal_disconnect_op {
+	using client_service = ClientService;
+
+	static constexpr uint8_t seconds = 5;
+
+	std::shared_ptr<client_service> _svc_ptr;
+	std::unique_ptr<asio::steady_timer> _timer;
+
+	using handler_type = cancellable_handler<
+		Handler, typename ClientService::executor_type
+	>;
+	handler_type _handler;
+
+public:
+	terminal_disconnect_op(
+		const std::shared_ptr<client_service>& svc_ptr,
+		Handler&& handler
+	) :
+		_svc_ptr(svc_ptr),
+		_timer(new asio::steady_timer(_svc_ptr->get_executor())),
+		_handler(std::move(handler), _svc_ptr->get_executor())
+	{}
+
+	terminal_disconnect_op(terminal_disconnect_op&&) noexcept = default;
+	terminal_disconnect_op(const terminal_disconnect_op&) = delete;
+
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
+	}
+
+	using allocator_type = asio::associated_allocator_t<handler_type>;
+	allocator_type get_allocator() const noexcept {
+		return asio::get_associated_allocator(_handler);
+	}
+
+	using cancellation_slot_type = asio::associated_cancellation_slot_t<handler_type>;
+	cancellation_slot_type get_cancellation_slot() const noexcept {
+		return asio::get_associated_cancellation_slot(_handler);
+	}
+
+	template <typename DisconnectContext>
+	void perform(DisconnectContext&& context) {
+		namespace asioex = boost::asio::experimental;
+
+		auto init_disconnect = [](
+			auto handler, disconnect_ctx ctx,
+			const std::shared_ptr<ClientService>& svc_ptr
+		) {
+			disconnect_op {
+				svc_ptr, std::move(ctx), std::move(handler)
+			}.perform();
+		};
+
+		_timer->expires_after(std::chrono::seconds(seconds));
+
+		auto timed_disconnect = asioex::make_parallel_group(
+			asio::async_initiate<const asio::deferred_t, void (error_code)>(
+				init_disconnect, asio::deferred,
+				std::forward<DisconnectContext>(context), _svc_ptr
+			),
+			_timer->async_wait(asio::deferred)
+		);
+
+		timed_disconnect.async_wait(
+			asioex::wait_for_one(), asio::prepend(std::move(*this))
+		);
+	}
+
+	void operator()(
+		std::array<std::size_t, 2> /* ord */,
+		error_code disconnect_ec, error_code /* timer_ec */
+	) {
+		_handler.complete(disconnect_ec);
+	}
+};
+
 template <typename ClientService, typename CompletionToken>
 decltype(auto) async_disconnect(
 	disconnect_rc_e reason_code, const disconnect_props& props,
-	bool terminal, const std::shared_ptr<ClientService>& svc_ptr,
+	const std::shared_ptr<ClientService>& svc_ptr,
 	CompletionToken&& token
 ) {
 	using Signature = void (error_code);
@@ -165,11 +252,34 @@ decltype(auto) async_disconnect(
 
 	return asio::async_initiate<CompletionToken, Signature>(
 		initiation, token,
-		disconnect_ctx { reason_code, props, terminal },
+		disconnect_ctx { reason_code, props, false },
 		svc_ptr
 	);
 }
 
+template <typename ClientService, typename CompletionToken>
+decltype(auto) async_terminal_disconnect(
+	disconnect_rc_e reason_code, const disconnect_props& props,
+	const std::shared_ptr<ClientService>& svc_ptr,
+	CompletionToken&& token
+) {
+	using Signature = void (error_code);
+
+	auto initiation = [](
+		auto handler, disconnect_ctx ctx,
+		const std::shared_ptr<ClientService>& svc_ptr
+	) {
+		terminal_disconnect_op {
+			svc_ptr, std::move(handler)
+		}.perform(std::move(ctx));
+	};
+
+	return asio::async_initiate<CompletionToken, Signature>(
+		initiation, token,
+		disconnect_ctx { reason_code, props, true },
+		svc_ptr
+	);
+}
 
 } // end namespace async_mqtt5::detail
 

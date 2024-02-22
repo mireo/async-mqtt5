@@ -806,15 +806,13 @@ public:
 	 * \brief Disconnect the Client by sending a \__DISCONNECT\__ packet
 	 * with a specified Reason Code. This function has terminal effects.
 	 *
-	 * \details Send a \__DISCONNECT\__ packet to the Broker with a Reason Code
-	 * describing the reason for disconnection.
+	 * \details The Client will attempt to send a \__DISCONNECT\__ packet to the Broker
+	 * with a Reason Code describing the reason for disconnection.
+	 * If the \__DISCONNECT\__ packet is successfully transmitted,
+	 * or if `5 seconds` elapsed without a successful send, the Client will terminate the connection.
 	 *
 	 * \attention This function has terminal effects and will close the Client.
 	 * See \ref mqtt_client::cancel.
-	 *
-	 * \note If you wish to close the Client regardless of its state,
-	 * prefer calling the \ref cancel function instead. This function will only
-	 * take effect when the connection has been successfully established.
 	 *
 	 * \param reason_code Reason Code to notify
 	 * the Broker of the reason for disconnection.
@@ -841,7 +839,10 @@ public:
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
-	 *		- `boost::asio::error::operation_aborted`\n
+	 *		- `boost::asio::error::operation_aborted`[footnote
+				This error code can appear if the Client failed to send the \__DISCONNECT\__ packet to the Server.
+				Regardless, the connection to the Server is terminated, and the Client is cancelled.
+			]\n
 	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
 	 *
 	 * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
@@ -853,10 +854,9 @@ public:
 	) {
 		auto impl = _impl;
 		_impl = impl->dup();
-		return detail::async_disconnect(
+		return detail::async_terminal_disconnect(
 			detail::disconnect_rc_e(static_cast<uint8_t>(reason_code)),
-			props, true, impl,
-			std::forward<CompletionToken>(token)
+			props, impl, std::forward<CompletionToken>(token)
 		);
 	}
 

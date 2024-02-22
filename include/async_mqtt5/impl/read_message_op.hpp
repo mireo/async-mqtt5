@@ -127,7 +127,7 @@ private:
 		auto svc_ptr = _svc_ptr; // copy before this is moved
 
 		async_disconnect(
-			disconnect_rc_e::malformed_packet, props, false, svc_ptr,
+			disconnect_rc_e::malformed_packet, props, svc_ptr,
 			asio::prepend(std::move(*this), on_disconnect {})
 		);
 	}

@@ -125,7 +125,7 @@ private:
 		auto props = disconnect_props {};
 		props[prop::reason_string] = std::move(message);
 
-		async_disconnect(reason, props, false, _svc_ptr, asio::detached);
+		async_disconnect(reason, props, _svc_ptr, asio::detached);
 	}
 
 };

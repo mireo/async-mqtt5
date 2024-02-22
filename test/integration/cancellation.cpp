@@ -24,7 +24,8 @@ enum operation_type {
 	publish,
 	receive,
 	subscribe,
-	unsubscribe
+	unsubscribe,
+	disconnect
 };
 
 enum cancel_type {
@@ -85,13 +86,41 @@ void setup_cancel_op_test_case(
 	c.async_receive(
 		asio::bind_cancellation_slot(
 			signal.slot(),
-			[&handlers_called](
+			[&c, &handlers_called](
 				error_code ec, std::string t, std::string p, publish_props
 			) {
 				++handlers_called; 
 				BOOST_TEST(ec == asio::error::operation_aborted);
 				BOOST_TEST(t == "");
 				BOOST_TEST(p == "");
+
+				// right now, emitting a terminal signal on async_receive
+				// does NOT cancel the client
+				c.cancel();
+			}
+		)
+	);
+}
+
+template <
+	test::operation_type op_type,
+	std::enable_if_t<op_type == test::operation_type::subscribe, bool> = true
+>
+void setup_cancel_op_test_case(
+	client_type& c, asio::cancellation_signal& signal, int& handlers_called
+) {
+	c.async_run(asio::detached);
+	c.async_subscribe(
+		subscribe_topic { "topic", subscribe_options {} }, subscribe_props {},
+		asio::bind_cancellation_slot(
+			signal.slot(),
+			[&handlers_called](
+				error_code ec, std::vector<reason_code> rcs, suback_props
+			) {
+				++handlers_called;
+				BOOST_TEST(ec == asio::error::operation_aborted);
+				BOOST_TEST_REQUIRE(rcs.size() == 1u);
+				BOOST_TEST(rcs[0] == reason_codes::empty);
 			}
 		)
 	);
@@ -123,23 +152,18 @@ void setup_cancel_op_test_case(
 
 template <
 	test::operation_type op_type,
-	std::enable_if_t<op_type == test::operation_type::subscribe, bool> = true
+	std::enable_if_t<op_type == test::operation_type::disconnect, bool> = true
 >
 void setup_cancel_op_test_case(
 	client_type& c, asio::cancellation_signal& signal, int& handlers_called
 ) {
 	c.async_run(asio::detached);
-	c.async_subscribe(
-		subscribe_topic { "topic", subscribe_options {} }, subscribe_props {},
+	c.async_disconnect(
 		asio::bind_cancellation_slot(
 			signal.slot(),
-			[&handlers_called](
-				error_code ec, std::vector<reason_code> rcs, suback_props
-			) {
+			[&handlers_called](error_code ec) {
 				++handlers_called;
 				BOOST_TEST(ec == asio::error::operation_aborted);
-				BOOST_TEST_REQUIRE(rcs.size() == 1u);
-				BOOST_TEST(rcs[0] == reason_codes::empty);
 			}
 		)
 	);
@@ -194,8 +218,7 @@ BOOST_AUTO_TEST_CASE(client_cancel_async_receive) {
 	run_cancel_op_test<test::client_cancel, test::receive>();
 }
 
-// hangs
-BOOST_AUTO_TEST_CASE(signal_emit_async_receive, *boost::unit_test::disabled()) {
+BOOST_AUTO_TEST_CASE(signal_emit_async_receive) {
 	run_cancel_op_test<test::signal_emit, test::receive>();
 }
 
@@ -213,6 +236,10 @@ BOOST_AUTO_TEST_CASE(client_cancel_async_unsubscribe) {
 
 BOOST_AUTO_TEST_CASE(signal_emit_async_unsubscribe) {
 	run_cancel_op_test<test::signal_emit, test::unsubscribe>();
+}
+
+BOOST_AUTO_TEST_CASE(signal_emit_async_disconnect) {
+	run_cancel_op_test<test::signal_emit, test::disconnect>();
 }
 
 struct shared_test_data {

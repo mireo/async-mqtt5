@@ -191,7 +191,7 @@ private:
 		props[prop::reason_string] = reason;
 		return async_disconnect(
 			disconnect_rc_e::malformed_packet, props,
-			false, _svc_ptr, asio::detached
+			_svc_ptr, asio::detached
 		);
 	}
 

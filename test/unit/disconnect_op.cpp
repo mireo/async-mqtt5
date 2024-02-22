@@ -42,7 +42,6 @@ void run_malformed_props_test(const disconnect_props& dprops) {
 	BOOST_TEST(handlers_called == expected_handlers_called);
 }
 
-
 BOOST_AUTO_TEST_CASE(malformed_reason_string) {
 	disconnect_props dprops;
 	dprops[prop::reason_string] = std::string { 0x01 };
@@ -64,10 +63,182 @@ BOOST_AUTO_TEST_CASE(malformed_user_property_value) {
 	run_malformed_props_test(dprops);
 }
 
-BOOST_AUTO_TEST_CASE(omit_props) {
-	using test::after;
-	using namespace std::chrono;
+struct shared_test_data {
+	error_code success {};
+	error_code fail = asio::error::not_connected;
 
+	const std::string connect = encoders::encode_connect(
+		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
+	);
+	const std::string connack = encoders::encode_connack(
+		true, reason_codes::success.value(), {}
+	);
+	const std::string disconnect = encoders::encode_disconnect(
+		reason_codes::normal_disconnection.value(), disconnect_props {}
+	);
+};
+
+using test::after;
+using namespace std::chrono_literals;
+using client_type = mqtt_client<test::test_stream>;
+
+template <typename TestCase>
+void run_test(test::msg_exchange broker_side, TestCase&& test_case) {
+	asio::io_context ioc;
+	auto executor = ioc.get_executor();
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
+
+	asio::steady_timer timer(executor);
+	client_type c(executor);
+	c.brokers("127.0.0.1")
+		.async_run(asio::detached);
+
+	test_case(c, timer);
+
+	ioc.run();
+	BOOST_TEST(broker.received_all_expected());
+}
+
+BOOST_FIXTURE_TEST_CASE(successful_disconnect, shared_test_data) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(0ms))
+			.reply_with(connack, after(0ms))
+		.expect(disconnect)
+			.complete_with(success, after(0ms));
+
+	run_test(
+		std::move(broker_side),
+		[&](client_type& c, asio::steady_timer& timer) {
+			timer.expires_after(100ms);
+			timer.async_wait([&](error_code) {
+				c.async_disconnect(
+					[&](error_code ec) {
+						handlers_called++;
+						BOOST_TEST(!ec);
+					}
+				);
+			});
+		}
+	);
+
+	BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
+BOOST_FIXTURE_TEST_CASE(successful_disconnect_in_queue, shared_test_data) {
+	constexpr int expected_handlers_called = 2;
+	int handlers_called = 0;
+
+	// packets
+	auto publish_qos0 = encoders::encode_publish(
+		0, "topic", "payload", qos_e::at_most_once, retain_e::no, dup_e::no, {}
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos0)
+			.complete_with(success, after(1ms))
+		.expect(disconnect)
+			.complete_with(success, after(0ms));
+
+	run_test(
+		std::move(broker_side),
+		[&](client_type& c, asio::steady_timer& timer) {
+			timer.expires_after(50ms);
+			timer.async_wait([&](error_code) {
+				c.async_publish<qos_e::at_most_once>(
+					"topic", "payload", retain_e::no, {},
+					[&handlers_called](error_code ec) {
+						BOOST_TEST(handlers_called == 0);
+						handlers_called++;
+						BOOST_TEST(!ec);
+					}
+				);
+				c.async_disconnect(
+					[&](error_code ec) {
+						BOOST_TEST(handlers_called == 1);
+						handlers_called++;
+						BOOST_TEST(!ec);
+					}
+				);
+			});
+		}
+	);
+
+	BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
+BOOST_FIXTURE_TEST_CASE(disconnect_on_disconnected_client, shared_test_data) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect);
+
+	run_test(
+		std::move(broker_side),
+		[&](client_type& c, asio::steady_timer& timer) {
+			timer.expires_after(50ms);
+			timer.async_wait([&](error_code) {
+				c.async_disconnect(
+					[&](error_code ec) {
+						handlers_called++;
+						BOOST_TEST(ec == asio::error::operation_aborted);
+					}
+				);
+			});
+		}
+	);
+
+	BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
+BOOST_FIXTURE_TEST_CASE(disconnect_in_queue_on_disconnected_client, shared_test_data) {
+	constexpr int expected_handlers_called = 2;
+	int handlers_called = 0;
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect);
+
+	run_test(
+		std::move(broker_side),
+		[&](client_type& c, asio::steady_timer& timer) {
+			timer.expires_after(50ms);
+			timer.async_wait([&](error_code) {
+				c.async_publish<qos_e::at_most_once>(
+					"topic", "payload", retain_e::no, {},
+					[&handlers_called](error_code ec) {
+						BOOST_TEST(handlers_called == 1);
+						handlers_called++;
+						BOOST_TEST(ec == asio::error::operation_aborted);
+					}
+				);
+				c.async_disconnect(
+					[&](error_code ec) {
+						BOOST_TEST(handlers_called == 0);
+						handlers_called++;
+						BOOST_TEST(ec == asio::error::operation_aborted);
+					}
+				);
+			});
+		}
+	);
+
+	BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
+BOOST_FIXTURE_TEST_CASE(omit_props, shared_test_data) {
 	constexpr int expected_handlers_called = 1;
 	int handlers_called = 0;
 
@@ -75,58 +246,41 @@ BOOST_AUTO_TEST_CASE(omit_props) {
 	co_props[prop::maximum_packet_size] = 20;
 
 	// packets
-	auto connect = encoders::encode_connect(
-		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
-	);
-	auto connack = encoders::encode_connack(
+	auto connack_with_max_packet = encoders::encode_connack(
 		false, reason_codes::success.value(), co_props
 	);
 
 	disconnect_props props;
 	props[prop::reason_string] = std::string(50, 'a');
-	auto disconnect = encoders::encode_disconnect(
+	auto big_disconnect = encoders::encode_disconnect(
 		reason_codes::normal_disconnection.value(), props
 	);
-	auto disconnect_no_props = encoders::encode_disconnect(
-		reason_codes::normal_disconnection.value(), disconnect_props {}
-	);
-
-	error_code success {};
 
 	test::msg_exchange broker_side;
 	broker_side
 		.expect(connect)
 			.complete_with(success, after(0ms))
-			.reply_with(connack, after(0ms))
-		.expect(disconnect_no_props)
+			.reply_with(connack_with_max_packet, after(0ms))
+		.expect(disconnect)
 			.complete_with(success, after(0ms));
 
-	asio::io_context ioc;
-	auto executor = ioc.get_executor();
-	auto& broker = asio::make_service<test::test_broker>(
-		ioc, executor, std::move(broker_side)
+	run_test(
+		std::move(broker_side),
+		[&](client_type& c, asio::steady_timer& timer) {
+			timer.expires_after(50ms);
+			timer.async_wait([&](error_code) {
+				c.async_disconnect(
+					disconnect_rc_e::normal_disconnection, props,
+					[&](error_code ec) {
+						handlers_called++;
+						BOOST_TEST(!ec);
+					}
+				);
+			});
+		}
 	);
 
-	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor);
-	c.brokers("127.0.0.1")
-		.async_run(asio::detached);
-
-	asio::steady_timer timer(c.get_executor());
-	timer.expires_after(50ms);
-	timer.async_wait([&](error_code) {
-		c.async_disconnect(
-			disconnect_rc_e::normal_disconnection, props,
-			[&](error_code ec) {
-				handlers_called++;
-				BOOST_TEST(!ec);
-			}
-		);
-	});
-
-	ioc.run_for(2s);
 	BOOST_TEST(handlers_called == expected_handlers_called);
-	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

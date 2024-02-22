@@ -70,7 +70,7 @@ public:
 			props[prop::reason_string] = "No reply received within 20 seconds";
 			auto svc_ptr = _svc_ptr;
 			return async_disconnect(
-				disconnect_rc_e::unspecified_error, props, false, svc_ptr,
+				disconnect_rc_e::unspecified_error, props, svc_ptr,
 				asio::prepend(std::move(*this), on_disconnect {})
 			);
 		}
