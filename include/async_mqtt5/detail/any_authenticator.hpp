@@ -9,12 +9,10 @@
 
 #include <async_mqtt5/types.hpp>
 
-namespace async_mqtt5 {
+namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 using error_code = boost::system::error_code;
-
-namespace detail {
 
 using auth_handler_type = asio::any_completion_handler<
 	void (error_code ec, std::string auth_data)
@@ -80,8 +78,6 @@ public:
 	}
 };
 
-} // end namespace detail
-
 class any_authenticator {
 	std::string _method;
 	std::shared_ptr<detail::auth_fun_base> _auth_fun;
@@ -128,7 +124,7 @@ public:
 	}
 };
 
-} // end namespace async_mqtt5
+} // end namespace async_mqtt5::detail
 
 
 #endif // !ASYNC_MQTT5_ANY_AUTHENTICATOR

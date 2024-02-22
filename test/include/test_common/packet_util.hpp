@@ -15,6 +15,8 @@
 
 namespace async_mqtt5::test {
 
+using control_code_e = async_mqtt5::detail::control_code_e;
+
 template <typename ...Strings>
 std::string concat_strings(Strings&&... strings) {
 	std::ostringstream stream;

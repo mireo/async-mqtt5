@@ -7,7 +7,7 @@
 
 #include <async_mqtt5/types.hpp>
 
-namespace async_mqtt5 {
+namespace async_mqtt5::detail {
 
 /* max varint number (268'435'455) + fixed header size (1 + 4) */
 static constexpr int32_t default_max_send_size = 268'435'460;
@@ -167,6 +167,6 @@ public:
 	}
 };
 
-} // end namespace async_mqtt5
+} // end namespace async_mqtt5::detail
 
 #endif // !ASYNC_MQTT5_CONTROL_PACKET_HPP
