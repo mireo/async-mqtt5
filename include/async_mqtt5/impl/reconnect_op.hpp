@@ -143,7 +143,7 @@ public:
 		if (ec == asio::error::host_not_found)
 			return complete(asio::error::no_recovery);
 
-		auto sptr = _owner.construct_next_layer();
+		auto sptr = _owner.construct_and_open_next_layer();
 
 		if constexpr (has_tls_context<typename Owner::stream_context_type>)
 			setup_tls_sni(

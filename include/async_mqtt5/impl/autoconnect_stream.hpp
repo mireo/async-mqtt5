@@ -90,9 +90,7 @@ public:
 	}
 
 	void open() {
-		error_code ec;
-		lowest_layer(*_stream_ptr).open(asio::ip::tcp::v4(), ec);
-		lowest_layer(*_stream_ptr).set_option(asio::ip::tcp::no_delay(true), ec);
+		open_lowest_layer(_stream_ptr);
 	}
 
 	void cancel() {
@@ -155,6 +153,14 @@ public:
 	}
 
 private:
+	static void open_lowest_layer(stream_ptr sptr) {
+		error_code ec;
+		auto& layer = lowest_layer(*sptr);
+		layer.open(asio::ip::tcp::v4(), ec);
+		layer.set_option(asio::socket_base::reuse_address(true), ec);
+		layer.set_option(asio::ip::tcp::no_delay(true), ec);
+	}
+
 	stream_ptr construct_next_layer() const {
 		stream_ptr sptr;
 		if constexpr (has_tls_context<StreamContext>)
@@ -164,11 +170,12 @@ private:
 		else
 			sptr = std::make_shared<stream_type>(_stream_executor);
 
-		error_code ec;
-		lowest_layer(*sptr).set_option(
-			asio::socket_base::reuse_address(true), ec
-		);
+		return sptr;
+	}
 
+	stream_ptr construct_and_open_next_layer() const {
+		auto sptr = construct_next_layer();
+		open_lowest_layer(sptr);
 		return sptr;
 	}
 
