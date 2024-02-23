@@ -255,7 +255,7 @@ struct shared_test_data {
 
 	const std::string topic = "topic";
 	const std::string payload = "payload";
-	const publish_props pub_props;
+	const publish_props pub_props {};
 
 	const std::string publish_qos1 = encoders::encode_publish(
 		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::no, {}

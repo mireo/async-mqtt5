@@ -110,10 +110,14 @@ private:
 
 	static bool should_reconnect(error_code ec) {
 		using namespace asio::error;
-		return ec == connection_aborted || ec == not_connected ||
+		// note: Win ERROR_SEM_TIMEOUT == Posix ENOLINK (Reserved)
+		return ec.value() == 1236L || /* Win ERROR_CONNECTION_ABORTED */
+			ec.value() == 121L || /* Win ERROR_SEM_TIMEOUT */
+			ec == connection_aborted || ec == not_connected ||
 			ec == timed_out || ec == connection_reset ||
 			ec == broken_pipe || ec == asio::error::eof;
 	}
+
 };
 
 
