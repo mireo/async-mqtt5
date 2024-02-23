@@ -98,14 +98,17 @@ public:
 		_svc_ptr->async_send(
 			wire_data,
 			no_serial, send_flag::terminal,
-			asio::consign(
-				asio::prepend(std::move(*this), on_disconnect {}),
-				std::move(disconnect)
+			asio::prepend(
+				std::move(*this),
+				on_disconnect {}, std::move(disconnect)
 			)
 		);
 	}
 
-	void operator()(on_disconnect, error_code ec) {
+	void operator()(
+		on_disconnect,
+		control_packet<allocator_type> disconnect, error_code ec
+	) {
 		// The connection must be closed even
 		// if we failed to send the DISCONNECT packet
 		// with Reason Code of 0x80 or greater.
@@ -116,13 +119,16 @@ public:
 		)
 			return complete(asio::error::operation_aborted);
 
+		if (ec == asio::error::try_again) {
+			if (_context.terminal)
+				return send_disconnect(std::move(disconnect));
+			return complete(error_code {});
+		}
+
 		if (_context.terminal) {
 			_svc_ptr->cancel();
 			return complete(error_code {});
 		}
-
-		if (ec == asio::error::try_again)
-			return complete(error_code {});
 
 		_svc_ptr->close_stream();
 		_svc_ptr->open_stream();

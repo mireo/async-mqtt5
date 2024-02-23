@@ -872,8 +872,8 @@ public:
 	 *
 	 *	\par Completion condition
 	 *	The asynchronous operation will complete when one of the following conditions is true:\n
-	 *		- The Client has attempted to send a \__DISCONNECT\__ packet, regardless of whether
-	 *		the sending was successful or not.\n
+	 *		- The Client has sent a \__DISCONNECT\__ packet.\n
+	 *		- 5 seconds have elapsed without a successful send.\n
 	 *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
 	 *
 	 *	\par Error codes
