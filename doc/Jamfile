@@ -32,6 +32,7 @@ make xml/index.xml
 		
 		# additional dependencies
 		../include/async_mqtt5/error.hpp
+		../include/async_mqtt5/reason_codes.hpp
 		../include/async_mqtt5/types.hpp
 		../include/async_mqtt5/mqtt_client.hpp
 	:
@@ -129,7 +130,8 @@ boostbook async_mqtt5
 		<xsl:param>chapter.autolabel=1
 		<xsl:param>chunk.section.depth=8
 		<xsl:param>chunk.first.sections=1
-		<xsl:param>generate.toc=""
+		<xsl:param>toc.max.depth=2
+		<xsl:param>generate.toc="chapter toc,title section nop reference nop part toc"
 		<xsl:param>html.stylesheet=boostbook.css
 	:
 		<dependency>stylesheets

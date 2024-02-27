@@ -20,6 +20,7 @@
 [template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
 [template indexterm2[term1 term2] '''<indexterm><primary>'''[term1]'''</primary><secondary>'''[term2]'''</secondary></indexterm>''']
 
+[template ghreflink[path text] [@https://github.com/mireo/async-mqtt5/[path] [text]]]
 [template reflink2[id text][link async_mqtt5.ref.[id] [^[text]]]]
 [template reflink[id][reflink2 [id] [id]]]
 [template refmem[class mem][reflink2 [class].[mem] [class]::[mem]]]
@@ -108,26 +109,15 @@
 [def __REASON_CODES__ [reflink2 Reason_codes `Reason Codes`]]
 [def __ERROR_HANDLING__ [reflink2 Error_handling `Error handling`]]
 
-[def __EXAMPLE_CALLBACK__ [link async_mqtt5.examples.callbacks Async functions with callbacks]]
-[def __EXAMPLE_COROUTINE__ [link async_mqtt5.examples.cpp20_coroutines Async functions with C++20 coroutines]]
-[def __EXAMPLE_FUTURE__ [link async_mqtt5.examples.futures Async functions with futures]]
-
 [include 01_intro.qbk]
-[include 02_examples.qbk]
+[include 02_configuring_the_client.qbk]
+[include 03_examples.qbk]
 
+[include examples/Examples.qbk]
+
+[section:ref Reference]
+[xinclude reference/quickref.xml]
+[block'''<part label="Two: Reference">''']
 [include reference/reference.qbk]
-
-[h3 Table of Contents]
-* [link async_mqtt5.intro Introduction]
-* [link async_mqtt5.examples Examples]
-	* [link async_mqtt5.examples.publisher The publisher]
-	* [link async_mqtt5.examples.receiver The receiver]
-	* [link async_mqtt5.examples.network_connection Establishing a network connection with different protocols]
-		* [link async_mqtt5.examples.network_connection.tcp_ip_connection TCP/IP connection]
-		* [link async_mqtt5.examples.network_connection.tls_ssl_connection TLS/SSL connection]
-		* [link async_mqtt5.examples.network_connection.websocket_connection WebSocket connection]
-	* [link async_mqtt5.examples.completion_tokens Completion tokens]
-			* [link async_mqtt5.examples.callbacks Async functions with callbacks]
-			* [link async_mqtt5.examples.cpp20_coroutines Async functions with C++20 coroutines]
-			* [link async_mqtt5.examples.futures Async functions with futures]
-* [link async_mqtt5.ref Reference]
+[block'''</part>''']
+[endsect]

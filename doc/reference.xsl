@@ -20,10 +20,6 @@
 -->
 <xsl:template match="/doxygen">
 <xsl:text>
-
-[section:ref Reference]
-[xinclude quickref.xml]
-
 [include Error_handling.qbk]
 [include concepts/ExecutionContext.qbk]
 [include concepts/StreamType.qbk]
@@ -69,10 +65,6 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:for-each>
-
-  <xsl:value-of select="$newline"/>
-  <xsl:text>[endsect]</xsl:text>
-  <xsl:value-of select="$newline"/>
 
 </xsl:template>
 
@@ -1707,7 +1699,6 @@
 </xsl:if>
 
 [endsect]
-
 <xsl:if test="$overload-count &gt; 1 and $overload-position = $overload-count">
 [endsect]
 </xsl:if>

@@ -5,7 +5,7 @@ Branch | Windows/Linux Build | Coverage | Documentation |
 -------|---------------------|----------|---------------|
 [`master`](https://github.com/mireo/async-mqtt5/tree/master) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/master) | [Documentation](https://spacetime.mireo.com/async-mqtt5/)
 
-Async.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. Async.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
+Async.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This Client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. Async.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
 
 Our clear intention is to include the Async.MQTT5 library into [Boost](https://www.boost.org/). We are actively working on it.
 
@@ -13,9 +13,9 @@ Motivation
 ---------
  The [MQTT](https://mqtt.org/) protocol is widely utilised for communication in various real-world scenarios, primarily serving as a reliable communication protocol for data transfer to and from IoT devices. While the MQTT protocol itself is relatively straightforward, integrating it into an application can be complex, especially due to the challenging implementation of message retransmission after a disconnect/reconnect sequence.
 
-The aim of Async.MQTT5 is to provide a very simple asynchronous C++ interface for application developers. The internal client's implementation manages network and MQTT protocol details. Notably, the client does not expose connect functions (nor asynchronous connect functions); instead, network connectivity, MQTT handshake, and message retransmission are automatically handled within the client.
+The aim of Async.MQTT5 is to provide a very simple asynchronous C++ interface for application developers. The internal Client's implementation manages network and MQTT protocol details. Notably, the Client does not expose connect functions (nor asynchronous connect functions); instead, network connectivity, MQTT handshake, and message retransmission are automatically handled within the Client.
 
-The Async.MQTT5 interface aligns seamlessly with the Boost.Asio asynchronous model. The client's asynchronous functions are compatible with all completion tokens supported by Boost.Asio. 
+The Async.MQTT5 interface aligns seamlessly with the Boost.Asio asynchronous model. The Client's asynchronous functions are compatible with all completion tokens supported by Boost.Asio. 
 
 Features
 ---------
@@ -24,7 +24,7 @@ The library attempts to embody this belief with a range of key features designed
 
 - **Complete TCP, TLS/SSL, and WebSocket support**
 - **User-focused simplicity**: Providing an interface that is as simple as possible without compromising functionality.
-- **Prioritized efficiency**: Utilising network and memory resources as efficiently as possible.
+- **Prioritised efficiency**: Utilising network and memory resources as efficiently as possible.
 - **Minimal memory footprint**: Ensuring optimal performance in resource-constrained environments typical of IoT devices.
 - **Automatic reconnect**: Automatically attempt to re-establish a connection in the event of a disconnection.
 - **Fully Boost.Asio compliant**: The interfaces and implementation strategies are built upon the foundations of Boost.Asio. Boost.Asio and Boost.Beast users will have no issues understanding and integrating Async.MQTT5. Furthermore, Async.MQTT5 integrates well with any other library within the Boost.Asio ecosystem.
@@ -94,11 +94,11 @@ When to use
 - Your application uses Boost.Asio and requires integrating a MQTT Client.
 - You require asynchronous access to an MQTT Broker.
 - You are developing a higher-level component that requires a connection to an MQTT Broker.
-- You require a dependable and resilient MQTT Client that can automatically manage all network-related issues.
+- You require a dependable and resilient MQTT Client to manage all network-related issues automatically.
 
 It may not be suitable for you if:
 - You solely require synchronous access to an MQTT Broker.
-- The MQTT Broker you are connecting to does not support the MQTT 5 version.
+- The MQTT Broker you connect to does not support the MQTT 5 version.
 
 
 Requirements

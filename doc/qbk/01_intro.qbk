@@ -2,7 +2,7 @@
 [nochunk]
 
 __Self__ is a C++17 client built on __Asio__. 
-This client is designed for publishing or receiving messages from an MQTT 5.0 compatible broker. 
+This client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. 
 __Self__ represents a comprehensive implementation of the MQTT 5.0 protocol standard, 
 offering full support for publishing or receiving messages with QoS 0, 1, and 2.
 
@@ -13,12 +13,12 @@ While the MQTT protocol itself is relatively straightforward, integrating it int
 especially due to the challenging implementation of message retransmission after a disconnect/reconnect sequence.
 
 The aim of __Self__ is to provide a very simple asynchronous C++ interface for application developers. 
-The internal client's implementation manages network and MQTT protocol details. 
-Notably, the client does not expose connect functions (nor asynchronous connect functions);
-instead, network connectivity, MQTT handshake, and message retransmission are automatically handled within the client.
+The internal Client's implementation manages network and MQTT protocol details. 
+Notably, the Client does not expose connect functions (nor asynchronous connect functions);
+instead, network connectivity, MQTT handshake, and message retransmission are automatically handled within the Client.
 
 The __Self__ interface aligns seamlessly with the __Asio__ asynchronous model. 
-The client's asynchronous functions are compatible with all completion tokens supported by __Asio__.
+The Client's asynchronous functions are compatible with all completion tokens supported by __Asio__.
 
 [heading Features]
 __Self__ is a library designed with the core belief that users should focus solely on their application logic, not the network complexities. [br]
@@ -26,7 +26,7 @@ The library attempts to embody this belief with a range of key features designed
 
 * [*Complete TCP, TLS/SLL, and WebSocket support]
 * [*User-focused simplicity]: Providing an interface that is as simple as possible without compromising functionality.
-* [*Prioritized efficiency]: Utilising network and memory resources as efficiently as possible.
+* [*Prioritised efficiency]: Utilising network and memory resources as efficiently as possible.
 * [*Minimal memory footprint]: Ensuring optimal performance in resource-constrained environments typical of IoT devices.
 * [*Automatic reconnect]: Automatically attempt to re-establish a connection in the event of a disconnection.
 * [*Fully Boost.Asio compliant]: The interfaces and implementation strategies are built upon the foundations of __Asio__. [br]
@@ -44,7 +44,7 @@ In the event of a connection failure with one Broker, the Client switches to the
 * [*Offline buffering]: While offline, it automatically buffers all the packets to send when the connection is re-established.
 
 [heading Example]
-The following example illustrates a simple scenario of configuring a Client and publishing an Application Message.
+The following example illustrates a simple scenario of configuring the Client and publishing an Application Message.
 
 [!c++]
 	#include <iostream>
@@ -85,12 +85,12 @@ __Self__ might be suitable for you if any of the following statements is true:
 * Your application uses __Asio__ and requires integrating a MQTT Client.
 * You require asynchronous access to an MQTT Broker.
 * You are developing a higher-level component that requires a connection to an MQTT Broker.
-* You require a dependable and resilient MQTT Client that can automatically manage all network-related issues.
+* You require a dependable and resilient MQTT Client to manage all network-related issues automatically.
 
 It may not be suitable for you if:
 
 * You solely require synchronous access to an MQTT Broker.
-* The MQTT Broker you are connecting to does not support the MQTT 5 version.
+* The MQTT Broker you connect to does not support the MQTT 5 version.
 
 [heading Requirements]
 

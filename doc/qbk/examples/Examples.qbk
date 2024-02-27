@@ -1,0 +1,43 @@
+[block'''<part>''']
+
+[section:hello_world_over_tcp Hello World over TCP/IP]
+This example illustrates the process of setting up the Client to connect to the Broker via TCP/IP and publish a "Hello World!" message.
+[import ../../../example/hello_world_over_tcp.cpp]
+[hello_world_over_tcp]
+[endsect] [/hello_world_over_tcp]
+
+[section:hello_world_over_tls Hello World over TLS/SSL]
+This example illustrates the process of setting up the Client to connect to the Broker via TLS/SSL and publish a "Hello World!" message.
+[import ../../../example/hello_world_over_tls.cpp]
+[hello_world_over_tls]
+[endsect] [/hello_world_over_tls]
+
+[section:hello_world_over_websocket_tcp Hello World over Websocket/TCP]
+This example illustrates the process of setting up the Client to connect to the Broker via Websocket/TCP and publish a "Hello World!" message.
+[import ../../../example/hello_world_over_websocket_tcp.cpp]
+[hello_world_over_websocket_tcp]
+[endsect] [/hello_world_over_websocket_tcp]
+
+[section:hello_world_over_websocket_tls Hello World over Websocket/TLS]
+This example illustrates the process of setting up the Client to connect to the Broker via Websocket/TLS and publish a "Hello World!" message.
+[import ../../../example/hello_world_over_websocket_tls.cpp]
+[hello_world_over_websocket_tls]
+[endsect] [/hello_world_over_websocket_tls]
+
+[section:publisher The publisher]
+This example will show how to use __Client__ as a publisher. 
+The __Client__ will use TCP to connect to the Broker and __USE_AWAITABLE__ as the completion token.
+
+[import ../../../example/publisher.cpp]
+[publisher]
+[endsect]
+
+[section:receiver The receiver]
+This example will show how to use __Client__ as a receiver. 
+The __Client__ will use TCP to connect to the Broker and __USE_AWAITABLE__ as the completion token.
+
+[import ../../../example/receiver.cpp]
+[receiver]
+[endsect]
+
+[block'''</part>''']

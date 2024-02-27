@@ -1,0 +1,34 @@
+[section:examples Examples]
+[nochunk]
+
+The following list contains all the examples that showcase how to use the __Client__:
+
+[variablelist 
+	[
+		[[link async_mqtt5.publisher publisher.cpp]]
+		[Shows how to use the __Client__ as a publisher.]
+	]
+	[
+		[[link async_mqtt5.receiver receiver.cpp]]
+		[Shows how to use the __Client__ as a receiver.]
+	]
+	[
+		[[link async_mqtt5.hello_world_over_tcp hello_world_over_tcp.cpp]]
+		[Publishes a "Hello World" message via TCP/IP.]
+	]
+	[
+		[[link async_mqtt5.hello_world_over_tls hello_world_over_tls.cpp]]
+		[Publishes a "Hello World" message via TLS/SSL.]
+	]
+	[
+		[[link async_mqtt5.hello_world_over_websocket_tcp hello_world_over_websocket_tcp.cpp]]
+		[Publishes a "Hello World" message via Websocket/TLS.]
+	]
+	[
+		[[link async_mqtt5.hello_world_over_websocket_tls hello_world_over_websocket_tls.cpp]]
+		[Publishes a "Hello World" message via Websocket/TLS.]
+	]
+]
+
+[endsect][/examples]
+
