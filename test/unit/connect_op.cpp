@@ -81,31 +81,13 @@ BOOST_FIXTURE_TEST_CASE(successfully_connect, shared_test_data) {
 			.reply_with(connack, after(4ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == success);
+		BOOST_TEST(ec == success);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));
 }
 
-BOOST_FIXTURE_TEST_CASE(connection_refused, shared_test_data) {
-	auto refuse_connack = encoders::encode_connack(
-		true, reason_codes::server_unavailable.value(), {}
-	);
-
-	test::msg_exchange broker_side;
-	broker_side
-		.expect(connect)
-			.complete_with(success, after(2ms))
-			.reply_with(refuse_connack, after(4ms));
-
-	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == asio::error::connection_refused);
-	};
-
-	run_unit_test(std::move(broker_side), std::move(handler));
-}
-
-BOOST_FIXTURE_TEST_CASE(access_denied, shared_test_data) {
+BOOST_FIXTURE_TEST_CASE(connack_with_fail_rc, shared_test_data) {
 	auto denied_connack = encoders::encode_connack(
 		true, reason_codes::bad_username_or_password.value(), {}
 	);
@@ -117,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(access_denied, shared_test_data) {
 			.reply_with(denied_connack, after(4ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == asio::error::access_denied);
+		BOOST_TEST(ec == asio::error::try_again);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));
@@ -147,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(receive_wrong_packet, shared_test_data) {
 			.reply_with(unexpected_packet, after(3ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == asio::error::try_again);
+		BOOST_TEST(ec == asio::error::try_again);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));
@@ -164,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE(malformed_connack_varlen, shared_test_data) {
 			.reply_with(malformed_connack, after(3ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == asio::error::try_again);
+		BOOST_TEST(ec == asio::error::try_again);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));
@@ -181,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE(malformed_connack_rc, shared_test_data) {
 		.reply_with(malformed_connack, after(3ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == client::error::malformed_packet);
+		BOOST_TEST(ec == client::error::malformed_packet);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));
@@ -204,7 +186,7 @@ BOOST_FIXTURE_TEST_CASE(fail_reading_connack_payload, shared_test_data) {
 		.send(fail, after(7ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == fail);
+		BOOST_TEST(ec == fail);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));
@@ -224,7 +206,7 @@ BOOST_FIXTURE_TEST_CASE(receive_unexpected_auth, shared_test_data) {
 		.send(auth, after(5ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == client::error::malformed_packet);
+		BOOST_TEST(ec == client::error::malformed_packet);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));
@@ -276,7 +258,7 @@ BOOST_FIXTURE_TEST_CASE(successful_auth, shared_test_auth_data) {
 			.reply_with(connack, after(4ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == success);
+		BOOST_TEST(ec == success);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;
@@ -299,7 +281,7 @@ BOOST_FIXTURE_TEST_CASE(successful_auth_multi_step, shared_test_auth_data) {
 			.reply_with(connack, after(4ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == success);
+		BOOST_TEST(ec == success);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;
@@ -320,7 +302,7 @@ BOOST_FIXTURE_TEST_CASE(malformed_auth_rc, shared_test_auth_data) {
 			.reply_with(malformed_auth_challenge, after(3ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == client::error::malformed_packet);
+		BOOST_TEST(ec == client::error::malformed_packet);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;
@@ -344,7 +326,7 @@ BOOST_FIXTURE_TEST_CASE(mismatched_auth_method, shared_test_auth_data) {
 			.reply_with(mismatched_auth_challenge, after(3ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == client::error::malformed_packet);
+		BOOST_TEST(ec == client::error::malformed_packet);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;
@@ -363,7 +345,7 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_auth, shared_test_auth_data) {
 			.complete_with(fail, after(2ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == fail);
+		BOOST_TEST(ec == fail);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;
@@ -376,7 +358,7 @@ BOOST_FIXTURE_TEST_CASE(auth_step_client_initial_fail, shared_test_auth_data) {
 	test::msg_exchange broker_side;
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == asio::error::try_again);
+		BOOST_TEST(ec == asio::error::try_again);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;
@@ -393,7 +375,7 @@ BOOST_FIXTURE_TEST_CASE(auth_step_server_challenge_fail, shared_test_auth_data) 
 			.reply_with(auth_challenge, after(3ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == asio::error::try_again);
+		BOOST_TEST(ec == asio::error::try_again);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;
@@ -413,7 +395,7 @@ BOOST_FIXTURE_TEST_CASE(auth_step_server_final_fail, shared_test_auth_data) {
 			.reply_with(connack, after(4ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == asio::error::try_again);
+		BOOST_TEST(ec == asio::error::try_again);
 	};
 
 	detail::mqtt_ctx mqtt_ctx;

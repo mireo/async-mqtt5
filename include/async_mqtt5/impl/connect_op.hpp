@@ -327,9 +327,8 @@ public:
 		if (!rc.has_value()) // reason code not allowed in CONNACK
 			return complete(client::error::malformed_packet);
 
-		auto ec = to_asio_error(*rc);
-		if (ec)
-			return complete(ec);
+		if (*rc)
+			return complete(asio::error::try_again);
 
 		if (_ctx.co_props[prop::authentication_method].has_value())
 			return _ctx.authenticator.async_auth(
@@ -424,20 +423,6 @@ private:
 	void complete(error_code ec) {
 		_cancellation_state.slot().clear();
 		std::move(_handler)(ec);
-	}
-
-	static error_code to_asio_error(reason_code rc) {
-		using namespace boost::asio::error;
-		using namespace reason_codes;
-
-		if (rc == success)
-			return {};
-
-		if (rc == unspecified_error || rc == server_unavailable ||
-			rc == server_busy || rc == connection_rate_exceeded)
-			return connection_refused;
-
-		return access_denied;
 	}
 };
 

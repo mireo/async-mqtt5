@@ -26,7 +26,7 @@ struct shared_test_data {
 	error_code success {};
 
 	const std::string connack = encoders::encode_connack(
-		false, reason_codes::server_moved.value(), {}
+		false, reason_codes::success.value(), {}
 	);
 };
 
@@ -44,10 +44,16 @@ void run_test(
 
 	client_type c(executor);
 	client_fun(c);
-	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
+	c.brokers("127.0.0.1")
 		.async_run(asio::detached);
 
-	ioc.run_for(5s);
+	asio::steady_timer timer(executor);
+	timer.expires_after(700ms);
+	timer.async_wait(
+		[&c](error_code) { c.cancel(); }
+	);
+
+	ioc.run();
 	BOOST_TEST(broker.received_all_expected());
 }
 
@@ -291,7 +297,6 @@ struct shared_connack_prop_test_data {
 
 	// data
 	const uint8_t session_present = 1;
-	const uint8_t reason_code = reason_codes::server_moved.value();
 
 	const int32_t session_expiry_interval = 20;
 	const int16_t receive_maximum = 2000;
@@ -319,7 +324,7 @@ struct shared_connack_prop_test_data {
 		"", std::nullopt, std::nullopt, 60, false, {}, std::nullopt
 	);
 	const std::string connack = encoders::encode_connack(
-		false, reason_codes::server_moved.value(), cprops
+		false, reason_codes::success.value(), cprops
 	);
 
 private:
@@ -357,11 +362,20 @@ void run_test_with_post_fun(
 	);
 
 	client_type c(executor);
-	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
+	c.brokers("127.0.0.1")
 		.async_run(asio::detached);
 
-	ioc.run_for(5s);
-	client_fun(c);
+	asio::steady_timer timer(executor);
+	timer.expires_after(700ms);
+	timer.async_wait(
+		[&c, fun = std::forward<TestingClientFun>(client_fun)](error_code) {
+			fun(c);
+			c.cancel(); 
+		}
+	);
+
+	ioc.run();
+
 	BOOST_TEST(broker.received_all_expected());
 }
 
