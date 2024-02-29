@@ -111,7 +111,8 @@
 
 [include 01_intro.qbk]
 [include 02_configuring_the_client.qbk]
-[include 03_examples.qbk]
+[include 03_auto_reconnect.qbk]
+[include 04_examples.qbk]
 
 [include examples/Examples.qbk]
 

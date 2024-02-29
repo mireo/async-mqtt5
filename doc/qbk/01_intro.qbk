@@ -44,7 +44,8 @@ In the event of a connection failure with one Broker, the Client switches to the
 * [*Offline buffering]: While offline, it automatically buffers all the packets to send when the connection is re-established.
 
 [heading Example]
-The following example illustrates a simple scenario of configuring the Client and publishing an Application Message.
+The following example illustrates a simple scenario of configuring a Client and publishing a
+"Hello World!" Application Message with `QoS` 0. 
 
 [!c++]
 	#include <iostream>
