@@ -69,7 +69,7 @@ A Broker can set this value to limit the number of simultaneous QoS > 0 messages
 potentially causing QoS 0 messages to be transmitted ahead of QoS > 0 messages in the delivery order.
 
 - The __DISCONNECT__ packet is sent *in a single TCP packet before any other packets* in the queue.
-[/ TODO: reference to the disconnect chapter]
+See [link async_mqtt5.disconnecting_the_client Disconnecting the client] for more information about disconnecting.
 
 [endsect] [/packet_ordering]
 

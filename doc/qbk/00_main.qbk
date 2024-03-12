@@ -42,6 +42,7 @@
 [def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]
 [def __Beast__ [@boost:/libs/beast/index.html Boost.Beast]]
 [def __ASIO_PER_OP_CANCELLATION__ [@boost:/doc/html/boost_asio/overview/core/cancellation.html Per-Operation Cancellation]]
+[def __IOC__ [@boost:doc/html/boost_asio/reference/io_context.html `boost::asio::io_context`]]
 [def __POST__ [@boost:doc/html/boost_asio/reference/post.html `boost::asio::post`]]
 [def __CO_SPAWN__ [@boost:/doc/html/boost_asio/reference/co_spawn.html `boost::asio::co_spawn`]]
 [def __USE_AWAITABLE__ [@boost:/doc/html/boost_asio/reference/use_awaitable.html `boost::asio::use_awaitable`]]
@@ -114,7 +115,7 @@
 [include 03_auto_reconnect.qbk]
 [include 04_maintaining_a_stable_connection.qbk]
 [include 05_optimising_communication.qbk]
-
+[include 06_disconnecting_the_client.qbk]
 
 [include 10_examples.qbk]
 
