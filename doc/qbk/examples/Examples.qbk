@@ -40,4 +40,12 @@ The __Client__ will use TCP to connect to the Broker and __USE_AWAITABLE__ as th
 [receiver]
 [endsect]
 
+[section:multiflight_client The multiflight Client]
+This example will show how to use __Client__ to simultaneously dispatch multiple
+requests.
+
+[import ../../../example/multiflight_client.cpp]
+[multiflight_client]
+[endsect]
+
 [block'''</part>''']

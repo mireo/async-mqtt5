@@ -28,6 +28,10 @@ The following list contains all the examples that showcase how to use the __Clie
 		[[link async_mqtt5.hello_world_over_websocket_tls hello_world_over_websocket_tls.cpp]]
 		[Publishes a "Hello World" message via Websocket/TLS.]
 	]
+	[
+		[[link async_mqtt5.multiflight_client multiflight_client.cpp]]
+		[Shows how to use the __Client__ to simultaneously dispatch multiple requests.]
+	]
 ]
 
 [endsect][/examples]
