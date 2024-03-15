@@ -25,16 +25,17 @@ This example illustrates the process of setting up the Client to connect to the 
 [endsect] [/hello_world_over_websocket_tls]
 
 [section:publisher The publisher]
-This example will show how to use __Client__ as a publisher. 
-The __Client__ will use TCP to connect to the Broker and __USE_AWAITABLE__ as the completion token.
+This example will show how to use __Client__ as a publisher that publishes sensor readings every `5` seconds.
+The __Client__ will use TCP to connect to the Broker and modified __USE_AWAITABLE__ as the completion token.
 
 [import ../../../example/publisher.cpp]
 [publisher]
 [endsect]
 
 [section:receiver The receiver]
-This example will show how to use __Client__ as a receiver. 
-The __Client__ will use TCP to connect to the Broker and __USE_AWAITABLE__ as the completion token.
+This example will show how to use __Client__ as a receiver.
+The __Client__ subscribes and indefinitely receives Application Messages from the Broker.
+The __Client__ will use TCP to connect to the Broker and modified __USE_AWAITABLE__ as the completion token.
 
 [import ../../../example/receiver.cpp]
 [receiver]

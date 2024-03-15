@@ -6,11 +6,11 @@ The following list contains all the examples that showcase how to use the __Clie
 [variablelist 
 	[
 		[[link async_mqtt5.publisher publisher.cpp]]
-		[Shows how to use the __Client__ as a publisher.]
+		[Shows how to use the __Client__ as a publisher. The __Client__ publishes sensor readings every `5 seconds`.]
 	]
 	[
 		[[link async_mqtt5.receiver receiver.cpp]]
-		[Shows how to use the __Client__ as a receiver.]
+		[Shows how to use the __Client__ as a receiver. The __Client__ subscribes and indefinitely receives Application Messages from the Broker.]
 	]
 	[
 		[[link async_mqtt5.hello_world_over_tcp hello_world_over_tcp.cpp]]
