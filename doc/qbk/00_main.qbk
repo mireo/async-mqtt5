@@ -116,6 +116,7 @@
 [include 04_maintaining_a_stable_connection.qbk]
 [include 05_optimising_communication.qbk]
 [include 06_disconnecting_the_client.qbk]
+[include 07_asio_compliance.qbk]
 
 [include 10_examples.qbk]
 
