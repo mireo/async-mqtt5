@@ -42,6 +42,8 @@
 [def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]
 [def __Beast__ [@boost:/libs/beast/index.html Boost.Beast]]
 [def __ASIO_PER_OP_CANCELLATION__ [@boost:/doc/html/boost_asio/overview/core/cancellation.html Per-Operation Cancellation]]
+[def __ASIO_ALLOCATORS__ [@boost:/doc/html/boost_asio/overview/model/allocators.html Allocators]]
+[def __ASIO_CUSTOM_MEMORY_ALLOCATION__ [@boost:/doc/html/boost_asio/overview/core/allocation.html Custom Memory Allocation]]
 [def __ASIO_PARALLEL_GROUP__ [@boost:/doc/html/boost_asio/overview/composition/parallel_group.html Co-ordinating Parallel Operations]]
 [def __IOC__ [@boost:doc/html/boost_asio/reference/io_context.html `boost::asio::io_context`]]
 [def __POST__ [@boost:doc/html/boost_asio/reference/post.html `boost::asio::post`]]
@@ -119,7 +121,7 @@
 [include 06_disconnecting_the_client.qbk]
 [include 07_asio_compliance.qbk]
 
-[include 10_examples.qbk]
+[include 15_examples.qbk]
 
 [include examples/Examples.qbk]
 

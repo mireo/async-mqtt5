@@ -34,7 +34,7 @@ Source: [link async_mqtt5.multiflight_client multiflight_client.cpp]
 
 [endsect] [/multiflight]
 
-[section:packet_queing Efficient bandwidth usage with packet queing]
+[section:packet_queuing Efficient bandwidth usage with packet queuing]
 
 The __Client__ employs a strategic queuing mechanism crucial in optimising network usage and performance for the user's requests.
 This mechanism bundles multiple MQTT packets for transmission within a single TCP packet whenever feasible 
@@ -54,7 +54,7 @@ As a result, in the [link async_mqtt5.multiflight_client multiflight_client.cpp]
 the __Client__ will transmit all `5` __PUBLISH__ packets in a single TCP packet
 if possible [footnote The Broker's `Receive Maximum` is equal to or greater than `5`.].
 
-[endsect] [/packet_queing]
+[endsect] [/packet_queuing]
 
 [section:packet_ordering Packet ordering]
 
