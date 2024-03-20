@@ -32,6 +32,20 @@ The following list contains all the examples that showcase how to use the __Clie
 		[[link async_mqtt5.multiflight_client multiflight_client.cpp]]
 		[Shows how to use the __Client__ to simultaneously dispatch multiple requests.]
 	]
+	[
+		[[link async_mqtt5.timeout_with_parallel_group timeout_with_parallel_group.cpp]]
+		[
+			Shows how to use the __Client__ with its support for per-operation cancellation to perform operations under a time constraint
+			using parallel group.
+		]
+	]
+	[
+		[[link async_mqtt5.timeout_with_awaitable_operators timeout_with_awaitable_operators.cpp]]
+		[
+			Shows how to use the __Client__ with its support for per-operation cancellation to perform operations under a time constraint
+			using awaitable operators.
+		]
+	]
 ]
 
 [endsect][/examples]

@@ -6,9 +6,14 @@ Every asynchronous operation in __Asio__ has associated characteristics that spe
 * A *cancellation slot* determines how the asynchronous operations support cancellation.
 * An *executor* determines the queuing and execution strategy for completion handlers.
 
-This section expands further into the roles of allocators, cancellation slots, and [link async_mqtt5.asio_compliance.executors Executors],
-highlighting their integration and usage within the __Client__.
+This section expands further into the roles of allocators,
+cancellation slots, and executors, highlighting their integration and usage within the __Client__.
+
+* See [link async_mqtt5.asio_compliance.per_op_cancellation Per-Operation Cancellation] for more information about how
+asynchronous operations within the __Client__ support cancellation.
+* See [link async_mqtt5.asio_compliance.executors Executors] for more information about executors.
 
 [include 08_executors.qbk]
+[include 09_per_op_cancellation.qbk]
 
 [endsect] [/asio_compliance]
