@@ -67,4 +67,18 @@ within `5 seconds`. Otherwise, they will be cancelled.
 [timeout_with_awaitable_operators]
 [endsect]
 
+[section:hello_world_in_multithreaded_env Hello World in a multithreaded environment using callbacks]
+This example demonstrates how to publish a "Hello World" message in a multithreaded environment using callbacks (`post`/`dispatch`).
+
+[import ../../../example/hello_world_in_multithreaded_env.cpp]
+[hello_world_in_multithreaded_env]
+[endsect]
+
+[section:hello_world_in_coro_multithreaded_env Hello World in a multithreaded environment using coroutines]
+This example demonstrates how to publish a "Hello World" message in a multithreaded environment using coroutines (`co_spawn`).
+
+[import ../../../example/hello_world_in_coro_multithreaded_env.cpp]
+[hello_world_in_coro_multithreaded_env]
+[endsect]
+
 [block'''</part>''']

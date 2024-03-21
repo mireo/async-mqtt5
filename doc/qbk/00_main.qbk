@@ -45,7 +45,11 @@
 [def __ASIO_ALLOCATORS__ [@boost:/doc/html/boost_asio/overview/model/allocators.html Allocators]]
 [def __ASIO_CUSTOM_MEMORY_ALLOCATION__ [@boost:/doc/html/boost_asio/overview/core/allocation.html Custom Memory Allocation]]
 [def __ASIO_PARALLEL_GROUP__ [@boost:/doc/html/boost_asio/overview/composition/parallel_group.html Co-ordinating Parallel Operations]]
+[def __ASIO_STRANDS__ [@boost:/doc/html/boost_asio/overview/core/strands.html Strands: Use Threads Without Explicit Locking]]
 [def __IOC__ [@boost:doc/html/boost_asio/reference/io_context.html `boost::asio::io_context`]]
+[def __IOC_RUN__ [@boost:doc/html/boost_asio/reference/io_context/run.html `boost::asio::io_context::run()`]]
+[def __STRAND__ [@boost:doc/html/boost_asio/reference/io_context__strand.html `boost::asio::io_context::strand`]]
+[def __DISPATCH__ [@boost:doc/html/boost_asio/reference/dispatch.html `boost::asio::dispatch`]]
 [def __POST__ [@boost:doc/html/boost_asio/reference/post.html `boost::asio::post`]]
 [def __CO_SPAWN__ [@boost:/doc/html/boost_asio/reference/co_spawn.html `boost::asio::co_spawn`]]
 [def __USE_AWAITABLE__ [@boost:/doc/html/boost_asio/reference/use_awaitable.html `boost::asio::use_awaitable`]]
@@ -120,6 +124,7 @@
 [include 05_optimising_communication.qbk]
 [include 06_disconnecting_the_client.qbk]
 [include 07_asio_compliance.qbk]
+[include 11_multithreading.qbk]
 
 [include 15_examples.qbk]
 

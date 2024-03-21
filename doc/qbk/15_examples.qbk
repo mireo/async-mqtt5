@@ -46,6 +46,14 @@ The following list contains all the examples that showcase how to use the __Clie
 			using awaitable operators.
 		]
 	]
+	[
+		[[link async_mqtt5.hello_world_in_multithreaded_env hello_world_in_multithreaded_env.cpp]]
+		[Shows how to publish a "Hello World" message in a multithreaded environment using callbacks (`post`/`dispatch`).]
+	]
+	[
+		[[link async_mqtt5.hello_world_in_coro_multithreaded_env hello_world_in_coro_multithreaded_env.cpp]]
+		[Shows how to publish a "Hello World" message in a multithreaded environment using coroutines (`co_spawn`).]
+	]
 ]
 
 [endsect][/examples]
