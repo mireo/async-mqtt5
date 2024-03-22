@@ -40,7 +40,7 @@ struct shared_test_data {
 using test::after;
 using namespace std::chrono;
 
-BOOST_FIXTURE_TEST_CASE(ordering_after_reconnect, shared_test_data) {
+BOOST_FIXTURE_TEST_CASE(publish_ordering_after_reconnect, shared_test_data) {
 	constexpr int expected_handlers_called = 2;
 	int handlers_called = 0;
 
@@ -104,6 +104,85 @@ BOOST_FIXTURE_TEST_CASE(ordering_after_reconnect, shared_test_data) {
 
 			if (handlers_called == expected_handlers_called)
 				c.cancel();
+		}
+	);
+
+	ioc.run_for(1s);
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
+}
+
+BOOST_FIXTURE_TEST_CASE(sub_unsub_ordering_after_reconnect, shared_test_data) {
+	constexpr int expected_handlers_called = 2;
+	int handlers_called = 0;
+
+	// data
+	std::vector<subscribe_topic> sub_topics = {
+		subscribe_topic { "topic", subscribe_options {} }
+	};
+	std::vector<uint8_t> sub_reason_codes = {
+		reason_codes::granted_qos_2.value()
+	};
+	std::vector<std::string> unsub_topics = { "topic" };
+	std::vector<uint8_t> unsub_reason_codes = { reason_codes::success.value() };
+
+	// packets
+	auto subscribe = encoders::encode_subscribe(
+		1, sub_topics, subscribe_props {}
+	);
+	auto suback = encoders::encode_suback(1, sub_reason_codes, suback_props {});
+	auto unsubscribe = encoders::encode_unsubscribe(
+		2, unsub_topics, unsubscribe_props {}
+	);
+	auto unsuback = encoders::encode_unsuback(2, unsub_reason_codes, unsuback_props {});
+	auto disconnect = encoders::encode_disconnect(0x00, {});
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(subscribe, unsubscribe)
+			.complete_with(success, after(1ms))
+		.send(disconnect, after(5ms))
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(subscribe, unsubscribe)
+			.complete_with(success, after(1ms))
+			.reply_with(suback, unsuback, after(2ms));
+
+	asio::io_context ioc;
+	auto executor = ioc.get_executor();
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
+
+	using client_type = mqtt_client<test::test_stream>;
+	client_type c(executor);
+	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
+		.async_run(asio::detached);
+
+	c.async_subscribe(
+		sub_topics, subscribe_props {},
+		[&](error_code ec, std::vector<reason_code> rcs, suback_props) {
+			++handlers_called;
+
+			BOOST_TEST(!ec);
+			BOOST_TEST_REQUIRE(rcs.size() == 1u);
+			BOOST_TEST(rcs[0] == reason_codes::granted_qos_2);
+		}
+	);
+	c.async_unsubscribe(
+		unsub_topics, unsubscribe_props {},
+		[&](error_code ec, std::vector<reason_code> rcs, unsuback_props) {
+			++handlers_called;
+
+			BOOST_TEST(!ec);
+			BOOST_TEST_REQUIRE(rcs.size() == 1u);
+			BOOST_TEST(rcs[0] == reason_codes::success);
+
+			c.cancel();
 		}
 	);
 
@@ -178,6 +257,70 @@ BOOST_FIXTURE_TEST_CASE(throttling, shared_test_data) {
 					c.cancel();
 			}
 		);
+
+	ioc.run_for(1s);
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
+}
+
+BOOST_FIXTURE_TEST_CASE(throttling_ordering, shared_test_data) {
+	constexpr int expected_handlers_called = 2;
+	int handlers_called = 0;
+
+	// packets
+	connack_props props;
+	props[prop::receive_maximum] = 2;
+	const std::string connack = encoders::encode_connack(
+		false, reason_codes::success.value(), props
+	);
+	auto publish_qos0 = encoders::encode_publish(
+		0, topic, payload, qos_e::at_most_once, retain_e::no, dup_e::no, {}
+	);
+
+	test::msg_exchange broker_side;
+	broker_side
+		.expect(connect)
+			.complete_with(success, after(1ms))
+			.reply_with(connack, after(2ms))
+		.expect(publish_qos1, publish_qos0)
+			.complete_with(success, after(1ms))
+			.reply_with(puback, after(2ms));
+
+	asio::io_context ioc;
+	auto executor = ioc.get_executor();
+	auto& broker = asio::make_service<test::test_broker>(
+		ioc, executor, std::move(broker_side)
+	);
+
+	using client_type = mqtt_client<test::test_stream>;
+	client_type c(executor);
+	c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
+		.async_run(asio::detached);
+
+	c.async_publish<qos_e::at_least_once>(
+		topic, payload, retain_e::no, publish_props {},
+		[&](error_code ec, reason_code rc, puback_props) {
+			++handlers_called;
+
+			BOOST_TEST(!ec);
+			BOOST_TEST(rc == reason_codes::success);
+
+			if (handlers_called == expected_handlers_called)
+				c.cancel();
+		}
+	);
+
+	c.async_publish<qos_e::at_most_once>(
+		topic, payload, retain_e::no, publish_props{},
+		[&](error_code ec) {
+			++handlers_called;
+
+			BOOST_TEST(!ec);
+
+			if (handlers_called == expected_handlers_called)
+				c.cancel();
+		}
+	);
 
 	ioc.run_for(1s);
 	BOOST_TEST(handlers_called == expected_handlers_called);

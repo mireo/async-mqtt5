@@ -40,7 +40,7 @@ public:
 	}
 
 	asio::const_buffer buffer() const {
-		 return _buffer;
+		return _buffer;
 	}
 
 	void complete(error_code ec) {
@@ -52,6 +52,10 @@ public:
 			ex,
 			asio::prepend(std::move(_handler), ec)
 		);
+	}
+
+	bool empty() const {
+		return !_handler;
 	}
 
 	auto get_executor() {
@@ -235,29 +239,24 @@ private:
 			write_queue = std::move(_write_queue);
 		}
 		else {
-			auto throttled_ptr = std::stable_partition(
-				_write_queue.begin(), _write_queue.end(),
-				[](const auto& op) { return !op.throttled(); }
-			);
-			uint16_t dist = static_cast<uint16_t>(
-				std::distance(throttled_ptr, _write_queue.end())
-			);
-			uint16_t throttled_num = std::min(dist, _quota);
-			_quota -= throttled_num;
-			throttled_ptr += throttled_num;
+			for (write_req& req : _write_queue)
+				if (!req.throttled())
+					write_queue.push_back(std::move(req));
+				else if (_quota > 0) {
+					--_quota;
+					write_queue.push_back(std::move(req));
+				}
 
-			if (throttled_ptr == _write_queue.begin()) {
+			if (write_queue.empty()) {
 				_write_in_progress = false;
 				return;
 			}
 
-			write_queue.insert(
-				write_queue.end(),
-				std::make_move_iterator(_write_queue.begin()),
-				std::make_move_iterator(throttled_ptr)
+			auto it = std::remove_if(
+				_write_queue.begin(), _write_queue.end(),
+				[](const write_req& req) { return req.empty(); }
 			);
-
-			_write_queue.erase(_write_queue.begin(), throttled_ptr);
+			_write_queue.erase(it, _write_queue.end());
 		}
 
 		std::vector<asio::const_buffer> buffers;
