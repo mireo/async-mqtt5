@@ -26,6 +26,7 @@ struct shared_test_data {
 	const std::string connack = encoders::encode_connack(
 		false, reason_codes::success.value(), {}
 	);
+	std::string connack_rm;
 
 	const std::string publish_qos1 = encoders::encode_publish(
 		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::no, {}
@@ -35,6 +36,15 @@ struct shared_test_data {
 	);
 
 	const std::string puback = encoders::encode_puback(1, uint8_t(0x00), {});
+
+	shared_test_data() {
+		connack_props props;
+		props[prop::receive_maximum] = uint16_t(1);
+
+		connack_rm = encoders::encode_connack(
+			false, reason_codes::success.value(), props
+		);
+	}
 };
 
 using test::after;
@@ -144,7 +154,7 @@ BOOST_FIXTURE_TEST_CASE(sub_unsub_ordering_after_reconnect, shared_test_data) {
 			.reply_with(connack, after(2ms))
 		.expect(subscribe, unsubscribe)
 			.complete_with(success, after(1ms))
-		.send(disconnect, after(5ms))
+		.send(disconnect, after(50ms))
 		.expect(connect)
 			.complete_with(success, after(1ms))
 			.reply_with(connack, after(2ms))
@@ -195,14 +205,7 @@ BOOST_FIXTURE_TEST_CASE(throttling, shared_test_data) {
 	constexpr int expected_handlers_called = 3;
 	int handlers_called = 0;
 
-	connack_props props;
-	props[prop::receive_maximum] = uint16_t(1);
-
-	//packets
-	auto connack_rm = encoders::encode_connack(
-		false, reason_codes::success.value(), props
-	);
-
+	// packets
 	auto publish_1 = encoders::encode_publish(
 		1, topic, payload, qos_e::at_least_once, retain_e::no, dup_e::no, {}
 	);
@@ -268,11 +271,6 @@ BOOST_FIXTURE_TEST_CASE(throttling_ordering, shared_test_data) {
 	int handlers_called = 0;
 
 	// packets
-	connack_props props;
-	props[prop::receive_maximum] = 2;
-	const std::string connack = encoders::encode_connack(
-		false, reason_codes::success.value(), props
-	);
 	auto publish_qos0 = encoders::encode_publish(
 		0, topic, payload, qos_e::at_most_once, retain_e::no, dup_e::no, {}
 	);

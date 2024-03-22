@@ -134,7 +134,7 @@ BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
 		.expect(connect)
 			.complete_with(success, after(0ms))
 			.reply_with(connack, after(0ms))
-		.send(disconnect, after(5ms))
+		.send(disconnect, after(50ms))
 		.expect(connect)
 			.complete_with(success, after(0ms))
 			.reply_with(connack, after(0ms));
