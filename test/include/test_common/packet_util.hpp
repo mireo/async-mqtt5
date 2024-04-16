@@ -6,6 +6,8 @@
 
 #include <boost/algorithm/string/join.hpp>
 
+#include <boost/asio/buffer.hpp>
+
 #include <boost/range/algorithm/transform.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
@@ -358,11 +360,17 @@ inline std::string to_readable_packet(std::string packet) {
 
 template <typename ConstBufferSequence>
 std::vector<std::string> to_readable_packets(const ConstBufferSequence& buffers) {
+	namespace asio = boost::asio;
+
 	std::vector<std::string> content;
 	
-	for (const auto& buff : buffers)
+	for (
+		auto it = asio::buffer_sequence_begin(buffers);
+		it != asio::buffer_sequence_end(buffers);
+		it++
+	)
 		content.push_back(
-			to_readable_packet(std::string { (const char*) buff.data(), buff.size() })
+			to_readable_packet(std::string { (const char*)it->data(), it->size() })
 		);
 
 	return content;

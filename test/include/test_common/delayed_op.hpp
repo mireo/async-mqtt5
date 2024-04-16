@@ -62,7 +62,7 @@ public:
 	void perform(CompletionHandler&& handler) {
 		_cancel_slot = asio::get_associated_cancellation_slot(handler);
 
-		_timer->expires_from_now(_delay);
+		_timer->expires_after(_delay);
 		_timer->async_wait(
 			asio::prepend(std::move(*this), on_timer {}, std::move(handler))
 		);

@@ -36,7 +36,7 @@ class pending_read {
 public:
 	template <typename MutableBuffer, typename Handler>
 	pending_read(const MutableBuffer& buffer, Handler&& handler) :
-		_buffer_data(asio::buffer_cast<void*>(buffer)),
+		_buffer_data(buffer.data()),
 		_buffer_size(buffer.size()),
 		_handler(std::move(handler))
 	{}
@@ -133,8 +133,9 @@ public:
 			auto reply_action = _broker_side.pop_reply_action();
 
 			size_t bytes_written = std::accumulate(
-				std::begin(buffers), std::end(buffers), size_t(0),
-				[](size_t a, const auto& b) { return a + b.size(); }
+				asio::buffer_sequence_begin(buffers),
+				asio::buffer_sequence_end(buffers),
+				size_t(0), [](size_t a, const auto& b) { return a + b.size(); }
 			);
 
 			executor_type ex = get_executor();
@@ -143,12 +144,12 @@ public:
 				const auto& expected = reply_action->expected_packets();
 
 				size_t buffers_size = std::distance(
-					buffers.begin(), buffers.end()
+					asio::buffer_sequence_begin(buffers), asio::buffer_sequence_end(buffers)
 				);
 				BOOST_CHECK_EQUAL(buffers_size, expected.size());
 
 				size_t num_packets = std::min(buffers_size, expected.size());
-				auto it = buffers.begin();
+				auto it = asio::buffer_sequence_begin(buffers);
 				for (size_t i = 0; i < num_packets; ++i, ++it) {
 					BOOST_CHECK_EQUAL(it->size(), expected[i].size());
 					size_t len = std::min(it->size(), expected[i].size());

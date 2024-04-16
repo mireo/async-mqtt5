@@ -67,7 +67,7 @@ public:
 
 		authority_path ap = _owner._servers[_owner._current_host];
 
-		_owner._connect_timer.expires_from_now(std::chrono::seconds(5));
+		_owner._connect_timer.expires_after(std::chrono::seconds(5));
 
 		auto timed_resolve = asioex::make_parallel_group(
 			_owner._resolver.async_resolve(ap.host, ap.port, asio::deferred),

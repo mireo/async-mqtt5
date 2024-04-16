@@ -112,7 +112,7 @@ public:
 	}
 
 	void backoff_and_reconnect() {
-		_owner._connect_timer.expires_from_now(_generator.generate());
+		_owner._connect_timer.expires_after(_generator.generate());
 		_owner._connect_timer.async_wait(
 			asio::prepend(std::move(*this), on_backoff {})
 		);
@@ -151,7 +151,7 @@ public:
 			);
 
 		// wait max 5 seconds for the connect (handshake) op to finish
-		_owner._connect_timer.expires_from_now(std::chrono::seconds(5));
+		_owner._connect_timer.expires_after(std::chrono::seconds(5));
 
 		auto init_connect = [](
 			auto handler, typename Owner::stream_type& stream,

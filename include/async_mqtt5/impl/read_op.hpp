@@ -50,7 +50,7 @@ public:
 		auto stream_ptr = _owner._stream_ptr;
 
 		if (_owner.was_connected()) {
-			_owner._read_timer.expires_from_now(wait_for);
+			_owner._read_timer.expires_after(wait_for);
 
 			auto timed_read = asioex::make_parallel_group(
 				stream_ptr->async_read_some(buffer, asio::deferred),

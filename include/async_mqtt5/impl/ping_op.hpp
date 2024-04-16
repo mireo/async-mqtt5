@@ -60,7 +60,7 @@ public:
 	}
 
 	void perform() {
-		_ping_timer->expires_from_now(compute_wait_time());
+		_ping_timer->expires_after(compute_wait_time());
 		_ping_timer->async_wait(
 			asio::prepend(std::move(*this), on_timer {})
 		);
