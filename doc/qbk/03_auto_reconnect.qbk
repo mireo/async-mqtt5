@@ -19,12 +19,18 @@ Note that the same principle applies to all other asynchronous functions within 
 and [refmem mqtt_client async_disconnect]).
 
 	// Publishing with QoS 1 involves a two-step process: sending a PUBLISH message to the Broker and awaiting a PUBACK (acknowledgement) response.
-	// The scenarios that might unfold include:
-	// a) The Client sends the PUBLISH message immediately.
-	// b) If the Client is offline when attempting to publish, it queues the PUBLISH message and sends it 
-	//    as soon as the connection is re-established.
-	// c) Should the Client lose connection after sending the PUBLISH message but before receiving a PUBACK,
-	//    it will automatically retransmit the PUBLISH message once connectivity is restored.
+	// The scenarios that might happen are:
+	//   1) The Client will immediately send the PUBLISH message and start to wait for the PUBACK reply. 
+	//       The user's completion handler will not be invoked yet, regardless of whether the Client successfully sent the message.
+	//   2) When the Client fails to send the message, it will try to reconnect to the Broker automatically.
+	//       If it succeeds, it will resend the message. If reconnect fails, the Client will try to connect again until it succeeds.
+	//       Meanwhile, the user's completion handler will NOT be invoked except when the Client detects an unrecoverable error (for example, when the list of configured brokers is empty).
+	//       Note that the Client will try to connect indefinitely, meaning the user's completion handler may never be invoked.
+	//   3) When the Client successfully sends the PUBLISH message, the Broker is required to respond with a PUBACK message. 
+	//       The reply message may indicate success or an MQTT error (for example, signalling that the message is not accepted due to implementation or administrative limits).
+	//       The Client will read the PUBACK message and call the user's completion handler with the appropriate arguments.
+	//   4) The PUBACK message should arrive within 20 seconds of the PUBLISH message being successfully sent.
+	//       If it does not, the PUBLISH message will be sent again. In the meantime, the user's callback will not be invoked.
 
 	client.async_publish<async_mqtt5::qos_e::at_least_once>(
 		"my-topic", "Hello world!",
@@ -89,8 +95,6 @@ Log lines should be injected directly into the __Client__ code (typically in the
 The __Client__ is designed to automatically buffer requests that are initiated while it is offline. 
 During extended downtime or when a high volume of requests accumulates, this can lead to an increase in memory usage.
 This aspect is significant for devices with limited resources, as the growing memory consumption can impact their performance and functionality.
-
-[/ TODO: link to the debugging the client chapter ]
 
 [endsect] [/cons]
 

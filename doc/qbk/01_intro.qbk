@@ -49,21 +49,22 @@ The following example illustrates a simple scenario of configuring a Client and 
 
 [!c++]
 	#include <iostream>
-	
+
+	#include <boost/asio/detached.hpp>
 	#include <boost/asio/io_context.hpp>
 	#include <boost/asio/ip/tcp.hpp>
-	
+
 	#include <async_mqtt5.hpp>
-	
+
 	int main() {
 		boost::asio::io_context ioc;
-		
+
 		using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
 		client_type c(ioc);
 
 		c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
 			.brokers("<your-mqtt-broker>", 1883)
-			.async_run(asio::detached);
+			.async_run(boost::asio::detached);
 
 		c.async_publish<async_mqtt5::qos_e::at_most_once>(
 			"<topic>", "Hello world!",

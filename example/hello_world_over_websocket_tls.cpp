@@ -12,12 +12,12 @@
 
 namespace boost::beast::websocket {
 
-// ``[beastreflink boost__beast__websocket__async_teardown boost::beast::websocket::async_teardown]`` is a free function
-// designed to initiate the asynchronous teardown of a connection.
+// boost::beast::websocket::async_teardown is a free function designed to initiate the asynchronous teardown of a connection.
 // The specific behaviour of this function is based on the NextLayer type (Socket type) used to create the ``__WEBSOCKET_STREAM__``.
 // ``__Beast__`` library includes an implementation of this function for ``__TCP_SOCKET__``.
 // However, the callers are responsible for providing a suitable overload of this function for any other type,
 // such as ``__SSL_STREAM__`` as shown in this example.
+// See ``__BEAST_ASYNC_TEARDOWN__`` for more information.
 template <typename TeardownHandler>
 void async_teardown(
 	boost::beast::role_type role,
@@ -82,8 +82,8 @@ int main() {
 		std::cout << "Failed to set peer verification mode!" << std::endl;
 	ec.clear();
 
-	// Construct the Client with ``[beastreflink boost__beast__websocket__stream websocket::stream<__SSL_STREAM__>]``
-	// as the underlying stream with ``__SSL_CONTEXT__`` as the ``__TlsContext__`` type.
+	// Construct the Client with WebSocket/SSL as the underlying stream 
+	// with ``__SSL_CONTEXT__`` as the ``__TlsContext__`` type.
 	async_mqtt5::mqtt_client<
 		boost::beast::websocket::stream<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>,
 		boost::asio::ssl::context

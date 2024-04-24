@@ -12,7 +12,7 @@
 int main() {
 	boost::asio::io_context ioc;
 
-	// Construct the Client with ``[beastreflink boost__beast__websocket__stream websocket::stream<__TCP_SOCKET__>]`` as the underlying stream.
+	// Construct the Client with WebSocket/TCP as the underlying stream.
 	async_mqtt5::mqtt_client<
 		boost::beast::websocket::stream<boost::asio::ip::tcp::socket>
 	> client(ioc);
