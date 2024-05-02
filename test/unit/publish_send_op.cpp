@@ -61,7 +61,7 @@ void run_test(
 	detail::publish_send_op<
 		client_service_type, decltype(handler), qos_e::at_least_once
 	> { svc_ptr, std::move(handler) }
-	.perform(topic_name, payload, retain_e::yes, pprops);
+		.perform(topic_name, payload, retain_e::yes, pprops);
 
 	ioc.run_for(std::chrono::milliseconds(500));
 	BOOST_TEST(handlers_called == expected_handlers_called);

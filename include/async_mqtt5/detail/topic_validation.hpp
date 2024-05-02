@@ -10,7 +10,7 @@ namespace async_mqtt5::detail {
 static constexpr uint32_t min_subscription_identifier = 1;
 static constexpr uint32_t max_subscription_identifier = 268'435'455;
 
-static constexpr std::string_view shared_sub_id = "$share/";
+static constexpr std::string_view shared_sub_prefix = "$share/";
 
 inline bool is_utf8_no_wildcard(validation_result result) {
 	return result == validation_result::valid;
@@ -28,7 +28,11 @@ inline validation_result validate_topic_name(std::string_view str) {
 	return validate_impl(str, is_valid_topic_size, is_utf8_no_wildcard);
 }
 
-inline validation_result validate_share_name(std::string_view str) {
+inline validation_result validate_topic_alias_name(std::string_view str) {
+	return validate_impl(str, is_valid_string_size, is_utf8_no_wildcard);
+}
+
+inline validation_result validate_shared_topic_name(std::string_view str) {
 	return validate_impl(str, is_not_empty, is_utf8_no_wildcard);
 }
 
@@ -80,17 +84,17 @@ inline validation_result validate_shared_topic_filter(
 	if (!is_valid_topic_size(str.size()))
 		return validation_result::invalid;
 
-	if (str.compare(0, shared_sub_id.size(), shared_sub_id) != 0)
+	if (str.compare(0, shared_sub_prefix.size(), shared_sub_prefix) != 0)
 		return validation_result::invalid;
 
-	str.remove_prefix(shared_sub_id.size());
+	str.remove_prefix(shared_sub_prefix.size());
 
 	size_t share_name_end = str.find_first_of('/');
 	if (share_name_end == std::string::npos)
 		return validation_result::invalid;
 
 	validation_result result;
-	result = validate_share_name(str.substr(0, share_name_end));
+	result = validate_shared_topic_name(str.substr(0, share_name_end));
 
 	if (result != validation_result::valid)
 		return validation_result::invalid;

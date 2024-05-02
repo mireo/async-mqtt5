@@ -200,7 +200,7 @@ private:
 
 		validation_result result = validation_result::valid;
 		if (
-			topic_filter.compare(0, shared_sub_id.size(), shared_sub_id) == 0
+			topic_filter.compare(0, shared_sub_prefix.size(), shared_sub_prefix) == 0
 		) {
 			if (!shared_available)
 				return client::error::shared_subscription_not_available;

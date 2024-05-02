@@ -332,7 +332,12 @@ private:
 		constexpr uint8_t default_maximum_qos = 2;
 		constexpr uint8_t default_payload_format_ind = 0;
 
-		if (validate_topic_name(topic) != validation_result::valid)
+		auto topic_name_valid = props[prop::topic_alias].has_value() ?
+			validate_topic_alias_name(topic) == validation_result::valid :
+			validate_topic_name(topic) == validation_result::valid
+		;
+
+		if (!topic_name_valid)
 			return client::error::invalid_topic;
 
 		auto max_qos = _svc_ptr->connack_property(prop::maximum_qos)

@@ -104,6 +104,25 @@ BOOST_AUTO_TEST_CASE(topic_name_validation) {
 	BOOST_CHECK(validate_topic_name("+/tennis/#") == validation_result::has_wildcard_character);
 }
 
+BOOST_AUTO_TEST_CASE(topic_alias_name_validation) {
+	using namespace async_mqtt5::detail;
+
+	BOOST_CHECK(validate_topic_alias_name("") == validation_result::valid);
+	BOOST_CHECK(validate_topic_alias_name("topic") == validation_result::valid);
+	BOOST_CHECK(validate_topic_alias_name("topic/subtopic") == validation_result::valid);
+
+	BOOST_CHECK(validate_topic_alias_name("#") == validation_result::has_wildcard_character);
+	BOOST_CHECK(validate_topic_alias_name("sport#") == validation_result::has_wildcard_character);
+	BOOST_CHECK(validate_topic_alias_name("sport/#") == validation_result::has_wildcard_character);
+
+	BOOST_CHECK(validate_topic_alias_name("+") == validation_result::has_wildcard_character);
+	BOOST_CHECK(validate_topic_alias_name("+sport") == validation_result::has_wildcard_character);
+	BOOST_CHECK(validate_topic_alias_name("sport+") == validation_result::has_wildcard_character);
+	BOOST_CHECK(validate_topic_alias_name("sport/+/player1") == validation_result::has_wildcard_character);
+
+	BOOST_CHECK(validate_topic_alias_name("+/tennis/#") == validation_result::has_wildcard_character);
+}
+
 BOOST_AUTO_TEST_CASE(shared_topic_filter_validation) {
 	using namespace async_mqtt5::detail;
 

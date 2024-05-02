@@ -46,7 +46,7 @@ void assign_tls_sni(
 
 } // end namespace async_mqtt5
 
-BOOST_AUTO_TEST_SUITE(coroutine/*, *boost::unit_test::disabled()*/)
+BOOST_AUTO_TEST_SUITE(client/*, *boost::unit_test::disabled()*/)
 
 using namespace async_mqtt5;
 namespace asio = boost::asio;
@@ -54,7 +54,7 @@ namespace asio = boost::asio;
 constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 template<typename StreamType, typename TlsContext>
-asio::awaitable<void> sanity_check(mqtt_client<StreamType, TlsContext>& c) {
+asio::awaitable<void> test_client(mqtt_client<StreamType, TlsContext>& c) {
 	// Note: Older versions of GCC compilers may not handle temporaries
 	// correctly in co_await expressions.
 	// (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=98401)
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(tcp_client_check) {
 
 	co_spawn(ioc, 
 		[&]() -> asio::awaitable<void> {
-			co_await sanity_check(c);
+			co_await test_client(c);
 			timer.cancel();
 		},
 		asio::detached
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
 
 	co_spawn(ioc,
 		[&]() -> asio::awaitable<void> {
-			co_await sanity_check(c);
+			co_await test_client(c);
 			timer.cancel();
 		},
 		asio::detached
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(openssl_tls_client_check) {
 
 	co_spawn(ioc,
 		 [&]() -> asio::awaitable<void> {
-			 co_await sanity_check(c);
+			 co_await test_client(c);
 			 timer.cancel();
 		 },
 		 asio::detached
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(websocket_tls_client_check) {
 
 	co_spawn(ioc,
 		[&]() -> asio::awaitable<void> {
-			co_await sanity_check(c);
+			co_await test_client(c);
 			timer.cancel();
 		},
 		asio::detached
