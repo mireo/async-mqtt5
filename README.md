@@ -92,7 +92,7 @@ You can use the `CMakeLists.txt` provided in our repository to compile and run a
 The following commands demonstrate compiling and running the previous code using CMake.
 The source file is located at [example/hello_world_over_tcp.cpp](https://github.com/mireo/async-mqtt5/blob/master/example/hello_world_over_tcp.cpp).
 
-```console
+```
 	# navigate to the root folder of Async.MQTT5
 
 	# compile the example
