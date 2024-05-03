@@ -45,7 +45,7 @@ In the event of a connection failure with one Broker, the Client switches to the
 
 [heading Example]
 The following example illustrates a simple scenario of configuring a Client and publishing a
-"Hello World!" Application Message with `QoS` 0. 
+"Hello World!" Application Message with `QoS` 0.
 
 [!c++]
 	#include <iostream>
@@ -59,8 +59,7 @@ The following example illustrates a simple scenario of configuring a Client and 
 	int main() {
 		boost::asio::io_context ioc;
 
-		using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
-		client_type c(ioc);
+		async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> c(ioc);
 
 		c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
 			.brokers("<your-mqtt-broker>", 1883)
@@ -79,6 +78,23 @@ The following example illustrates a simple scenario of configuring a Client and 
 	}
 
 To see more examples, visit [link async_mqtt5.examples Examples].
+
+[heading Building with CMake]
+You can use the `CMakeLists.txt` provided in our repository to compile and run any of the [link async_mqtt5.examples examples] or your own source files.
+The following commands demonstrate compiling and running the previous code using CMake. 
+The source file is located at [ghreflink example/hello_world_over_tcp.cpp example/hello_world_over_tcp.cpp].
+
+	# navigate to the root folder of Async.MQTT5
+
+	# compile the example
+	cmake -S . -B {build-folder} -DBUILD_EXAMPLES=ON -DCMAKE_EXE_LINKER_FLAGS="-pthread"
+	cmake --build {build-folder}
+
+	# run the example
+	./{build-folder}/example/example
+
+You can edit the [ghreflink example/CMakeLists.txt example/CMakeLists.txt] file to compile the source file of your choice.
+By default, it will compile [ghreflink example/hello_world_over_tcp.cpp example/hello_world_over_tcp.cpp].
 
 [heading When to use]
 

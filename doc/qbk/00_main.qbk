@@ -20,7 +20,7 @@
 [template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
 [template indexterm2[term1 term2] '''<indexterm><primary>'''[term1]'''</primary><secondary>'''[term2]'''</secondary></indexterm>''']
 
-[template ghreflink[path text] [@https://github.com/mireo/async-mqtt5/[path] [text]]]
+[template ghreflink[path text] [@https://github.com/mireo/async-mqtt5/blob/master/[path] [text]]]
 [template reflink2[id text][link async_mqtt5.ref.[id] [^[text]]]]
 [template reflink[id][reflink2 [id] [id]]]
 [template refmem[class mem][reflink2 [class].[mem] [class]::[mem]]]
