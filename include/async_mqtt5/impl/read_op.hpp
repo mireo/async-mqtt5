@@ -30,7 +30,7 @@ public:
 		_handler(std::move(handler))
 	{}
 
-	read_op(read_op&&) noexcept = default;
+	read_op(read_op&&) = default;
 	read_op(const read_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;

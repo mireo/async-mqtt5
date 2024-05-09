@@ -89,10 +89,10 @@ To see more examples, visit [Examples](https://github.com/mireo/async-mqtt5/tree
 Building with CMake
 ---------
 You can use the `CMakeLists.txt` provided in our repository to compile and run any of the [examples](https://github.com/mireo/async-mqtt5/tree/master/example) or your own source files. 
-The following commands demonstrate compiling and running the previous code using CMake.
+The following commands demonstrate compiling and running the previous code using CMake on Linux.
 The source file is located at [example/hello_world_over_tcp.cpp](https://github.com/mireo/async-mqtt5/blob/master/example/hello_world_over_tcp.cpp).
 
-```
+```bash
 	# navigate to the root folder of Async.MQTT5
 
 	# compile the example
@@ -129,7 +129,7 @@ Async.MQTT5 is a header-only library. To use Async.MQTT5 it requires the followi
 
 Async.MQTT5 has been tested with the following compilers: 
 - clang 12.0, 13.0, 14.0, 15.0 (Linux)
-- GCC 10, 11, 12 (Linux)
+- GCC 9, 10, 11, 12 (Linux)
 - MSVC 14.37 - Visual Studio 2022 (Windows)
 
 Contributing

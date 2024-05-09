@@ -33,7 +33,7 @@ public:
 		_owner(owner), _handler(std::move(handler))
 	{}
 
-	resolve_op(resolve_op&&) noexcept = default;
+	resolve_op(resolve_op&&) = default;
 	resolve_op(const resolve_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;

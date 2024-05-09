@@ -66,7 +66,7 @@ public:
 		_handler(std::forward<Handler>(handler))
 	{}
 
-	reconnect_op(reconnect_op&&) noexcept = default;
+	reconnect_op(reconnect_op&&) = default;
 	reconnect_op(const reconnect_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;

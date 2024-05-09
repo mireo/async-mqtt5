@@ -51,8 +51,8 @@ public:
 			});
 	}
 
-	unsubscribe_op(unsubscribe_op&&) noexcept = default;
-	unsubscribe_op(const unsubscribe_op&) noexcept = delete;
+	unsubscribe_op(unsubscribe_op&&) = default;
+	unsubscribe_op(const unsubscribe_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {

@@ -118,7 +118,7 @@ public:
 			});
 	}
 
-	read_op(read_op&&) noexcept = default;
+	read_op(read_op&&) = default;
 	read_op(const read_op&) = delete;
 
 	using executor_type = test_stream_impl::executor_type;
@@ -173,7 +173,7 @@ public:
 		_handler(std::move(handler))
 	{}
 
-	write_op(write_op&&) noexcept = default;
+	write_op(write_op&&) = default;
 	write_op(const write_op&) = delete;
 
 	using executor_type = test_stream_impl::executor_type;

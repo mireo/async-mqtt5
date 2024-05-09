@@ -79,7 +79,7 @@ public:
 			});
 	}
 
-	publish_send_op(publish_send_op&&) noexcept = default;
+	publish_send_op(publish_send_op&& other) = default;
 	publish_send_op(const publish_send_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;

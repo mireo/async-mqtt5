@@ -40,7 +40,7 @@ public:
 		_args(std::move(args)...)
 	{}
 
-	delayed_op(delayed_op&&) noexcept = default;
+	delayed_op(delayed_op&&) = default;
 	delayed_op(const delayed_op&) = delete;
 
 	using executor_type = asio::steady_timer::executor_type;

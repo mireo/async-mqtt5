@@ -117,6 +117,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - toolset: g++-9
+            compiler: g++-9
+            install: g++-9
+            os: ubuntu-latest
+            container: ubuntu:22.04
+            build-type: 'Release'
+            cxxstd: 17
+            cxxflags: ''
+            ldflags: ''
+
           - toolset: g++-10
             compiler: g++-10
             install: g++-10

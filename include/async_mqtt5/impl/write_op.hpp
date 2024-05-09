@@ -22,11 +22,10 @@ class write_op {
 
 public:
 	write_op(Owner& owner, Handler&& handler) :
-		_owner(owner),
-		_handler(std::move(handler))
+		_owner(owner), _handler(std::move(handler))
 	{}
 
-	write_op(write_op&&) noexcept = default;
+	write_op(write_op&&) = default;
 	write_op(const write_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;

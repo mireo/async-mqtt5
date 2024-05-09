@@ -45,8 +45,7 @@ public:
 		const std::shared_ptr<client_service>& svc_ptr,
 		DisconnectContext&& context, Handler&& handler
 	) :
-		_svc_ptr(svc_ptr),
-		_context(std::move(context)),
+		_svc_ptr(svc_ptr), _context(std::move(context)),
 		_handler(std::move(handler), _svc_ptr->get_executor())
 	{
 		auto slot = asio::get_associated_cancellation_slot(_handler);
@@ -56,7 +55,7 @@ public:
 			});
 	}
 
-	disconnect_op(disconnect_op&&) noexcept = default;
+	disconnect_op(disconnect_op&&) = default;
 	disconnect_op(const disconnect_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;
@@ -185,7 +184,7 @@ public:
 		_handler(std::move(handler), _svc_ptr->get_executor())
 	{}
 
-	terminal_disconnect_op(terminal_disconnect_op&&) noexcept = default;
+	terminal_disconnect_op(terminal_disconnect_op&&) = default;
 	terminal_disconnect_op(const terminal_disconnect_op&) = delete;
 
 	using executor_type = asio::associated_executor_t<handler_type>;

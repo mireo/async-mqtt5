@@ -31,7 +31,7 @@ public:
 		)
 	{}
 
-	cancellable_handler(cancellable_handler&& other) noexcept = default;
+	cancellable_handler(cancellable_handler&&) = default;
 	cancellable_handler(const cancellable_handler&) = delete;
 
 	using executor_type = tracking_type<Handler, Executor>;
