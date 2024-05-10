@@ -223,10 +223,10 @@ private:
 	template <typename ClientService, typename Handler>
 	friend class assemble_op;
 
-	template <typename ClientService>
+	template <typename ClientService, typename Executor>
 	friend class ping_op;
 
-	template <typename ClientService>
+	template <typename ClientService, typename Executor>
 	friend class sentry_op;
 
 	template <typename ClientService>
@@ -369,7 +369,6 @@ public:
 
 	template <typename Handler>
 	void run(Handler&& handler) {
-		_executor = asio::get_associated_executor(handler, _executor);
 		_run_handler = std::move(handler);
 		auto slot = asio::get_associated_cancellation_slot(_run_handler);
 		if (slot.is_connected()) {

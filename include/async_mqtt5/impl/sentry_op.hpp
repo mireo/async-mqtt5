@@ -16,31 +16,36 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename ClientService>
+template <typename ClientService, typename Executor>
 class sentry_op {
+public:
+	using executor_type = Executor;
+private:
 	using client_service = ClientService;
+
 	struct on_timer {};
 	struct on_disconnect {};
 
 	static constexpr auto check_interval = std::chrono::seconds(3);
 
 	std::shared_ptr<client_service> _svc_ptr;
+	executor_type _executor;
 	std::unique_ptr<asio::steady_timer> _sentry_timer;
 
 public:
 	sentry_op(
-		const std::shared_ptr<client_service>& svc_ptr
+		const std::shared_ptr<client_service>& svc_ptr,
+		const executor_type& ex
 	) :
-		_svc_ptr(svc_ptr),
-		_sentry_timer(new asio::steady_timer(svc_ptr->get_executor()))
+		_svc_ptr(svc_ptr), _executor(ex),
+		_sentry_timer(new asio::steady_timer(_svc_ptr->get_executor()))
 	{}
 
 	sentry_op(sentry_op&&) noexcept = default;
 	sentry_op(const sentry_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
+		return _executor;
 	}
 
 	using allocator_type = asio::recycling_allocator<void>;

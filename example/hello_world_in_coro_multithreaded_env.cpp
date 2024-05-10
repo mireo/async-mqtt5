@@ -28,15 +28,10 @@ boost::asio::awaitable<void> publish_hello_world(
 	assert(strand.running_in_this_thread());
 
 	// All these function calls will be executed by the strand that is executing the coroutine.
-	// All the completion handler's associated executors will be the same strand
-	// because the Client was constructed with it as the default associated executor,
-	// and no executors were associated with the async_run call.
-
-	// Note: you can spawn the coroutine in another strand that is different
-	// from the one used in constructing the Client.
-	// However, then you must bind the second strand to async_run's handler.
-
-	client.async_run(boost::asio::detached);
+	// All the completion handler's associated executors will be that same strand
+	// because the Client was constructed with it as the default associated executor.
+	client.brokers("<your-mqtt-broker>", 1883)
+		.async_run(boost::asio::detached);
 
 	auto&& [ec, rc, puback_props] = co_await client.async_publish<async_mqtt5::qos_e::at_least_once>(
 		"<your-mqtt-topic>", "Hello world!", async_mqtt5::retain_e::no,
@@ -65,8 +60,6 @@ int main() {
 
 	// Create the Client with the explicit strand as the default associated executor.
 	client_type client(strand);
-
-	client.brokers("<your-mqtt-broker>", 1883);
 
 	// Spawn the coroutine.
 	// The executor that executes the coroutine must be the same executor

@@ -180,11 +180,12 @@ public:
 		using Signature = void(error_code);
 
 		auto initiation = [] (auto handler, const impl_type& impl) {
-			impl->run(std::move(handler));
+			auto ex = asio::get_associated_executor(handler, impl->get_executor());
 
-			detail::ping_op { impl }.perform();
-			detail::read_message_op { impl }.perform();
-			detail::sentry_op { impl }.perform();
+			impl->run(std::move(handler));
+			detail::ping_op { impl, ex }.perform();
+			detail::read_message_op { impl, ex }.perform();
+			detail::sentry_op { impl, ex }.perform();
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(

@@ -20,20 +20,28 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename ClientService>
+template <typename ClientService, typename Executor>
 class ping_op {
+public:
+	using executor_type = Executor;
+private:
 	using client_service = ClientService;
+
 	struct on_timer {};
 	struct on_pingreq {};
 
 	std::shared_ptr<client_service> _svc_ptr;
+	executor_type _executor;
 	std::unique_ptr<asio::steady_timer> _ping_timer;
 	asio::cancellation_state _cancellation_state;
 
 public:
-	ping_op(const std::shared_ptr<client_service>& svc_ptr) :
-		_svc_ptr(svc_ptr),
-		_ping_timer(new asio::steady_timer(svc_ptr->get_executor())),
+	ping_op(
+		const std::shared_ptr<client_service>& svc_ptr,
+		const executor_type& ex
+	) :
+		_svc_ptr(svc_ptr), _executor(ex),
+		_ping_timer(new asio::steady_timer(_svc_ptr->get_executor())),
 		_cancellation_state(
 			svc_ptr->_cancel_ping.slot(),
 			asio::enable_total_cancellation {},
@@ -44,9 +52,8 @@ public:
 	ping_op(ping_op&&) noexcept = default;
 	ping_op(const ping_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
+		return _executor;
 	}
 
 	using allocator_type = asio::recycling_allocator<void>;

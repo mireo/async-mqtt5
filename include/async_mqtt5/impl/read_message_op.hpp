@@ -20,26 +20,31 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename ClientService>
+template <typename ClientService, typename Executor>
 class read_message_op {
+public:
+	using executor_type = Executor;
+private:
 	using client_service = ClientService;
+
 	struct on_message {};
 	struct on_disconnect {};
 
 	std::shared_ptr<client_service> _svc_ptr;
+	executor_type _executor;
 public:
 	read_message_op(
-		const std::shared_ptr<client_service>& svc_ptr
+		const std::shared_ptr<client_service>& svc_ptr,
+		const executor_type& ex
 	) :
-		_svc_ptr(svc_ptr)
+		_svc_ptr(svc_ptr), _executor(ex)
 	{}
 
 	read_message_op(read_message_op&&) noexcept = default;
 	read_message_op(const read_message_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
+		return _executor;
 	}
 
 	using allocator_type = asio::recycling_allocator<void>;

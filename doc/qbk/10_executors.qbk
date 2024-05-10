@@ -15,27 +15,19 @@ and will be used for the execution of all the intermediate operations and a fina
 that have not bound an executor.
 If an executor is bound to an asynchronous operation, that executor will be used instead.
 
-In this context, the [refmem mqtt_client async_run] operation is particularly important. 
-It starts the __Client__, which initiates a series of internal asynchronous operations, all of which need an executor.
+The [refmem mqtt_client async_run] operation starts the __Client__, which initiates a series of internal asynchronous operations, all of which need an executor.
 If the [refmem mqtt_client async_run] is called with a completion handler that has an associated executor,
-then all the internal asynchronous operations will also be associated with the same executor.
-Otherwise, the default executor from the __Client__'s construction will be used instead.
-
-[note 
-	If the [refmem mqtt_client async_run]'s completion handler has an associated executor,
-	*the associated executor will become the new default associated executor* instead of the executor provided in the constructor.
-]
+then all the internal asynchronous operations will associate the same executor.
 
 [important
- The same executor *must* execute [refmem mqtt_client async_run] and all the subsequent async_xxx operations.
+ The same executor *must* execute [refmem mqtt_client async_run] and all the subsequent `async_xxx` operations.
 ]
 
 The following examples will demonstrate the previously described interactions.
 
-[heading Example 1: using the constructor's executor as the default associated executor]
+[heading Example: using the constructor's executor as the default associated executor]
 
-In this code snippet, the __Client__ is constructed with a strand
-without explicitly associating an executor with the completion handler of [refmem mqtt_client async_run]. 
+In this code snippet, the __Client__ is constructed with a strand.
 Consequently, the __Client__ adopts the strand as its new default executor,
 which is used to execute the [refmem mqtt_client async_publish] operation.
 
@@ -64,78 +56,6 @@ int main() {
 	ioc.run();
 }
 
-```
-
-[heading Example 2: binding an executor to async_run's handler overrides the default associated executor]
-
-In this code snippet, the __Client__ is constructed with __IOC__'s executor
-with explicitly associating an executor (strand) with the completion handler of [refmem mqtt_client async_run]. 
-Consequently, the __Client__ adopts the strand as its new default executor,
-which is used to execute the [refmem mqtt_client async_publish] operation.
-
-```
-int main() {
-	boost::asio::io_context ioc;
-
-	// Create the Client with io_context's executor.
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc.get_executor());
-
-	auto strand = boost::asio::make_strand(ioc.get_executor());
-	client.brokers("<your-mqtt-broker>", 1883)
-		// Bind the strand to async_run's completion handler.
-		// Strand is now the default associated executor.
-		.async_run(boost::asio::bind_executor(strand, boost::asio::detached));
-
-	client.async_publish<async_mqtt5::qos_e::at_most_once>(
-		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		[&client, &strand](async_mqtt5::error_code /* ec */) {
-			assert(strand.running_in_this_thread());
-			client.cancel();
-		}
-	);
-
-	ioc.run();
-}
-```
-
-[heading Example 3: binding an executor to a async_xxx call]
-
-In this code snippet, the __Client__ is constructed with __IOC__'s executor
-without explicitly associating an executor with the completion handler of [refmem mqtt_client async_run]. 
-The [refmem mqtt_client async_publish] operation bound the strand as the associated executor.
-Therefore, all the intermediate operations and the final completion handler will be executed
-on the strand.
-
-[warning 
-	This example only serves as a demonstration and should *not* be used.
-	It is *not* recommended that [refmem mqtt_client async_run] and other async_xxx operations execute on different executors! 
-]
-
-```
-int main() {
-	boost::asio::io_context ioc;
-
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc.get_executor());
-
-	auto strand = boost::asio::make_strand(ioc.get_executor());
-	client.brokers("<your-mqtt-broker>", 1883)
-		.async_run(boost::asio::detached);
-
-	client.async_publish<async_mqtt5::qos_e::at_most_once>(
-		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		boost::asio::bind_executor(
-			strand,
-			[&client, &strand](async_mqtt5::error_code /* ec */) {
-				assert(strand.running_in_this_thread());
-				client.cancel();
-			}
-		)
-	);
-
-	ioc.run();
-}
 ```
 
 [endsect] [/executors]
