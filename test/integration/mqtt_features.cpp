@@ -87,8 +87,9 @@ asio::awaitable<void> test_subscription_identifiers() {
 	client.brokers(broker)
 		.async_run(asio::detached);
 
+	publish_props pprops;
 	auto&& [ec_1, rc_1, _] = co_await client.async_publish<qos_e::at_least_once>(
-		topic, payload, retain_e::yes, publish_props {}, use_nothrow_awaitable
+		topic, payload, retain_e::yes, pprops, use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!ec_1);
 	BOOST_TEST_WARN(!rc_1);
@@ -98,9 +99,9 @@ asio::awaitable<void> test_subscription_identifiers() {
 	sprops[prop::subscription_identifier] = sub_id;
 
 	subscribe_options sub_opts = { .no_local = no_local_e::no };
-
+	subscribe_topic sub_topic = { share_topic, sub_opts };
 	auto&& [ec_2, rcs, __] = co_await client.async_subscribe(
-		{ topic, sub_opts }, sprops, use_nothrow_awaitable
+		sub_topic, sprops, use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!ec_2);
 	BOOST_TEST_WARN(!rcs[0]);
@@ -128,16 +129,18 @@ asio::awaitable<void> test_shared_subscription() {
 		.async_run(asio::detached);
 
 	subscribe_options sub_opts = { .no_local = no_local_e::no };
-
+	subscribe_topic sub_topic = { share_topic, sub_opts };
+	subscribe_props sprops;
 	auto&& [ec_1, rcs, __] = co_await client.async_subscribe(
-		{ share_topic, sub_opts}, subscribe_props {}, use_nothrow_awaitable
+		sub_topic, sprops, use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!ec_1);
 	BOOST_TEST_WARN(!rcs[0]);
 
+	publish_props pprops;
 	// shared subscriptions do not send Retained Messages on first subscribe
 	auto&& [ec_2, rc_2, _] = co_await client.async_publish<qos_e::at_least_once>(
-		topic, payload, retain_e::no, publish_props{}, use_nothrow_awaitable
+		topic, payload, retain_e::no, pprops, use_nothrow_awaitable
 	);
 	BOOST_TEST_WARN(!ec_2);
 	BOOST_TEST_WARN(!rc_2);
