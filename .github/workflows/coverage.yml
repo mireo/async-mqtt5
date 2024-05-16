@@ -19,7 +19,6 @@ jobs:
         include:
           - toolset: coverage
             compiler: g++-11
-            install: g++-11
             os: ubuntu-latest
             container: ubuntu:22.04
             cxxstd: 20
@@ -33,16 +32,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup container environment
         if: matrix.container
         run: |
           apt-get update
-          apt-get -y install sudo wget tar cmake openssl libssl-dev pkg-config lcov
+          apt-get -y install sudo wget tar cmake openssl libssl-dev pkg-config lcov gpg git
 
       - name: Install compiler
-        run: sudo apt-get install -y ${{ matrix.install }}
+        run: sudo apt-get install -y ${{ matrix.compiler }}
       
       - name: Setup Boost
         run: |
@@ -76,9 +75,12 @@ jobs:
           lcov --remove coverage.info '**/boost/*' --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
-          files: coverage.info
+          verbose: true
+          file: coverage.info
+          disable_search: true
           fail_ci_if_error: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          plugin: noop
+          token: ${{ secrets.CODECOV_TOKEN }}
+

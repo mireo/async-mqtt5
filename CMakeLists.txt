@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(async-mqtt5 VERSION 0.0.1 LANGUAGES CXX)
+project(async-mqtt5 VERSION 1.0.1 LANGUAGES CXX)
 
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)

@@ -19,5 +19,9 @@ coverage:
     project:
       default:
         informational: true
+
 github_checks:
   annotations: true
+
+fixes:
+  - ".*/async_mqtt5/::include/async_mqtt5/"
