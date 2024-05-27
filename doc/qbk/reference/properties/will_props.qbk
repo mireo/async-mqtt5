@@ -1,3 +1,9 @@
+[/
+    Copyright (c) 2023-2024 Ivica Siladic, Bruno Iljazovic, Korina Simicevic
+    Distributed under the Boost Software License, Version 1.0.
+    (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
+]
+
 [section:will_props Will properties]
 The Will Properties consist of the properties that determine when to publish the [reflink2 will Will] Message 
 and the Application Message properties to be sent with the [reflink2 will Will] Message.
