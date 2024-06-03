@@ -11,6 +11,7 @@
 #include <boost/asio/detached.hpp>
 
 #include <async_mqtt5/error.hpp>
+#include <async_mqtt5/reason_codes.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/any_authenticator.hpp>

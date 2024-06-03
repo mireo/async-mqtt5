@@ -8,6 +8,7 @@
 #ifndef ASYNC_MQTT5_CONTROL_PACKET_HPP
 #define ASYNC_MQTT5_CONTROL_PACKET_HPP
 
+#include <algorithm>
 #include <vector>
 
 #include <boost/smart_ptr/allocate_unique.hpp>

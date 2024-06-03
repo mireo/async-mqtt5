@@ -15,7 +15,7 @@ env:
 
 jobs:
   windows:
-    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
+    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }}"
     defaults:
       run:
         shell: cmd
@@ -114,7 +114,7 @@ jobs:
         .\\test\\build\\${{ matrix.build-type }}\\mqtt-test.exe
 
   posix:
-    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.build-type }}"
+    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.container }}"
 
     defaults:
       run:
@@ -149,6 +149,26 @@ jobs:
             install: g++-12
             os: ubuntu-latest
             container: ubuntu:22.04
+            build-type: 'Release'
+            cxxstd: 17
+            cxxflags: ''
+            ldflags: ''
+          
+          - toolset: g++-13
+            compiler: g++-13
+            install: g++-13
+            os: ubuntu-24.04
+            container: ubuntu:24.04
+            build-type: 'Release'
+            cxxstd: 17
+            cxxflags: ''
+            ldflags: ''
+          
+          - toolset: g++-14
+            compiler: g++-14
+            install: g++-14
+            os: ubuntu-24.04
+            container: ubuntu:24.04
             build-type: 'Release'
             cxxstd: 20
             cxxflags: ''

@@ -15,7 +15,7 @@ env:
 
 jobs:
   posix:
-    name: "coverage ${{ matrix.compiler }} -std=c++${{ matrix.cxxstd }}"
+    name: "coverage ${{ matrix.compiler }} -std=c++${{ matrix.cxxstd }} ${{ matrix.container }}"
     defaults:
       run:
         shell: bash

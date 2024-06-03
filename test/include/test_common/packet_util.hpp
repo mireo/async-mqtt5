@@ -8,8 +8,9 @@
 #ifndef ASYNC_MQTT5_TEST_PACKET_UTIL_HPP
 #define ASYNC_MQTT5_TEST_PACKET_UTIL_HPP
 
-#include <string>
 #include <bitset>
+#include <sstream>
+#include <string>
 
 #include <boost/algorithm/string/join.hpp>
 
