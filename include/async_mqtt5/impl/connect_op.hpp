@@ -11,6 +11,7 @@
 #include <boost/asio/append.hpp>
 #include <boost/asio/cancellation_state.hpp>
 #include <boost/asio/consign.hpp>
+#include <boost/asio/completion_condition.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/read.hpp>
@@ -248,7 +249,7 @@ public:
 
 		auto buff = asio::buffer(_buffer_ptr->data(), min_packet_sz);
 		asio::async_read(
-			_stream, buff,
+			_stream, buff, asio::transfer_all(),
 			asio::prepend(std::move(*this), on_fixed_header {})
 		);
 	}
@@ -287,7 +288,7 @@ public:
 		auto last = first + *varlen;
 
 		asio::async_read(
-			_stream, buff,
+			_stream, buff, asio::transfer_all(),
 			asio::prepend(
 				asio::append(std::move(*this), code, first, last),
 				on_read_packet {}
@@ -407,7 +408,7 @@ public:
 
 		auto buff = asio::buffer(_buffer_ptr->data(), min_packet_sz);
 		asio::async_read(
-			_stream, buff,
+			_stream, buff, asio::transfer_all(),
 			asio::prepend(std::move(*this), on_fixed_header {})
 		);
 	}

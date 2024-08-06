@@ -5,6 +5,8 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define BOOST_TEST_MODULE async_mqtt5_tests
+
 #include <boost/test/included/unit_test.hpp>
 
 #include <test_common/protocol_logging.hpp>
