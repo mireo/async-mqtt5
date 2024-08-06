@@ -10,8 +10,12 @@
 #include <chrono>
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/bind_immediate_executor.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/steady_timer.hpp>
+
+#include <boost/asio/ip/tcp.hpp>
 
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
@@ -101,8 +105,8 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 			asio::bind_executor(
 				strand,
 				[&](error_code ec) {
-					BOOST_CHECK_EQUAL(ec, asio::error::operation_aborted);
-					BOOST_CHECK(strand.running_in_this_thread());
+					BOOST_TEST(ec == asio::error::operation_aborted);
+					BOOST_TEST(strand.running_in_this_thread());
 					++handlers_called;
 				}
 			)
@@ -113,8 +117,8 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 		asio::bind_executor(
 			strand,
 			[&](error_code ec) {
-				BOOST_CHECK_MESSAGE(!ec, ec.message());
-				BOOST_CHECK(strand.running_in_this_thread());
+				BOOST_TEST(!ec);
+				BOOST_TEST(strand.running_in_this_thread());
 				++handlers_called;
 			}
 		)
@@ -125,9 +129,9 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 		asio::bind_executor(
 			strand,
 			[&](error_code ec, reason_code rc, auto) {
-				BOOST_CHECK_MESSAGE(!ec, ec.message());
-				BOOST_CHECK_MESSAGE(!rc, rc.message());
-				BOOST_CHECK(strand.running_in_this_thread());
+				BOOST_TEST(!ec);
+				BOOST_TEST(!rc);
+				BOOST_TEST(strand.running_in_this_thread());
 				++handlers_called;
 			}
 		)
@@ -138,9 +142,9 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 		asio::bind_executor(
 			strand,
 			[&](error_code ec, reason_code rc, auto) {
-				BOOST_CHECK_MESSAGE(!ec, ec.message());
-				BOOST_CHECK_MESSAGE(!rc, rc.message());
-				BOOST_CHECK(strand.running_in_this_thread());
+				BOOST_TEST(!ec);
+				BOOST_TEST(!rc);
+				BOOST_TEST(strand.running_in_this_thread());
 				++handlers_called;
 			}
 		)
@@ -151,9 +155,9 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 		asio::bind_executor(
 			strand,
 			[&](error_code ec, std::vector<reason_code> rcs, auto) {
-				BOOST_CHECK_MESSAGE(!ec, ec.message());
-				BOOST_CHECK_MESSAGE(!rcs[0], rcs[0].message());
-				BOOST_CHECK(strand.running_in_this_thread());
+				BOOST_TEST(!ec);
+				BOOST_TEST(!rcs[0]);
+				BOOST_TEST(strand.running_in_this_thread());
 				++handlers_called;
 			}
 		)
@@ -167,10 +171,10 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 				std::string rec_topic, std::string rec_payload,
 				publish_props
 			) {
-				BOOST_CHECK_MESSAGE(!ec, ec.message());
-				BOOST_CHECK_EQUAL("t_0", rec_topic);
-				BOOST_CHECK_EQUAL("p_0",  rec_payload);
-				BOOST_CHECK(strand.running_in_this_thread());
+				BOOST_TEST(!ec);
+				BOOST_TEST("t_0" == rec_topic);
+				BOOST_TEST("p_0" == rec_payload);
+				BOOST_TEST(strand.running_in_this_thread());
 				++handlers_called;
 
 				c.async_unsubscribe(
@@ -178,17 +182,17 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 					asio::bind_executor(
 						strand,
 						[&](error_code ec, std::vector<reason_code> rcs, auto) {
-							BOOST_CHECK_MESSAGE(!ec, ec.message());
-							BOOST_CHECK_MESSAGE(!rcs[0], rcs[0].message());
-							BOOST_CHECK(strand.running_in_this_thread());
+							BOOST_TEST(!ec);
+							BOOST_TEST(!rcs[0]);
+							BOOST_TEST(strand.running_in_this_thread());
 							++handlers_called;
 
 							c.async_disconnect(
 								asio::bind_executor(
 									strand,
 									[&](error_code ec) {
-										BOOST_CHECK_MESSAGE(!ec, ec.message());
-										BOOST_CHECK(strand.running_in_this_thread());
+										BOOST_TEST(!ec);
+										BOOST_TEST(strand.running_in_this_thread());
 										++handlers_called;
 									}
 								)
@@ -201,8 +205,94 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 	);
 
 	ioc.run_for(500ms);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
+
+BOOST_AUTO_TEST_CASE(immediate_executor_async_publish) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	asio::io_context ioc;
+
+	using client_type = mqtt_client<asio::ip::tcp::socket>;
+	client_type c(ioc.get_executor());
+
+	auto strand = asio::make_strand(ioc);
+
+	auto handler = asio::bind_immediate_executor(
+		strand,
+		[&handlers_called, &strand](error_code ec) {
+			++handlers_called;
+			BOOST_TEST(strand.running_in_this_thread());
+			BOOST_TEST(ec);
+		}
+	);
+	c.async_publish<qos_e::at_most_once>(
+		"invalid/#", "", retain_e::no, publish_props {}, std::move(handler)
+	);
+
+	ioc.run();
+	BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
+BOOST_AUTO_TEST_CASE(immediate_executor_async_subscribe) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	asio::io_context ioc;
+
+	using client_type = mqtt_client<asio::ip::tcp::socket>;
+	client_type c(ioc.get_executor());
+
+	auto strand = asio::make_strand(ioc);
+
+	auto handler = asio::bind_immediate_executor(
+		strand,
+		[&handlers_called, &strand](
+			error_code ec, std::vector<reason_code>, suback_props
+		) {
+			++handlers_called;
+			BOOST_TEST(strand.running_in_this_thread());
+			BOOST_TEST(ec);
+		}
+	);
+	c.async_subscribe(
+		{ "+topic" }, subscribe_props {}, std::move(handler)
+	);
+
+	ioc.run();
+	BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
+BOOST_AUTO_TEST_CASE(immediate_executor_async_unsubscribe) {
+	constexpr int expected_handlers_called = 1;
+	int handlers_called = 0;
+
+	asio::io_context ioc;
+
+	using client_type = mqtt_client<asio::ip::tcp::socket>;
+	client_type c(ioc.get_executor());
+
+	auto strand = asio::make_strand(ioc);
+
+	auto handler = asio::bind_immediate_executor(
+		strand,
+		[&handlers_called, &strand](
+			error_code ec, std::vector<reason_code>, unsuback_props
+		) {
+			++handlers_called;
+			BOOST_TEST(strand.running_in_this_thread());
+			BOOST_TEST(ec);
+		}
+	);
+	c.async_unsubscribe(
+		"some/topic#", unsubscribe_props {}, std::move(handler)
+	);
+
+	ioc.run();
+	BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()

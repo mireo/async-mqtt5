@@ -8,6 +8,8 @@
 #ifndef ASYNC_MQTT5_PUBLISH_SEND_OP_HPP
 #define ASYNC_MQTT5_PUBLISH_SEND_OP_HPP
 
+#include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_executor.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/prepend.hpp>
 
@@ -86,17 +88,20 @@ public:
 			});
 	}
 
-	publish_send_op(publish_send_op&& other) = default;
+	publish_send_op(publish_send_op&&) = default;
 	publish_send_op(const publish_send_op&) = delete;
 
-	using executor_type = asio::associated_executor_t<handler_type>;
-	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
-	}
+	publish_send_op& operator=(publish_send_op&&) noexcept = default;
+	publish_send_op& operator=(const publish_send_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
+	}
+
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
 	}
 
 	void perform(
@@ -107,12 +112,12 @@ public:
 		if constexpr (qos_type != qos_e::at_most_once) {
 			packet_id = _svc_ptr->allocate_pid();
 			if (packet_id == 0)
-				return complete_post(client::error::pid_overrun, packet_id);
+				return complete_immediate(client::error::pid_overrun, packet_id);
 		}
 
 		auto ec = validate_publish(topic, payload, retain, props);
 		if (ec)
-			return complete_post(ec, packet_id);
+			return complete_immediate(ec, packet_id);
 
 		_serial_num = _svc_ptr->next_serial_num();
 
@@ -126,7 +131,7 @@ public:
 		auto max_packet_size = _svc_ptr->connack_property(prop::maximum_packet_size)
 				.value_or(default_max_send_size);
 		if (publish.size() > max_packet_size)
-			return complete_post(client::error::packet_too_large, packet_id);
+			return complete_immediate(client::error::packet_too_large, packet_id);
 
 		send_publish(std::move(publish));
 	}
@@ -429,8 +434,8 @@ private:
 		qos_e q = qos_type,
 		std::enable_if_t<q == qos_e::at_most_once, bool> = true
 	>
-	void complete_post(error_code ec, uint16_t) {
-		_handler.complete_post(ec);
+	void complete_immediate(error_code ec, uint16_t) {
+		_handler.complete_immediate(ec);
 	}
 
 	template <
@@ -457,10 +462,10 @@ private:
 			bool
 		> = true
 	>
-	void complete_post(error_code ec, uint16_t packet_id) {
+	void complete_immediate(error_code ec, uint16_t packet_id) {
 		if (packet_id != 0)
 			_svc_ptr->free_pid(packet_id, false);
-		_handler.complete_post(ec, reason_codes::empty, Props {});
+		_handler.complete_immediate(ec, reason_codes::empty, Props {});
 	}
 };
 

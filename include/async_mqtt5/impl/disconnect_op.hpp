@@ -8,6 +8,9 @@
 #ifndef ASYNC_MQTT5_DISCONNECT_OP_HPP
 #define ASYNC_MQTT5_DISCONNECT_OP_HPP
 
+#include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_executor.hpp>
+#include <boost/asio/associated_cancellation_slot.hpp>
 #include <boost/asio/consign.hpp>
 #include <boost/asio/deferred.hpp>
 #include <boost/asio/prepend.hpp>
@@ -65,20 +68,23 @@ public:
 	disconnect_op(disconnect_op&&) = default;
 	disconnect_op(const disconnect_op&) = delete;
 
-	using executor_type = asio::associated_executor_t<handler_type>;
-	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
-	}
+	disconnect_op& operator=(disconnect_op&&) noexcept = default;
+	disconnect_op& operator=(const disconnect_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
 	}
 
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
+	}
+
 	void perform() {
 		error_code ec = validate_disconnect(_context.props);
 		if (ec)
-			return complete_post(ec);
+			return complete_immediate(ec);
 
 		auto disconnect = control_packet<allocator_type>::of(
 			no_pid, get_allocator(),
@@ -162,8 +168,8 @@ private:
 		_handler.complete(ec);
 	}
 
-	void complete_post(error_code ec) {
-		_handler.complete_post(ec);
+	void complete_immediate(error_code ec) {
+		_handler.complete_immediate(ec);
 	}
 };
 
@@ -194,10 +200,8 @@ public:
 	terminal_disconnect_op(terminal_disconnect_op&&) = default;
 	terminal_disconnect_op(const terminal_disconnect_op&) = delete;
 
-	using executor_type = asio::associated_executor_t<handler_type>;
-	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
-	}
+	terminal_disconnect_op& operator=(terminal_disconnect_op&&) noexcept = default;
+	terminal_disconnect_op& operator=(const terminal_disconnect_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
@@ -207,6 +211,11 @@ public:
 	using cancellation_slot_type = asio::associated_cancellation_slot_t<handler_type>;
 	cancellation_slot_type get_cancellation_slot() const noexcept {
 		return asio::get_associated_cancellation_slot(_handler);
+	}
+
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
 	}
 
 	template <typename DisconnectContext>

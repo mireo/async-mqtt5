@@ -8,6 +8,7 @@
 #ifndef ASYNC_MQTT5_TEST_TEST_STREAM_HPP
 #define ASYNC_MQTT5_TEST_TEST_STREAM_HPP
 
+#include <boost/asio/associated_executor.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/execution_context.hpp>
 #include <boost/asio/post.hpp>
@@ -48,7 +49,13 @@ private:
 	friend class write_op;
 
 public:
-	test_stream_impl(executor_type ex) : _ex(std::move(ex))	{}
+	explicit test_stream_impl(executor_type ex) : _ex(std::move(ex))	{}
+
+	test_stream_impl(test_stream_impl&&) = default;
+	test_stream_impl(const test_stream_impl&) = delete;
+
+	test_stream_impl& operator=(test_stream_impl&&) = default;
+	test_stream_impl& operator=(const test_stream_impl&) = delete;
 
 	executor_type get_executor() const noexcept {
 		return _ex;
@@ -128,20 +135,23 @@ public:
 	read_op(read_op&&) = default;
 	read_op(const read_op&) = delete;
 
-	using executor_type = test_stream_impl::executor_type;
-	executor_type get_executor() const noexcept {
-		return _stream_impl->get_executor();
-	}
+	read_op& operator=(read_op&&) noexcept = default;
+	read_op& operator=(const read_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
 		return allocator_type {};
 	}
 
+	using executor_type = test_stream_impl::executor_type;
+	executor_type get_executor() const noexcept {
+		return _stream_impl->get_executor();
+	}
+
 	template <typename BufferType>
 	void perform(const BufferType& buffer) {
 		if (!_stream_impl->is_open() || !_stream_impl->is_connected())
-			return complete_post(asio::error::not_connected, 0);
+			return complete_immediate(asio::error::not_connected, 0);
 
 		_stream_impl->_test_broker->read_from_network(
 			buffer,
@@ -156,8 +166,8 @@ public:
 	}
 
 private:
-	void complete_post(error_code ec, size_t bytes_read) {
-		_handler.complete_post(ec, bytes_read);
+	void complete_immediate(error_code ec, size_t bytes_read) {
+		_handler.complete_immediate(ec, bytes_read);
 	}
 
 	void complete(error_code ec, size_t bytes_read) {
@@ -183,14 +193,17 @@ public:
 	write_op(write_op&&) = default;
 	write_op(const write_op&) = delete;
 
-	using executor_type = test_stream_impl::executor_type;
-	executor_type get_executor() const noexcept {
-		return _stream_impl->get_executor();
-	}
+	write_op& operator=(write_op&&) noexcept = default;
+	write_op& operator=(const write_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
 		return allocator_type {};
+	}
+
+	using executor_type = test_stream_impl::executor_type;
+	executor_type get_executor() const noexcept {
+		return _stream_impl->get_executor();
 	}
 
 	template <typename BufferType>

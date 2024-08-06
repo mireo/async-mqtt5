@@ -11,8 +11,9 @@
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
 #include <boost/asio/associated_cancellation_slot.hpp>
+#include <boost/asio/associated_immediate_executor.hpp>
 #include <boost/asio/cancellation_state.hpp>
-#include <boost/asio/post.hpp>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/detail/async_traits.hpp>
@@ -41,11 +42,6 @@ public:
 	cancellable_handler(cancellable_handler&&) = default;
 	cancellable_handler(const cancellable_handler&) = delete;
 
-	using executor_type = tracking_type<Handler, Executor>;
-	executor_type get_executor() const noexcept {
-		return _handler_ex;
-	}
-
 	using allocator_type = asio::associated_allocator_t<Handler>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
@@ -56,7 +52,20 @@ public:
 		return _cancellation_state.slot();
 	}
 
-	asio::cancellation_type_t cancelled() const noexcept {
+	using executor_type = tracking_type<Handler, Executor>;
+	executor_type get_executor() const noexcept {
+		return _handler_ex;
+	}
+	
+	using immediate_executor_type =
+		asio::associated_immediate_executor_t<Handler, Executor>;
+	immediate_executor_type get_immediate_executor() const noexcept {
+		// get_associated_immediate_executor will require asio::execution::blocking.never
+		// on the default executor.
+		return asio::get_associated_immediate_executor(_handler, _executor);
+	}
+
+	asio::cancellation_type_t cancelled() const {
 		return _cancellation_state.cancelled();
 	}
 
@@ -67,10 +76,11 @@ public:
 	}
 
 	template <typename... Args>
-	void complete_post(Args&&... args) {
+	void complete_immediate(Args&&... args) {
 		asio::get_associated_cancellation_slot(_handler).clear();
-		asio::post(
-			_executor,
+		auto ex = get_immediate_executor();
+		asio::dispatch(
+			ex,
 			asio::prepend(std::move(_handler), std::forward<Args>(args)...)
 		);
 	}

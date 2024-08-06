@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <cstdint>
 
+#include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_executor.hpp>
 #include <boost/asio/detached.hpp>
 
 #include <async_mqtt5/error.hpp>
@@ -66,14 +68,17 @@ public:
 	subscribe_op(subscribe_op&&) = default;
 	subscribe_op(const subscribe_op&) = delete;
 
-	using executor_type = asio::associated_executor_t<handler_type>;
-	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
-	}
+	subscribe_op& operator=(subscribe_op&&) noexcept = default;
+	subscribe_op& operator=(const subscribe_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
+	}
+
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
 	}
 
 	void perform(
@@ -84,14 +89,14 @@ public:
 
 		uint16_t packet_id = _svc_ptr->allocate_pid();
 		if (packet_id == 0)
-			return complete_post(client::error::pid_overrun, packet_id);
+			return complete_immediate(client::error::pid_overrun, packet_id);
 
 		if (_num_topics == 0)
-			return complete_post(client::error::invalid_topic, packet_id);
+			return complete_immediate(client::error::invalid_topic, packet_id);
 
 		auto ec = validate_subscribe(topics, props);
 		if (ec)
-			return complete_post(ec, packet_id);
+			return complete_immediate(ec, packet_id);
 
 		auto subscribe = control_packet<allocator_type>::of(
 			with_pid, get_allocator(),
@@ -102,7 +107,7 @@ public:
 		auto max_packet_size = _svc_ptr->connack_property(prop::maximum_packet_size)
 				.value_or(default_max_send_size);
 		if (subscribe.size() > max_packet_size)
-			return complete_post(client::error::packet_too_large, packet_id);
+			return complete_immediate(client::error::packet_too_large, packet_id);
 
 		send_subscribe(std::move(subscribe));
 	}
@@ -267,10 +272,10 @@ private:
 		);
 	}
 
-	void complete_post(error_code ec, uint16_t packet_id) {
+	void complete_immediate(error_code ec, uint16_t packet_id) {
 		if (packet_id != 0)
 			_svc_ptr->free_pid(packet_id);
-		_handler.complete_post(
+		_handler.complete_immediate(
 			ec, std::vector<reason_code>(_num_topics, reason_codes::empty),
 			suback_props {}
 		);
