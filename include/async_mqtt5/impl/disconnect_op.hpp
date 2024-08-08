@@ -68,7 +68,7 @@ public:
 	disconnect_op(disconnect_op&&) = default;
 	disconnect_op(const disconnect_op&) = delete;
 
-	disconnect_op& operator=(disconnect_op&&) noexcept = default;
+	disconnect_op& operator=(disconnect_op&&) = default;
 	disconnect_op& operator=(const disconnect_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
@@ -200,7 +200,7 @@ public:
 	terminal_disconnect_op(terminal_disconnect_op&&) = default;
 	terminal_disconnect_op(const terminal_disconnect_op&) = delete;
 
-	terminal_disconnect_op& operator=(terminal_disconnect_op&&) noexcept = default;
+	terminal_disconnect_op& operator=(terminal_disconnect_op&&) = default;
 	terminal_disconnect_op& operator=(const terminal_disconnect_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;

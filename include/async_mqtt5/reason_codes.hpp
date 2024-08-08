@@ -55,18 +55,6 @@ public:
 	constexpr explicit reason_code(uint8_t code) : _code(code) {}
 /// \endcond
 
-	/// Copy constructor.
-	reason_code(const reason_code&) = default;
-
-	/// Move constructor.
-	reason_code(reason_code&&) = default;
-
-	/// Copy assignment operator.
-	reason_code& operator=(const reason_code&) = default;
-
-	/// Move assignment operator.
-	reason_code& operator=(reason_code&&) = default;
-
 	/**
 	 * \brief Indication if the object holds a Reason Code indicating an error.
 	 *

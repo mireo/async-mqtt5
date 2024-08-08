@@ -68,7 +68,7 @@ public:
 	subscribe_op(subscribe_op&&) = default;
 	subscribe_op(const subscribe_op&) = delete;
 
-	subscribe_op& operator=(subscribe_op&&) noexcept = default;
+	subscribe_op& operator=(subscribe_op&&) = default;
 	subscribe_op& operator=(const subscribe_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;

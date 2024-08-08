@@ -8,6 +8,8 @@
 #ifndef ASYNC_MQTT5_SENTRY_OP_HPP
 #define ASYNC_MQTT5_SENTRY_OP_HPP
 
+#include <chrono>
+
 #include <boost/asio/cancellation_signal.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
@@ -51,9 +53,8 @@ public:
 	sentry_op(sentry_op&&) noexcept = default;
 	sentry_op(const sentry_op&) = delete;
 
-	executor_type get_executor() const noexcept {
-		return _executor;
-	}
+	sentry_op& operator=(sentry_op&&) noexcept = default;
+	sentry_op& operator=(const sentry_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
@@ -63,6 +64,10 @@ public:
 	using cancellation_slot_type = asio::cancellation_slot;
 	asio::cancellation_slot get_cancellation_slot() const noexcept {
 		return _svc_ptr->_cancel_sentry.slot();
+	}
+
+	executor_type get_executor() const noexcept {
+		return _executor;
 	}
 
 	void perform() {

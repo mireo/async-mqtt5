@@ -62,7 +62,7 @@ public:
 	unsubscribe_op(unsubscribe_op&&) = default;
 	unsubscribe_op(const unsubscribe_op&) = delete;
 
-	unsubscribe_op& operator=(unsubscribe_op&&) noexcept = default;
+	unsubscribe_op& operator=(unsubscribe_op&&) = default;
 	unsubscribe_op& operator=(const unsubscribe_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;

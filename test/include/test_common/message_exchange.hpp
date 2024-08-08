@@ -50,6 +50,9 @@ public:
 	stream_message(const stream_message&) = delete;
 	stream_message(stream_message&&) = default;
 
+	stream_message& operator=(stream_message&&) = default;
+	stream_message& operator=(const stream_message&) = delete;
+
 	template <typename Executor>
 	auto to_operation(const Executor& ex) {
 		return delayed_op<error_code, std::vector<uint8_t>> {
@@ -77,8 +80,11 @@ public:
 		_expected_packets({ std::forward<Args>(args)... })
 	{}
 
-	client_message(const client_message&) = delete;
 	client_message(client_message&&) = default;
+	client_message(const client_message&) = delete;
+
+	client_message& operator=(client_message&&) = default;
+	client_message& operator=(const client_message&) = delete;
 
 	client_message& complete_with(error_code ec, duration af) {
 		_write_ec = ec;
@@ -165,8 +171,11 @@ public:
 		_owner(owner), _message(ec, af, std::forward<Args>(args) ...)
 	{}
 
-	broker_message(const broker_message&) = delete;
 	broker_message(broker_message&&) = default;
+	broker_message(const broker_message&) = delete;
+
+	broker_message& operator=(broker_message&&) = default;
+	broker_message& operator=(const broker_message&) = delete;
 
 	template <typename ...Args>
 	client_message& expect(Args&& ...args);
@@ -186,6 +195,14 @@ class msg_exchange {
 	std::vector<broker_message> _from_broker;
 
 public:
+	msg_exchange() = default;
+
+	msg_exchange(msg_exchange&&) = default;
+	msg_exchange(const msg_exchange&) = delete;
+
+	msg_exchange& operator=(msg_exchange&&) = default;
+	msg_exchange& operator=(const msg_exchange&) = delete;
+
 	template <
 		typename ...Args,
 		std::enable_if_t<

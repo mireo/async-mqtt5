@@ -133,6 +133,7 @@ class stream_context<
 	mqtt_ctx _mqtt_context;
 public:
 	explicit stream_context(std::monostate) {}
+
 	stream_context(const stream_context& other) :
 		_mqtt_context(other._mqtt_context)
 	{}
@@ -271,7 +272,7 @@ private:
 
 public:
 
-	client_service(
+	explicit client_service(
 		const executor_type& ex,
 		tls_context_type tls_context = {}
 	) :

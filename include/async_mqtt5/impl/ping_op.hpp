@@ -59,9 +59,8 @@ public:
 	ping_op(ping_op&&) noexcept = default;
 	ping_op(const ping_op&) = delete;
 
-	executor_type get_executor() const noexcept {
-		return _executor;
-	}
+	ping_op& operator=(ping_op&&) noexcept = default;
+	ping_op& operator=(const ping_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
@@ -71,6 +70,10 @@ public:
 	using cancellation_slot_type = asio::cancellation_slot;
 	asio::cancellation_slot get_cancellation_slot() const noexcept {
 		return _cancellation_state.slot();
+	}
+
+	executor_type get_executor() const noexcept {
+		return _executor;
 	}
 
 	void perform() {

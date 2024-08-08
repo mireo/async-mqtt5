@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include <boost/asio/associated_executor.hpp>
+#include <boost/asio/execution.hpp>
 #include <boost/asio/prefer.hpp>
 #include <boost/asio/write.hpp>
 

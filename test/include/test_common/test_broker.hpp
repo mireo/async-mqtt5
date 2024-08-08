@@ -49,8 +49,12 @@ public:
 	{}
 
 	pending_read() = default;
+
 	pending_read(pending_read&&) = default;
+	pending_read(const pending_read&) = delete;
+
 	pending_read& operator=(pending_read&&) = default;
+	pending_read& operator=(const pending_read&) = delete;
 
 	size_t consume(const std::vector<uint8_t>& data) {
 		size_t num_bytes = std::min(_buffer_size, data.size());
@@ -98,7 +102,7 @@ private:
 	std::vector<std::unique_ptr<asio::cancellation_signal>> _cancel_signals;
 
 public:
-	test_broker(
+	explicit test_broker(
 		asio::execution_context& context,
 		asio::any_io_executor ex = {}, msg_exchange broker_side = {}
 	) :
@@ -108,7 +112,7 @@ public:
 	}
 
 	test_broker(const test_broker&) = delete;
-	void operator=(const test_broker&) = delete;
+	test_broker& operator=(const test_broker&) = delete;
 
 	executor_type get_executor() const noexcept {
 		return _ex;

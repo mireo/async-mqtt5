@@ -43,6 +43,12 @@ private:
 			_ts(std::chrono::system_clock::now())
 		{}
 
+		reply_handler(reply_handler&&) = default;
+		reply_handler(const reply_handler&) = delete;
+
+		reply_handler& operator=(reply_handler&&) = default;
+		reply_handler& operator=(const reply_handler&) = delete;
+
 		void complete(
 			error_code ec,
 			byte_citer first = byte_citer {}, byte_citer last = byte_citer {}
@@ -87,7 +93,13 @@ private:
 
 public:
 	template <typename Executor>
-	replies(const Executor& ex) : _ex(ex) {}
+	explicit replies(const Executor& ex) : _ex(ex) {}
+
+	replies(replies&&) = default;
+	replies(const replies&) = delete;
+
+	replies& operator=(replies&&) = default;
+	replies& operator=(const replies&) = delete;
 
 	template <typename CompletionToken>
 	decltype(auto) async_wait_reply(

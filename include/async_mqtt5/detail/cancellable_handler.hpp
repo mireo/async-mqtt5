@@ -42,6 +42,9 @@ public:
 	cancellable_handler(cancellable_handler&&) = default;
 	cancellable_handler(const cancellable_handler&) = delete;
 
+	cancellable_handler& operator=(cancellable_handler&&) = default;
+	cancellable_handler& operator=(const cancellable_handler&) = delete;
+
 	using allocator_type = asio::associated_allocator_t<Handler>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);

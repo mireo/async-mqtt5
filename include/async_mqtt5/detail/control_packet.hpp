@@ -61,7 +61,10 @@ class control_packet {
 
 public:
 	control_packet(control_packet&&) noexcept = default;
-	control_packet(const control_packet&) noexcept = delete;
+	control_packet(const control_packet&) = delete;
+
+	control_packet& operator=(control_packet&&) noexcept = default;
+	control_packet& operator=(const control_packet&) = delete;
 
 	template <
 		typename EncodeFun,
@@ -135,6 +138,12 @@ public:
 	packet_id_allocator() {
 		_free_ids.emplace_back(MAX_PACKET_ID, uint16_t(0));
 	}
+
+	packet_id_allocator(packet_id_allocator&&) noexcept = default;
+	packet_id_allocator(const packet_id_allocator&) = delete;
+
+	packet_id_allocator& operator=(packet_id_allocator&&) noexcept = default;
+	packet_id_allocator& operator=(const packet_id_allocator&) = delete;
 
 	uint16_t allocate() {
 		if (_free_ids.empty()) return 0;

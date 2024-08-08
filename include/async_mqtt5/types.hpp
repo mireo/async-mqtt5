@@ -334,18 +334,6 @@ public:
 		_qos(qos), _retain(retain)
 	{}
 
-	/// Copy constructor.
-	will(const will&) = default;
-
-	/// Move constructor.
-	will(will&&) noexcept = default;
-
-	/// Copy assignment operator.
-	will& operator=(const will&) = delete;
-
-	/// Move assignment operator.
-	will& operator=(will&&) noexcept = default;
-
 	/// Get the Topic Name.
 	std::string_view topic() const {
 		return _topic;

@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(immediate_executor_async_subscribe) {
 		}
 	);
 	c.async_subscribe(
-		{ "+topic" }, subscribe_props {}, std::move(handler)
+		{ "+topic", subscribe_options {} }, subscribe_props{}, std::move(handler)
 	);
 
 	ioc.run();

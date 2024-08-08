@@ -251,11 +251,12 @@ private:
 	std::shared_ptr<detail::test_stream_impl> _impl;
 
 public:
-	test_stream(executor_type ex) :
+	explicit test_stream(executor_type ex) :
 		_impl(std::make_shared<detail::test_stream_impl>(std::move(ex)))
 	{}
 
 	test_stream(const test_stream&) = delete;
+	test_stream& operator=(const test_stream&) = delete;
 
 	~test_stream() {
 		error_code ec;

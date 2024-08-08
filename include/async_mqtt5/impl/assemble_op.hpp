@@ -11,6 +11,7 @@
 #include <string>
 
 #include <boost/asio/append.hpp>
+#include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/completion_condition.hpp>
 #include <boost/asio/dispatch.hpp>
@@ -23,7 +24,6 @@
 #include <async_mqtt5/detail/internal_types.hpp>
 
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
-
 
 namespace async_mqtt5::detail {
 
@@ -80,14 +80,17 @@ public:
 	assemble_op(assemble_op&&) noexcept = default;
 	assemble_op(const assemble_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
-	executor_type get_executor() const noexcept {
-		return _svc.get_executor();
-	}
+	assemble_op& operator=(assemble_op&&) noexcept = default;
+	assemble_op& operator=(const assemble_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
+	}
+
+	using executor_type = typename client_service::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc.get_executor();
 	}
 
 	template <typename CompletionCondition>

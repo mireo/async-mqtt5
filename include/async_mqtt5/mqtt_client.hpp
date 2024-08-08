@@ -117,7 +117,7 @@ public:
 	 *
 	 * \details Moved-from client can only be destructed
 	 */
-	mqtt_client(mqtt_client&& other) noexcept = default;
+	mqtt_client(mqtt_client&&) noexcept = default;
 
 
 	/**

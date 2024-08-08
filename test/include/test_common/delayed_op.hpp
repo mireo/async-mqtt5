@@ -50,10 +50,8 @@ public:
 	delayed_op(delayed_op&&) = default;
 	delayed_op(const delayed_op&) = delete;
 
-	using executor_type = asio::steady_timer::executor_type;
-	executor_type get_executor() const noexcept {
-		return _timer->get_executor();
-	}
+	delayed_op& operator=(delayed_op&&) = default;
+	delayed_op& operator=(const delayed_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
@@ -63,6 +61,11 @@ public:
 	using cancellation_slot_type = asio::cancellation_slot;
 	asio::cancellation_slot get_cancellation_slot() const noexcept {
 		return _cancel_slot;
+	}
+
+	using executor_type = asio::steady_timer::executor_type;
+	executor_type get_executor() const noexcept {
+		return _timer->get_executor();
 	}
 
 	template <typename CompletionHandler>

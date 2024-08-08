@@ -50,13 +50,16 @@ public:
 	read_message_op(read_message_op&&) noexcept = default;
 	read_message_op(const read_message_op&) = delete;
 
-	executor_type get_executor() const noexcept {
-		return _executor;
-	}
+	read_message_op& operator=(read_message_op&&) noexcept = default;
+	read_message_op& operator=(const read_message_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
 		return allocator_type {};
+	}
+
+	executor_type get_executor() const noexcept {
+		return _executor;
 	}
 
 	void perform() {

@@ -71,6 +71,9 @@ public:
 		replace_next_layer(construct_next_layer());
 	}
 
+	autoconnect_stream(const autoconnect_stream&) = delete;
+	autoconnect_stream& operator=(const autoconnect_stream&) = delete;
+
 	using next_layer_type = stream_type;
 	next_layer_type& next_layer() {
 		return *_stream_ptr;

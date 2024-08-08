@@ -32,7 +32,7 @@ class test_service : public async_mqtt5::detail::client_service<StreamType, TlsC
 	asio::any_io_executor _ex;
 	connack_props _test_props;
 public:
-	test_service(const asio::any_io_executor ex)
+	explicit test_service(const asio::any_io_executor ex)
 		: base(ex), _ex(ex)
 	{}
 
@@ -74,7 +74,7 @@ template <
 >
 class overrun_client : public async_mqtt5::detail::client_service<StreamType, TlsContext> {
 public:
-	overrun_client(const asio::any_io_executor& ex) :
+	explicit overrun_client(const asio::any_io_executor& ex) :
 		async_mqtt5::detail::client_service<StreamType, TlsContext>(ex)
 	{}
 

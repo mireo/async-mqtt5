@@ -47,10 +47,8 @@ private:
 		tracked_op(tracked_op&&) = default;
 		tracked_op(const tracked_op&) = delete;
 
-		using executor_type = tracking_type<Handler, Executor>;
-		executor_type get_executor() const noexcept {
-			return _executor;
-		}
+		tracked_op& operator=(tracked_op&&) = default;
+		tracked_op& operator=(const tracked_op&) = delete;
 
 		using allocator_type = asio::associated_allocator_t<Handler>;
 		allocator_type get_allocator() const noexcept {
@@ -61,6 +59,11 @@ private:
 			asio::associated_cancellation_slot_t<Handler>;
 		cancellation_slot_type get_cancellation_slot() const noexcept {
 			return asio::get_associated_cancellation_slot(_handler);
+		}
+
+		using executor_type = tracking_type<Handler, Executor>;
+		executor_type get_executor() const noexcept {
+			return _executor;
 		}
 
 		void operator()(error_code ec) {
@@ -104,7 +107,7 @@ private:
 
 public:
 	template <typename Executor>
-	async_mutex(Executor&& ex) : _ex(std::forward<Executor>(ex)) {}
+	explicit async_mutex(Executor&& ex) : _ex(std::forward<Executor>(ex)) {}
 
 	async_mutex(const async_mutex&) = delete;
 	async_mutex& operator=(const async_mutex&) = delete;

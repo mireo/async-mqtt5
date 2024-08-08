@@ -9,6 +9,7 @@
 #define ASYNC_MQTT5_RE_AUTH_OP_hpp
 
 #include <boost/asio/detached.hpp>
+#include <boost/asio/recycling_allocator.hpp>
 
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/reason_codes.hpp>
@@ -34,22 +35,25 @@ class re_auth_op {
 	any_authenticator& _auth;
 
 public:
-	re_auth_op(const std::shared_ptr<client_service>& svc_ptr) :
+	explicit re_auth_op(const std::shared_ptr<client_service>& svc_ptr) :
 		_svc_ptr(svc_ptr),
 		_auth(_svc_ptr->_stream_context.mqtt_context().authenticator)
 	{}
 
 	re_auth_op(re_auth_op&&) noexcept = default;
-	re_auth_op(const re_auth_op&) noexcept = delete;
+	re_auth_op(const re_auth_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
-	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
-	}
+	re_auth_op& operator=(re_auth_op&&) noexcept = default;
+	re_auth_op& operator=(const re_auth_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
 		return allocator_type {};
+	}
+
+	using executor_type = typename client_service::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc_ptr->get_executor();
 	}
 
 	void perform() {

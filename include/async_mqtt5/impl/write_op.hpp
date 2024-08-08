@@ -8,6 +8,8 @@
 #ifndef ASYNC_MQTT5_WRITE_OP_HPP
 #define ASYNC_MQTT5_WRITE_OP_HPP
 
+#include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_executor.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
@@ -35,14 +37,17 @@ public:
 	write_op(write_op&&) = default;
 	write_op(const write_op&) = delete;
 
-	using executor_type = asio::associated_executor_t<handler_type>;
-	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
-	}
+	write_op& operator=(write_op&&) = default;
+	write_op& operator=(const write_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
 		return asio::get_associated_allocator(_handler);
+	}
+
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
 	}
 
 	template <typename BufferType>

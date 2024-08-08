@@ -42,6 +42,12 @@ public:
 		_handler(std::move(handler))
 	{}
 
+	write_req(write_req&&) = default;
+	write_req(const write_req&) = delete;
+
+	write_req& operator=(write_req&&) = default;
+	write_req& operator=(const write_req&) = delete;
+
 	static serial_num_t next_serial_num(serial_num_t last) {
 		return last + 1;
 	}
@@ -122,6 +128,12 @@ class async_sender {
 
 public:
 	explicit async_sender(ClientService& svc) : _svc(svc) {}
+
+	async_sender(async_sender&&) = default;
+	async_sender(const async_sender&) = delete;
+
+	async_sender& operator=(async_sender&&) = default;
+	async_sender& operator=(const async_sender&) = delete;
 
 	using allocator_type = queue_allocator_type;
 	allocator_type get_allocator() const noexcept {

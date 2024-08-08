@@ -33,6 +33,7 @@ namespace asio = boost::asio;
 template <typename ClientService>
 class publish_rec_op {
 	using client_service = ClientService;
+
 	struct on_puback {};
 	struct on_pubrec {};
 	struct on_pubrel {};
@@ -42,21 +43,24 @@ class publish_rec_op {
 	decoders::publish_message _message;
 
 public:
-	publish_rec_op(const std::shared_ptr<client_service>& svc_ptr) :
+	explicit publish_rec_op(const std::shared_ptr<client_service>& svc_ptr) :
 		_svc_ptr(svc_ptr)
 	{}
 
 	publish_rec_op(publish_rec_op&&) noexcept = default;
 	publish_rec_op(const publish_rec_op&) = delete;
 
-	using executor_type = typename client_service::executor_type;
-	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
-	}
+	publish_rec_op& operator=(publish_rec_op&&) noexcept = default;
+	publish_rec_op& operator=(const publish_rec_op&) = delete;
 
 	using allocator_type = asio::recycling_allocator<void>;
 	allocator_type get_allocator() const noexcept {
 		return allocator_type {};
+	}
+
+	using executor_type = typename client_service::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc_ptr->get_executor();
 	}
 
 	void perform(decoders::publish_message message) {

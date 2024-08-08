@@ -9,6 +9,9 @@
 #define ASYNC_MQTT5_CONNECT_OP_HPP
 
 #include <boost/asio/append.hpp>
+#include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_executor.hpp>
+#include <boost/asio/associated_cancellation_slot.hpp>
 #include <boost/asio/cancellation_state.hpp>
 #include <boost/asio/consign.hpp>
 #include <boost/asio/completion_condition.hpp>
@@ -76,13 +79,11 @@ public:
 		)
 	{}
 
-	connect_op(connect_op&&) noexcept = default;
+	connect_op(connect_op&&) = default;
 	connect_op(const connect_op&) = delete;
 
-	using executor_type = asio::associated_executor_t<handler_type>;
-	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
-	}
+	connect_op& operator=(connect_op&&) = default;
+	connect_op& operator=(const connect_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
@@ -93,6 +94,11 @@ public:
 		asio::associated_cancellation_slot_t<handler_type>;
 	cancellation_slot_type get_cancellation_slot() const noexcept {
 		return _cancellation_state.slot();
+	}
+
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
 	}
 
 	void perform(

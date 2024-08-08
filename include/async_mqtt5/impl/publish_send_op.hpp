@@ -91,7 +91,7 @@ public:
 	publish_send_op(publish_send_op&&) = default;
 	publish_send_op(const publish_send_op&) = delete;
 
-	publish_send_op& operator=(publish_send_op&&) noexcept = default;
+	publish_send_op& operator=(publish_send_op&&) = default;
 	publish_send_op& operator=(const publish_send_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;

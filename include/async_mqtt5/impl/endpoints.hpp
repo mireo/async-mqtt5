@@ -9,6 +9,9 @@
 #define ASYNC_MQTT5_ENDPOINTS_HPP
 
 #include <boost/asio/append.hpp>
+#include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_executor.hpp>
+#include <boost/asio/associated_cancellation_slot.hpp>
 #include <boost/asio/deferred.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
@@ -43,10 +46,8 @@ public:
 	resolve_op(resolve_op&&) = default;
 	resolve_op(const resolve_op&) = delete;
 
-	using executor_type = asio::associated_executor_t<handler_type>;
-	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
-	}
+	resolve_op& operator=(resolve_op&&) = default;
+	resolve_op& operator=(const resolve_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
@@ -57,6 +58,11 @@ public:
 		asio::associated_cancellation_slot_t<handler_type>;
 	cancellation_slot_type get_cancellation_slot() const noexcept {
 		return asio::get_associated_cancellation_slot(_handler);
+	}
+
+	using executor_type = asio::associated_executor_t<handler_type>;
+	executor_type get_executor() const noexcept {
+		return asio::get_associated_executor(_handler);
 	}
 
 	void perform() {
@@ -152,13 +158,16 @@ public:
 		_resolver(ex), _connect_timer(timer)
 	{}
 
+	endpoints(const endpoints&) = delete;
+	endpoints& operator=(const endpoints&) = delete;
+
 	void clone_servers(const endpoints& other) {
 		_servers = other._servers;
 	}
 
 	using executor_type = asio::ip::tcp::resolver::executor_type;
 	// NOTE: asio::ip::basic_resolver returns executor by value
-	executor_type get_executor() {
+	executor_type get_executor() noexcept {
 		return _resolver.get_executor();
 	}
 
