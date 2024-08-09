@@ -52,10 +52,10 @@ class subscribe_op {
 
 public:
 	subscribe_op(
-		const std::shared_ptr<client_service>& svc_ptr,
+		std::shared_ptr<client_service> svc_ptr,
 		Handler&& handler
 	) :
-		_svc_ptr(svc_ptr),
+		_svc_ptr(std::move(svc_ptr)),
 		_handler(std::move(handler), _svc_ptr->get_executor())
 	{
 		auto slot = asio::get_associated_cancellation_slot(_handler);
@@ -302,6 +302,28 @@ private:
 	}
 };
 
+template <typename ClientService>
+class initiate_async_subscribe {
+	std::shared_ptr<ClientService> _svc_ptr;
+public:
+	explicit initiate_async_subscribe(std::shared_ptr<ClientService> svc_ptr) :
+		_svc_ptr(std::move(svc_ptr))
+	{}
+
+	using executor_type = typename ClientService::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc_ptr->get_executor();
+	}
+
+	template <typename Handler>
+	void operator()(
+		Handler&& handler,
+		const std::vector<subscribe_topic>& topics, const subscribe_props& props
+	) {
+		detail::subscribe_op { _svc_ptr, std::move(handler) }
+			.perform(topics, props);
+	}
+};
 
 } // end namespace async_mqtt5::detail
 

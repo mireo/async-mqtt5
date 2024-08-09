@@ -46,10 +46,10 @@ class unsubscribe_op {
 
 public:
 	unsubscribe_op(
-		const std::shared_ptr<client_service>& svc_ptr,
+		std::shared_ptr<client_service> svc_ptr,
 		Handler&& handler
 	) :
-		_svc_ptr(svc_ptr),
+		_svc_ptr(std::move(svc_ptr)),
 		_handler(std::move(handler), _svc_ptr->get_executor())
 	{
 		auto slot = asio::get_associated_cancellation_slot(_handler);
@@ -234,6 +234,29 @@ private:
 
 		_svc_ptr->free_pid(packet_id);
 		_handler.complete(ec, std::move(reason_codes), std::move(props));
+	}
+};
+
+template <typename ClientService>
+class initiate_async_unsubscribe {
+	std::shared_ptr<ClientService> _svc_ptr;
+public:
+	explicit initiate_async_unsubscribe(std::shared_ptr<ClientService> svc_ptr) :
+		_svc_ptr(std::move(svc_ptr))
+	{}
+
+	using executor_type = typename ClientService::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc_ptr->get_executor();
+	}
+
+	template <typename Handler>
+	void operator()(
+		Handler&& handler,
+		const std::vector<std::string>& topics, const unsubscribe_props& props
+	) {
+		detail::unsubscribe_op { _svc_ptr, std::move(handler) }
+			.perform(topics, props);
 	}
 };
 

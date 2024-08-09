@@ -43,8 +43,8 @@ class publish_rec_op {
 	decoders::publish_message _message;
 
 public:
-	explicit publish_rec_op(const std::shared_ptr<client_service>& svc_ptr) :
-		_svc_ptr(svc_ptr)
+	explicit publish_rec_op(std::shared_ptr<client_service> svc_ptr) :
+		_svc_ptr(std::move(svc_ptr))
 	{}
 
 	publish_rec_op(publish_rec_op&&) noexcept = default;

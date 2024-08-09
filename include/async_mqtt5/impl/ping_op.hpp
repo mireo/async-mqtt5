@@ -44,13 +44,13 @@ private:
 
 public:
 	ping_op(
-		const std::shared_ptr<client_service>& svc_ptr,
-		const executor_type& ex
+		std::shared_ptr<client_service> svc_ptr,
+		executor_type ex
 	) :
-		_svc_ptr(svc_ptr), _executor(ex),
+		_svc_ptr(std::move(svc_ptr)), _executor(ex),
 		_ping_timer(new asio::steady_timer(_svc_ptr->get_executor())),
 		_cancellation_state(
-			svc_ptr->_cancel_ping.slot(),
+			_svc_ptr->_cancel_ping.slot(),
 			asio::enable_total_cancellation {},
 			asio::enable_total_cancellation {}
 		)

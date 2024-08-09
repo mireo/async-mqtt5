@@ -75,10 +75,10 @@ class publish_send_op {
 
 public:
 	publish_send_op(
-		const std::shared_ptr<client_service>& svc_ptr,
+		std::shared_ptr<client_service> svc_ptr,
 		Handler&& handler
 	) :
-		_svc_ptr(svc_ptr),
+		_svc_ptr(std::move(svc_ptr)),
 		_handler(std::move(handler), _svc_ptr->get_executor())
 	{
 		auto slot = asio::get_associated_cancellation_slot(_handler);
@@ -469,6 +469,32 @@ private:
 	}
 };
 
+template <typename ClientService, qos_e qos_type>
+class initiate_async_publish {
+	std::shared_ptr<ClientService> _svc_ptr;
+public:
+	explicit initiate_async_publish(std::shared_ptr<ClientService> svc_ptr) :
+		_svc_ptr(std::move(svc_ptr))
+	{}
+
+	using executor_type = typename ClientService::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc_ptr->get_executor();
+	}
+
+	template <typename Handler>
+	void operator()(
+		Handler&& handler,
+		std::string topic, std::string payload,
+		retain_e retain, const publish_props& props
+	) {
+		detail::publish_send_op<ClientService, Handler, qos_type> {
+			_svc_ptr, std::move(handler) 
+		}.perform(
+			std::move(topic), std::move(payload), retain, props
+		);
+	}
+};
 
 } // end namespace async_mqtt5::detail
 

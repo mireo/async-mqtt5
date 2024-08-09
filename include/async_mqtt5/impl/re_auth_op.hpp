@@ -35,8 +35,8 @@ class re_auth_op {
 	any_authenticator& _auth;
 
 public:
-	explicit re_auth_op(const std::shared_ptr<client_service>& svc_ptr) :
-		_svc_ptr(svc_ptr),
+	explicit re_auth_op(std::shared_ptr<client_service> svc_ptr) :
+		_svc_ptr(std::move(svc_ptr)),
 		_auth(_svc_ptr->_stream_context.mqtt_context().authenticator)
 	{}
 

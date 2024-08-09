@@ -52,10 +52,10 @@ class disconnect_op {
 public:
 	template <typename Handler>
 	disconnect_op(
-		const std::shared_ptr<client_service>& svc_ptr,
+		std::shared_ptr<client_service> svc_ptr,
 		DisconnectContext&& context, Handler&& handler
 	) :
-		_svc_ptr(svc_ptr), _context(std::move(context)),
+		_svc_ptr(std::move(svc_ptr)), _context(std::move(context)),
 		_handler(std::move(handler), _svc_ptr->get_executor())
 	{
 		auto slot = asio::get_associated_cancellation_slot(_handler);
@@ -189,10 +189,10 @@ class terminal_disconnect_op {
 
 public:
 	terminal_disconnect_op(
-		const std::shared_ptr<client_service>& svc_ptr,
+		std::shared_ptr<client_service> svc_ptr,
 		Handler&& handler
 	) :
-		_svc_ptr(svc_ptr),
+		_svc_ptr(std::move(svc_ptr)),
 		_timer(new asio::steady_timer(_svc_ptr->get_executor())),
 		_handler(std::move(handler), _svc_ptr->get_executor())
 	{}
@@ -254,6 +254,34 @@ public:
 	}
 };
 
+template <typename ClientService, bool terminal>
+class initiate_async_disconnect {
+	std::shared_ptr<ClientService> _svc_ptr;
+public:
+	explicit initiate_async_disconnect(std::shared_ptr<ClientService> svc_ptr) :
+		_svc_ptr(std::move(svc_ptr))
+	{}
+
+	using executor_type = typename ClientService::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc_ptr->get_executor();
+	}
+
+	template <typename Handler>
+	void operator()(
+		Handler&& handler,
+		disconnect_rc_e rc, const disconnect_props& props
+	) {
+		auto ctx = disconnect_ctx { rc, props, terminal };
+		if constexpr (terminal)
+			terminal_disconnect_op { _svc_ptr, std::move(handler) }
+				.perform(std::move(ctx));
+		else
+			disconnect_op { _svc_ptr, std::move(ctx), std::move(handler) }
+				.perform();
+	}
+};
+
 template <typename ClientService, typename CompletionToken>
 decltype(auto) async_disconnect(
 	disconnect_rc_e reason_code, const disconnect_props& props,
@@ -261,20 +289,9 @@ decltype(auto) async_disconnect(
 	CompletionToken&& token
 ) {
 	using Signature = void (error_code);
-
-	auto initiation = [](
-		auto handler, disconnect_ctx ctx,
-		const std::shared_ptr<ClientService>& svc_ptr
-	) {
-		disconnect_op {
-			svc_ptr, std::move(ctx), std::move(handler)
-		}.perform();
-	};
-
 	return asio::async_initiate<CompletionToken, Signature>(
-		initiation, token,
-		disconnect_ctx { reason_code, props, false },
-		svc_ptr
+		initiate_async_disconnect<ClientService, false>(svc_ptr), token,
+		reason_code, props
 	);
 }
 
@@ -285,20 +302,9 @@ decltype(auto) async_terminal_disconnect(
 	CompletionToken&& token
 ) {
 	using Signature = void (error_code);
-
-	auto initiation = [](
-		auto handler, disconnect_ctx ctx,
-		const std::shared_ptr<ClientService>& svc_ptr
-	) {
-		terminal_disconnect_op {
-			svc_ptr, std::move(handler)
-		}.perform(std::move(ctx));
-	};
-
 	return asio::async_initiate<CompletionToken, Signature>(
-		initiation, token,
-		disconnect_ctx { reason_code, props, true },
-		svc_ptr
+		initiate_async_disconnect<ClientService, true>(svc_ptr), token,
+		reason_code, props
 	);
 }
 

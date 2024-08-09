@@ -72,8 +72,7 @@ class reconnect_op {
 public:
 	template <typename Handler>
 	reconnect_op(Owner& owner, Handler&& handler) :
-		_owner(owner),
-		_handler(std::forward<Handler>(handler))
+		_owner(owner), _handler(std::move(handler))
 	{}
 
 	reconnect_op(reconnect_op&&) = default;

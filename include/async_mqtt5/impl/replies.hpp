@@ -93,7 +93,7 @@ private:
 
 public:
 	template <typename Executor>
-	explicit replies(const Executor& ex) : _ex(ex) {}
+	explicit replies(Executor ex) : _ex(ex) {}
 
 	replies(replies&&) = default;
 	replies(const replies&) = delete;

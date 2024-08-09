@@ -35,8 +35,7 @@ class read_op {
 
 public:
 	read_op(Owner& owner, Handler&& handler) :
-		_owner(owner),
-		_handler(std::move(handler))
+		_owner(owner), _handler(std::move(handler))
 	{}
 
 	read_op(read_op&&) = default;

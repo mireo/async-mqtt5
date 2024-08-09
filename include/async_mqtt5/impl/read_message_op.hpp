@@ -41,10 +41,10 @@ private:
 	executor_type _executor;
 public:
 	read_message_op(
-		const std::shared_ptr<client_service>& svc_ptr,
-		const executor_type& ex
+		std::shared_ptr<client_service> svc_ptr,
+		executor_type ex
 	) :
-		_svc_ptr(svc_ptr), _executor(ex)
+		_svc_ptr(std::move(svc_ptr)), _executor(ex)
 	{}
 
 	read_message_op(read_message_op&&) noexcept = default;
