@@ -1465,6 +1465,7 @@
 <xsl:variable name="template-type">
   <xsl:choose>
     <xsl:when test="contains($qualified-name, 'CompletionToken')">CompletionToken</xsl:when>
+    <xsl:when test="contains($qualified-name, 'Executor')">Executor</xsl:when>
     <xsl:when test="contains($qualified-name, 'ExecutionContext')">ExecutionContext</xsl:when>
     <xsl:when test="contains($qualified-name, 'StreamType')">StreamType</xsl:when>
     <xsl:when test="contains($qualified-name, 'TlsContext')">TlsContext</xsl:when>
@@ -1518,8 +1519,11 @@
     </xsl:if>
   </xsl:when>
   <!-- unfortunately, there is no better way to differentiate between template types and non-documented types -->
-  <xsl:when test="contains(type, 'CompletionToken') or contains(type, 'ExecutionContext')
-    or contains(type, 'TlsContext') or contains(type, 'StreamType')
+  <xsl:when test="contains(type, 'CompletionToken')
+    or contains(type, 'Executor')
+    or contains(type, 'ExecutionContext')
+    or contains(type, 'TlsContext')
+    or contains(type, 'StreamType')
     or contains(type, 'is_authenticator')">
     <xsl:call-template name="mqtt-template">
       <xsl:with-param name="qualified-name" select="$type"/>

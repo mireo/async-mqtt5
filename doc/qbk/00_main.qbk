@@ -39,6 +39,7 @@
 [def __OPENSSL__ [@https://www.openssl.org/ OpenSSL]]
 
 [def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers CompletionToken]]
+[def __Executor__ [@boost:/doc/html/boost_asio/reference/Executor1.html Executor]]
 [def __ExecutionContext__ [reflink ExecutionContext]]
 [def __StreamType__ [reflink StreamType]]
 [def __TlsContext__ [reflink TlsContext]]
