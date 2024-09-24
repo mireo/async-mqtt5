@@ -8,9 +8,15 @@
 #ifndef ASYNC_MQTT5_REBIND_EXECUTOR_HPP
 #define ASYNC_MQTT5_REBIND_EXECUTOR_HPP
 
-#include <boost/asio/ssl/stream.hpp>
-
 #include <boost/beast/websocket/stream.hpp>
+
+namespace boost::asio::ssl {
+
+// forward declare to preserve optional OpenSSL dependency
+template <typename Stream>
+class stream;
+
+} // end namespace boost::asio::ssl
 
 namespace async_mqtt5::detail {
 
