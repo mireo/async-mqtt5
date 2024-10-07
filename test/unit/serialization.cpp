@@ -83,51 +83,51 @@ BOOST_AUTO_TEST_CASE(test_connect) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_connect(remain_length, it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [client_id_, uname_, password_, keep_alive_, clean_start_, cprops_, w_] = *rv;
-	BOOST_CHECK_EQUAL(client_id_, client_id);
-	BOOST_CHECK(uname_);
-	BOOST_CHECK_EQUAL(*uname_, uname);
+	BOOST_TEST(client_id_ == client_id);
+	BOOST_TEST_REQUIRE(uname_.has_value());
+	BOOST_TEST(*uname_ == uname);
 	BOOST_CHECK(password_ == password);
-	BOOST_CHECK_EQUAL(keep_alive_, keep_alive);
-	BOOST_CHECK_EQUAL(clean_start_, clean_start);
+	BOOST_TEST(keep_alive_ == keep_alive);
+	BOOST_TEST(clean_start_ == clean_start);
 
 	cprops_.visit([](const auto& prop, const auto&) {
-		(void)prop; BOOST_ASSERT(prop);
+		(void)prop; BOOST_TEST_REQUIRE(prop);
 		return true;
 	});
-	BOOST_CHECK_EQUAL(*cprops_[prop::session_expiry_interval], session_expiry_interval);
-	BOOST_CHECK_EQUAL(*cprops_[prop::receive_maximum], receive_max);
-	BOOST_CHECK_EQUAL(*cprops_[prop::maximum_packet_size], maximum_packet_size);
-	BOOST_CHECK_EQUAL(*cprops_[prop::topic_alias_maximum], topic_alias_max);
-	BOOST_CHECK_EQUAL(*cprops_[prop::request_response_information], request_response_information);
-	BOOST_CHECK_EQUAL(*cprops_[prop::request_problem_information], request_problem_information);
-	BOOST_ASSERT(cprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].second, user_property_2);
-	BOOST_CHECK_EQUAL(*cprops_[prop::authentication_method], auth_method);
-	BOOST_CHECK_EQUAL(*cprops_[prop::authentication_data], auth_data);
+	BOOST_TEST(*cprops_[prop::session_expiry_interval] == session_expiry_interval);
+	BOOST_TEST(*cprops_[prop::receive_maximum] == receive_max);
+	BOOST_TEST(*cprops_[prop::maximum_packet_size] == maximum_packet_size);
+	BOOST_TEST(*cprops_[prop::topic_alias_maximum] == topic_alias_max);
+	BOOST_TEST(*cprops_[prop::request_response_information] == request_response_information);
+	BOOST_TEST(*cprops_[prop::request_problem_information] == request_problem_information);
+	BOOST_TEST_REQUIRE(cprops_[prop::user_property].size() == 1);
+	BOOST_TEST(cprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(cprops_[prop::user_property][0].second == user_property_2);
+	BOOST_TEST(*cprops_[prop::authentication_method] == auth_method);
+	BOOST_TEST(*cprops_[prop::authentication_data] == auth_data);
 
-	BOOST_CHECK(w_);
+	BOOST_TEST_REQUIRE(w_.has_value());
+	const auto& will = *w_;
+	BOOST_TEST((will).topic() == will_topic);
+	BOOST_TEST((will).message() == will_message);
 
-	BOOST_CHECK_EQUAL((*w_).topic(), will_topic);
-	BOOST_CHECK_EQUAL((*w_).message(), will_message);
-
-	(*w_).visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*(*w_)[prop::will_delay_interval], will_delay_interval);
-	BOOST_CHECK_EQUAL(*(*w_)[prop::payload_format_indicator], will_payload_format_indicator);
-	BOOST_CHECK_EQUAL(*(*w_)[prop::message_expiry_interval], will_message_expiry_interval);
-	BOOST_CHECK_EQUAL(*(*w_)[prop::content_type], will_content_type);
-	BOOST_CHECK_EQUAL(*(*w_)[prop::response_topic], will_response_topic);
-	BOOST_CHECK_EQUAL(*(*w_)[prop::correlation_data], will_correlation_data);
-	BOOST_ASSERT((*w_)[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL((*w_)[prop::user_property][0].first, will_user_property_1);
-	BOOST_CHECK_EQUAL((*w_)[prop::user_property][0].second, will_user_property_2);
+	(will).visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*(will)[prop::will_delay_interval] == will_delay_interval);
+	BOOST_TEST(*(will)[prop::payload_format_indicator] == will_payload_format_indicator);
+	BOOST_TEST(*(will)[prop::message_expiry_interval] == will_message_expiry_interval);
+	BOOST_TEST(*(will)[prop::content_type] == will_content_type);
+	BOOST_TEST(*(will)[prop::response_topic] == will_response_topic);
+	BOOST_TEST(*(will)[prop::correlation_data] == will_correlation_data);
+	BOOST_TEST_REQUIRE((will)[prop::user_property].size() == 1);
+	BOOST_TEST((will)[prop::user_property][0].first == will_user_property_1);
+	BOOST_TEST((will)[prop::user_property][0].second == will_user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_connack) {
@@ -177,36 +177,36 @@ BOOST_AUTO_TEST_CASE(test_connack) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_connack(remain_length, it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [session_present_, reason_code_, cprops_] = *rv;
-	BOOST_CHECK_EQUAL(session_present_, session_present);
-	BOOST_CHECK_EQUAL(reason_code_, reason_code);
+	BOOST_TEST(session_present_ == session_present);
+	BOOST_TEST(reason_code_ == reason_code);
 
-	cprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*cprops_[prop::session_expiry_interval], session_expiry_interval);
-	BOOST_CHECK_EQUAL(*cprops_[prop::receive_maximum], receive_maximum);
-	BOOST_CHECK_EQUAL(*cprops_[prop::maximum_qos], max_qos);
-	BOOST_CHECK_EQUAL(*cprops_[prop::retain_available], retain_available);
-	BOOST_CHECK_EQUAL(*cprops_[prop::maximum_packet_size], maximum_packet_sz);
-	BOOST_CHECK_EQUAL(*cprops_[prop::assigned_client_identifier], assigned_client_id);
-	BOOST_CHECK_EQUAL(*cprops_[prop::topic_alias_maximum], topic_alias_max);
-	BOOST_CHECK_EQUAL(*cprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(cprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(cprops_[prop::user_property][0].second, user_property_2);
-	BOOST_CHECK_EQUAL(*cprops_[prop::wildcard_subscription_available], wildcard_sub);
-	BOOST_CHECK_EQUAL(*cprops_[prop::subscription_identifier_available], sub_id);
-	BOOST_CHECK_EQUAL(*cprops_[prop::shared_subscription_available], shared_sub);
-	BOOST_CHECK_EQUAL(*cprops_[prop::server_keep_alive], server_keep_alive);
-	BOOST_CHECK_EQUAL(*cprops_[prop::response_information], response_information);
-	BOOST_CHECK_EQUAL(*cprops_[prop::server_reference], server_reference);
-	BOOST_CHECK_EQUAL(*cprops_[prop::authentication_method], authentication_method);
-	BOOST_CHECK_EQUAL(*cprops_[prop::authentication_data], authentication_data);
+	cprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*cprops_[prop::session_expiry_interval] == session_expiry_interval);
+	BOOST_TEST(*cprops_[prop::receive_maximum] == receive_maximum);
+	BOOST_TEST(*cprops_[prop::maximum_qos] == max_qos);
+	BOOST_TEST(*cprops_[prop::retain_available] == retain_available);
+	BOOST_TEST(*cprops_[prop::maximum_packet_size] == maximum_packet_sz);
+	BOOST_TEST(*cprops_[prop::assigned_client_identifier] == assigned_client_id);
+	BOOST_TEST(*cprops_[prop::topic_alias_maximum] == topic_alias_max);
+	BOOST_TEST(*cprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(cprops_[prop::user_property].size() == 1);
+	BOOST_TEST(cprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(cprops_[prop::user_property][0].second == user_property_2);
+	BOOST_TEST(*cprops_[prop::wildcard_subscription_available] == wildcard_sub);
+	BOOST_TEST(*cprops_[prop::subscription_identifier_available] == sub_id);
+	BOOST_TEST(*cprops_[prop::shared_subscription_available] == shared_sub);
+	BOOST_TEST(*cprops_[prop::server_keep_alive] == server_keep_alive);
+	BOOST_TEST(*cprops_[prop::response_information] == response_information);
+	BOOST_TEST(*cprops_[prop::server_reference] == server_reference);
+	BOOST_TEST(*cprops_[prop::authentication_method] == authentication_method);
+	BOOST_TEST(*cprops_[prop::authentication_data] == authentication_data);
 }
 
 BOOST_AUTO_TEST_CASE(test_publish) {
@@ -243,30 +243,30 @@ BOOST_AUTO_TEST_CASE(test_publish) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_publish(control_byte, remain_length, it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [topic_, packet_id_, flags, pprops_, payload_] = *rv;
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
-	BOOST_CHECK_EQUAL(topic_, topic);
-	BOOST_CHECK_EQUAL(payload_, payload);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
+	BOOST_TEST(topic_ == topic);
+	BOOST_TEST(payload_ == payload);
 
-	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*pprops_[prop::payload_format_indicator], payload_format_indicator);
-	BOOST_CHECK_EQUAL(*pprops_[prop::message_expiry_interval], message_expiry_interval);
-	BOOST_CHECK_EQUAL(*pprops_[prop::topic_alias], topic_alias);
-	BOOST_CHECK_EQUAL(*pprops_[prop::response_topic], response_topic);
-	BOOST_CHECK_EQUAL(*pprops_[prop::correlation_data], correlation_data);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, publish_prop_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, publish_prop_2);
-	BOOST_ASSERT(pprops_[prop::subscription_identifier].size() == 1);
-	BOOST_CHECK_EQUAL(pprops_[prop::subscription_identifier][0], subscription_identifier);
-	BOOST_CHECK_EQUAL(*pprops_[prop::content_type], content_type);
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*pprops_[prop::payload_format_indicator] == payload_format_indicator);
+	BOOST_TEST(*pprops_[prop::message_expiry_interval] == message_expiry_interval);
+	BOOST_TEST(*pprops_[prop::topic_alias] == topic_alias);
+	BOOST_TEST(*pprops_[prop::response_topic] == response_topic);
+	BOOST_TEST(*pprops_[prop::correlation_data] == correlation_data);
+	BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+	BOOST_TEST(pprops_[prop::user_property][0].first == publish_prop_1);
+	BOOST_TEST(pprops_[prop::user_property][0].second == publish_prop_2);
+	BOOST_TEST_REQUIRE(pprops_[prop::subscription_identifier].size() == 1);
+	BOOST_TEST(pprops_[prop::subscription_identifier][0] == subscription_identifier);
+	BOOST_TEST(*pprops_[prop::content_type] == content_type);
 }
 
 BOOST_AUTO_TEST_CASE(test_large_publish) {
@@ -283,17 +283,17 @@ BOOST_AUTO_TEST_CASE(test_large_publish) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_publish(control_byte, remain_length, it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [topic_, packet_id_, flags, pprops, payload_] = *rv;
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
-	BOOST_CHECK_EQUAL(topic_, topic);
-	BOOST_CHECK_EQUAL(payload_, large_payload);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
+	BOOST_TEST(topic_ == topic);
+	BOOST_TEST(payload_ == large_payload);
 }
 
 BOOST_AUTO_TEST_CASE(test_puback) {
@@ -313,23 +313,23 @@ BOOST_AUTO_TEST_CASE(test_puback) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_puback(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(reason_code_, reason_code);
-	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(reason_code_ == reason_code);
+	BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+	BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pubrec) {
@@ -349,23 +349,23 @@ BOOST_AUTO_TEST_CASE(test_pubrec) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_pubrec(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(reason_code_, reason_code);
-	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(reason_code_ == reason_code);
+	BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+	BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pubrel) {
@@ -385,23 +385,23 @@ BOOST_AUTO_TEST_CASE(test_pubrel) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_pubrel(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(reason_code_, reason_code);
-	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(reason_code_ == reason_code);
+	BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+	BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pubcomp) {
@@ -421,23 +421,23 @@ BOOST_AUTO_TEST_CASE(test_pubcomp) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_pubcomp(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);;
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, pprops_] = *rv;
-	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(reason_code_, reason_code);
-	BOOST_CHECK_EQUAL(*pprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(pprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(pprops_[prop::user_property][0].second, user_property_2);
+	pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(reason_code_ == reason_code);
+	BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+	BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_subscribe) {
@@ -467,31 +467,31 @@ BOOST_AUTO_TEST_CASE(test_subscribe) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 	auto rv = decoders::decode_subscribe(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [sprops_, filters_] = *rv;
 	const auto& filter_ = filters_[0];
-	BOOST_CHECK_EQUAL(std::get<0>(filter_), filters[0].topic_filter);
+	BOOST_TEST(std::get<0>(filter_) == filters[0].topic_filter);
 
 	uint8_t options_ = std::get<1>(filter_);
 	uint8_t mask = (static_cast<uint8_t>(retain_handling) << 4) |
 		(static_cast<uint8_t>(retain_as_published) << 3) |
 		(static_cast<uint8_t>(no_local) << 2) |
 		static_cast<uint8_t>(qos);
-	BOOST_CHECK_EQUAL(options_, mask);
+	BOOST_TEST(options_ == mask);
 
-	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*sprops_[prop::subscription_identifier], sub_id);
-	BOOST_ASSERT(sprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].second, user_property_2);
+	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*sprops_[prop::subscription_identifier] == sub_id);
+	BOOST_TEST_REQUIRE(sprops_[prop::user_property].size() == 1);
+	BOOST_TEST(sprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(sprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_suback) {
@@ -511,23 +511,23 @@ BOOST_AUTO_TEST_CASE(test_suback) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 	auto rv = decoders::decode_suback(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [sprops_, reason_codes_] = *rv;
-	BOOST_CHECK(reason_codes_ == reason_codes);
+	BOOST_TEST(reason_codes_ == reason_codes);
 
-	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*sprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(sprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(sprops_[prop::user_property][0].second, user_property_2);
+	sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*sprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(sprops_[prop::user_property].size() == 1);
+	BOOST_TEST(sprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(sprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_unsubscribe) {
@@ -545,22 +545,22 @@ BOOST_AUTO_TEST_CASE(test_unsubscribe) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 	auto rv = decoders::decode_unsubscribe(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [uprops_, topics_] = *rv;
-	BOOST_CHECK(topics_ == topics);
+	BOOST_TEST(topics_ == topics);
 
-	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_ASSERT(uprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].second, user_property_2);
+	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST_REQUIRE(uprops_[prop::user_property].size() == 1);
+	BOOST_TEST(uprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(uprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_unsuback) {
@@ -580,23 +580,23 @@ BOOST_AUTO_TEST_CASE(test_unsuback) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_CHECK(packet_id);
-	BOOST_CHECK_EQUAL(*packet_id_, packet_id);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
+	BOOST_TEST(*packet_id_ == packet_id);
 	auto rv = decoders::decode_unsuback(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [uprops_, reason_codes_] = *rv;
-	BOOST_CHECK(reason_codes_ == reason_codes);
+	BOOST_TEST(reason_codes_ == reason_codes);
 
-	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*uprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(uprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(uprops_[prop::user_property][0].second, user_property_2);
+	uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*uprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(uprops_[prop::user_property].size() == 1);
+	BOOST_TEST(uprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(uprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_disconnect) {
@@ -619,22 +619,22 @@ BOOST_AUTO_TEST_CASE(test_disconnect) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_disconnect(remain_length, it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, dprops_] = *rv;
-	BOOST_CHECK_EQUAL(reason_code_, reason_code);
+	BOOST_TEST(reason_code_ == reason_code);
 
-	dprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*dprops_[prop::session_expiry_interval], session_expiry_interval);
-	BOOST_CHECK_EQUAL(*dprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(dprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(dprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(dprops_[prop::user_property][0].second, user_property_2);
-	BOOST_CHECK_EQUAL(*dprops_[prop::server_reference], server_reference);
+	dprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*dprops_[prop::session_expiry_interval] == session_expiry_interval);
+	BOOST_TEST(*dprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(dprops_[prop::user_property].size() == 1);
+	BOOST_TEST(dprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(dprops_[prop::user_property][0].second == user_property_2);
+	BOOST_TEST(*dprops_[prop::server_reference] == server_reference);
 }
 
 BOOST_AUTO_TEST_CASE(test_auth) {
@@ -658,56 +658,55 @@ BOOST_AUTO_TEST_CASE(test_auth) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_auth(remain_length, it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, aprops_] = *rv;
-	BOOST_CHECK_EQUAL(reason_code_, reason_code);
+	BOOST_TEST(reason_code_ == reason_code);
 
-	aprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_ASSERT(p); return true; });
-	BOOST_CHECK_EQUAL(*aprops_[prop::authentication_method], authentication_method);
-	BOOST_CHECK_EQUAL(*aprops_[prop::authentication_data], authentication_data);
-	BOOST_CHECK_EQUAL(*aprops_[prop::reason_string], reason_string);
-	BOOST_ASSERT(aprops_[prop::user_property].size() == 1);
-	BOOST_CHECK_EQUAL(aprops_[prop::user_property][0].first, user_property_1);
-	BOOST_CHECK_EQUAL(aprops_[prop::user_property][0].second, user_property_2);
+	aprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
+	BOOST_TEST(*aprops_[prop::authentication_method] == authentication_method);
+	BOOST_TEST(*aprops_[prop::authentication_data] == authentication_data);
+	BOOST_TEST(*aprops_[prop::reason_string] == reason_string);
+	BOOST_TEST_REQUIRE(aprops_[prop::user_property].size() == 1);
+	BOOST_TEST(aprops_[prop::user_property][0].first == user_property_1);
+	BOOST_TEST(aprops_[prop::user_property][0].second == user_property_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_pingreq) {
 	auto msg = encoders::encode_pingreq();
 
 	auto encoded_pingreq = std::string({ -64 /* 192 */, 0 });
-	BOOST_CHECK_EQUAL(msg, encoded_pingreq);
+	BOOST_TEST(msg == encoded_pingreq);
 }
 
 BOOST_AUTO_TEST_CASE(test_pingresp) {
 	auto msg = encoders::encode_pingresp();
 
 	auto encoded_pingresp = std::string({ -48 /* 208 */, 0 });
-	BOOST_CHECK_EQUAL(msg, encoded_pingresp);
+	BOOST_TEST(msg == encoded_pingresp);
 }
 
 BOOST_AUTO_TEST_CASE(subscription_identifiers) {
 	// check boost::container::small_vector interface
-	BOOST_ASSERT(is_small_vector<prop::subscription_identifiers>);
+	BOOST_TEST_REQUIRE(is_small_vector<prop::subscription_identifiers>);
 
 	// check optional interface
 	prop::subscription_identifiers sub_ids;
 	sub_ids.emplace(40);
-	BOOST_CHECK(sub_ids);
-	BOOST_CHECK(sub_ids.has_value());
-	BOOST_CHECK_EQUAL(*sub_ids, 40);
+	BOOST_TEST_REQUIRE(sub_ids.has_value());
+	BOOST_TEST(*sub_ids == 40);
 	*sub_ids = 41;
-	BOOST_CHECK_EQUAL(sub_ids.value(), 41);
-	BOOST_CHECK_EQUAL(sub_ids.value_or(-1), 41);
+	BOOST_TEST(sub_ids.value() == 41);
+	BOOST_TEST(sub_ids.value_or(-1) == 41);
 	sub_ids.reset();
-	BOOST_CHECK(!sub_ids);
-	BOOST_CHECK_EQUAL(sub_ids.value_or(-1), -1);
+	BOOST_TEST(!sub_ids);
+	BOOST_TEST(sub_ids.value_or(-1) == -1);
 	sub_ids.emplace();
-	BOOST_CHECK_EQUAL(*sub_ids, 0);
+	BOOST_TEST(*sub_ids == 0);
 }
 
 BOOST_AUTO_TEST_CASE(empty_user_property) {
@@ -722,18 +721,18 @@ BOOST_AUTO_TEST_CASE(empty_user_property) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_publish(control_byte, remain_length, it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [topic_, packet_id_, flags, pprops_, payload_] = *rv;
 
 	auto user_props_ = pprops_[prop::user_property];
-	BOOST_ASSERT(user_props_.size() == 1);
-	BOOST_CHECK_EQUAL(user_props_[0].first, "");
-	BOOST_CHECK_EQUAL(user_props_[0].second, "");
+	BOOST_TEST_REQUIRE(user_props_.size() == 1);
+	BOOST_TEST(user_props_[0].first == "");
+	BOOST_TEST(user_props_[0].second == "");
 }
 
 BOOST_AUTO_TEST_CASE(deserialize_user_property) {
@@ -745,18 +744,18 @@ BOOST_AUTO_TEST_CASE(deserialize_user_property) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_ASSERT(packet_id_);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_puback(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, pprops_] = *rv;
 	auto user_props_ = pprops_[prop::user_property];
-	BOOST_ASSERT(user_props_.size() == 1);
-	BOOST_CHECK_EQUAL(user_props_[0].first, "key");
-	BOOST_CHECK_EQUAL(user_props_[0].second, "val");
+	BOOST_TEST_REQUIRE(user_props_.size() == 1);
+	BOOST_TEST(user_props_[0].first == "key");
+	BOOST_TEST(user_props_[0].second == "val");
 }
 
 BOOST_AUTO_TEST_CASE(deserialize_empty_user_property) {
@@ -764,22 +763,22 @@ BOOST_AUTO_TEST_CASE(deserialize_empty_user_property) {
 	const char puback[] = {
 		64, 9, 0, 1, 0, 5, 38, 0, 0, 0, 0
 	};
-	std::string msg{ puback, sizeof(puback) / sizeof(char) };
+	std::string msg { puback, sizeof(puback) / sizeof(char) };
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_ASSERT(packet_id_);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_puback(remain_length - sizeof(uint16_t), it);
-	BOOST_ASSERT(rv);
+	BOOST_TEST_REQUIRE(rv.has_value());
 
 	const auto& [reason_code_, pprops_] = *rv;
 	auto user_props_ = pprops_[prop::user_property];
-	BOOST_ASSERT(user_props_.size() == 1);
-	BOOST_CHECK_EQUAL(user_props_[0].first, "");
-	BOOST_CHECK_EQUAL(user_props_[0].second, "");
+	BOOST_TEST_REQUIRE(user_props_.size() == 1);
+	BOOST_TEST(user_props_[0].first == "");
+	BOOST_TEST(user_props_[0].second == "");
 }
 
 BOOST_AUTO_TEST_CASE(malformed_user_property) {
@@ -791,12 +790,12 @@ BOOST_AUTO_TEST_CASE(malformed_user_property) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_ASSERT(packet_id_);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_puback(remain_length - sizeof(uint16_t), it);
-	BOOST_CHECK(!rv);
+	BOOST_TEST(!rv);
 }
 
 BOOST_AUTO_TEST_CASE(malformed_reason_string) {
@@ -808,12 +807,12 @@ BOOST_AUTO_TEST_CASE(malformed_reason_string) {
 
 	byte_citer it = msg.cbegin(), last = msg.cend();
 	auto header = decoders::decode_fixed_header(it, last);
-	BOOST_ASSERT(header);
+	BOOST_TEST_REQUIRE(header.has_value());
 	auto packet_id_ = decoders::decode_packet_id(it);
-	BOOST_ASSERT(packet_id_);
+	BOOST_TEST_REQUIRE(packet_id_.has_value());
 	const auto& [control_byte, remain_length] = *header;
 	auto rv = decoders::decode_puback(remain_length - sizeof(uint16_t), it);
-	BOOST_CHECK(!rv);
+	BOOST_TEST(!rv);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

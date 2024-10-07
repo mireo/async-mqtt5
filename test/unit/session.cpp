@@ -25,17 +25,17 @@ BOOST_AUTO_TEST_SUITE(session/*, *boost::unit_test::disabled()*/)
 BOOST_AUTO_TEST_CASE(session_state_session_present) {
 	detail::session_state session_state;
 
-	BOOST_CHECK_EQUAL(session_state.session_present(), false);
+	BOOST_TEST(session_state.session_present() == false);
 	session_state.session_present(true);
-	BOOST_CHECK_EQUAL(session_state.session_present(), true);
+	BOOST_TEST(session_state.session_present() == true);
 	session_state.session_present(false);
-	BOOST_CHECK_EQUAL(session_state.session_present(), false);
+	BOOST_TEST(session_state.session_present() == false);
 
-	BOOST_CHECK_EQUAL(session_state.subscriptions_present(), false);
+	BOOST_TEST(session_state.subscriptions_present() == false);
 	session_state.subscriptions_present(true);
-	BOOST_CHECK_EQUAL(session_state.subscriptions_present(), true);
+	BOOST_TEST(session_state.subscriptions_present() == true);
 	session_state.subscriptions_present(false);
-	BOOST_CHECK_EQUAL(session_state.subscriptions_present(), false);
+	BOOST_TEST(session_state.subscriptions_present() == false);
 }
 
 BOOST_AUTO_TEST_CASE(clear_waiting_on_pubrel) {
@@ -54,10 +54,10 @@ BOOST_AUTO_TEST_CASE(clear_waiting_on_pubrel) {
 	asio::steady_timer timer(ioc.get_executor());
 	timer.expires_after(std::chrono::milliseconds(50));
 	timer.async_wait([&svc_ptr](error_code) {
-		BOOST_CHECK_EQUAL(svc_ptr.use_count(), 2);
+		BOOST_TEST(svc_ptr.use_count() == 2);
 		svc_ptr->update_session_state(); // session_present = false
 		// publish_rec_op should complete
-		BOOST_CHECK_EQUAL(svc_ptr.use_count(), 1);
+		BOOST_TEST(svc_ptr.use_count() == 1);
 	});
 
 	ioc.run();

@@ -81,7 +81,7 @@ void run_test(
 	});
 
 	ioc.run();
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_FIXTURE_TEST_CASE(ping_pong_client_ka, shared_test_data) {

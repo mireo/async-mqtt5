@@ -93,9 +93,9 @@ void run_test(test::msg_exchange broker_side) {
 			[&handlers_called, &c](error_code ec, std::vector<reason_code> rcs, suback_props) {
 				++handlers_called;
 
-				BOOST_CHECK(!ec);
-				BOOST_ASSERT(rcs.size() == 1);
-				BOOST_CHECK_EQUAL(rcs[0], reason_codes::granted_qos_0);
+				BOOST_TEST(!ec);
+				BOOST_TEST_REQUIRE(rcs.size() == 1);
+				BOOST_TEST(rcs[0] == reason_codes::granted_qos_0);
 
 				c.cancel();
 			}
@@ -106,17 +106,17 @@ void run_test(test::msg_exchange broker_side) {
 			[&handlers_called, &c](error_code ec, std::vector<reason_code> rcs, unsuback_props) {
 				++handlers_called;
 
-				BOOST_CHECK(!ec);
-				BOOST_ASSERT(rcs.size() == 1);
-				BOOST_CHECK_EQUAL(rcs[0], reason_codes::success);
+				BOOST_TEST(!ec);
+				BOOST_TEST_REQUIRE(rcs.size() == 1);
+				BOOST_TEST(rcs[0] == reason_codes::success);
 
 				c.cancel();
 			}
 		);
 
 	ioc.run_for(5s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 // subscribe
@@ -423,9 +423,9 @@ void run_cancellation_test(test::msg_exchange broker_side) {
 				[&handlers_called, &c](error_code ec, std::vector<reason_code> rcs, suback_props) {
 					++handlers_called;
 
-					BOOST_CHECK(ec == asio::error::operation_aborted);
-					BOOST_ASSERT(rcs.size() == 1);
-					BOOST_CHECK_EQUAL(rcs[0], reason_codes::empty);
+					BOOST_TEST(ec == asio::error::operation_aborted);
+					BOOST_TEST_REQUIRE(rcs.size() == 1);
+					BOOST_TEST(rcs[0] == reason_codes::empty);
 
 					c.cancel();
 				}
@@ -439,9 +439,9 @@ void run_cancellation_test(test::msg_exchange broker_side) {
 				[&handlers_called, &c](error_code ec, std::vector<reason_code> rcs, unsuback_props) {
 					++handlers_called;
 
-					BOOST_CHECK(ec == asio::error::operation_aborted);
-					BOOST_ASSERT(rcs.size() == 1);
-					BOOST_CHECK_EQUAL(rcs[0], reason_codes::empty);
+					BOOST_TEST(ec == asio::error::operation_aborted);
+					BOOST_TEST_REQUIRE(rcs.size() == 1);
+					BOOST_TEST(rcs[0] == reason_codes::empty);
 
 					c.cancel();
 				}
@@ -451,8 +451,8 @@ void run_cancellation_test(test::msg_exchange broker_side) {
 	cancel_signal.emit(asio::cancellation_type::total);
 
 	ioc.run_for(2s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 BOOST_FIXTURE_TEST_CASE(cancel_resending_subscribe, shared_test_data) {

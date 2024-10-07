@@ -14,28 +14,9 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include <boost/beast/websocket.hpp>
+#include <boost/beast/ssl/ssl_stream.hpp> // async_teardown specialization for websocket ssl stream
 
 #include <async_mqtt5.hpp>
-
-namespace boost::beast::websocket {
-
-// boost::beast::websocket::async_teardown is a free function designed to initiate the asynchronous teardown of a connection.
-// The specific behaviour of this function is based on the NextLayer type (Socket type) used to create the ``__WEBSOCKET_STREAM__``.
-// ``__Beast__`` library includes an implementation of this function for ``__TCP_SOCKET__``.
-// However, the callers are responsible for providing a suitable overload of this function for any other type,
-// such as ``__SSL_STREAM__`` as shown in this example.
-// See ``__BEAST_ASYNC_TEARDOWN__`` for more information.
-template <typename TeardownHandler>
-void async_teardown(
-	boost::beast::role_type role,
-	asio::ssl::stream<asio::ip::tcp::socket>& stream,
-	TeardownHandler&& handler
-) {
-	return stream.async_shutdown(std::forward<TeardownHandler>(handler));
-}
-
-} // end namespace boost::beast::websocket
-
 
 // External customization point.
 namespace async_mqtt5 {
@@ -51,7 +32,7 @@ struct tls_handshake_type<boost::asio::ssl::stream<StreamBase>> {
 template <typename StreamBase>
 void assign_tls_sni(
 	const authority_path& ap,
-	boost::asio::ssl::context& ctx,
+	boost::asio::ssl::context& /*ctx*/,
 	boost::asio::ssl::stream<StreamBase>& stream
 ) {
 	SSL_set_tlsext_host_name(stream.native_handle(), ap.host.c_str());

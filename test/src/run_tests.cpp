@@ -9,12 +9,9 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include <test_common/protocol_logging.hpp>
-
 boost::unit_test::test_suite* init_tests(
 	int /*argc*/, char* /*argv*/[]
 ) {
-	async_mqtt5::test::logging_enabled() = false;
 	return nullptr;
 }
 

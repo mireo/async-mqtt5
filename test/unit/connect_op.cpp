@@ -69,8 +69,8 @@ void run_unit_test(
 	).perform(eps, ap);
 
 	ioc.run_for(1s);
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
-	BOOST_CHECK(broker.received_all_expected());
+	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(broker.received_all_expected());
 }
 
 void run_unit_test(
@@ -121,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE(fail_to_send_connect, shared_test_data) {
 		.complete_with(fail, after(2ms));
 
 	auto handler = [&](error_code ec) {
-		BOOST_CHECK(ec == fail);
+		BOOST_TEST(ec == fail);
 	};
 
 	run_unit_test(std::move(broker_side), std::move(handler));

@@ -43,7 +43,7 @@ Using the library
 
 1. Download [Boost](https://www.boost.org/users/download/), and add it to your include path.
 2. If you use SSL, download [OpenSSL](https://www.openssl.org/), link the library and add it to your include path.
-3. Additionally, you can add Async.MQTT5's `include` folder to your include path.
+3. Add Async.MQTT5's `include` folder to your include path.
 
 You can compile the example below with the following command line on Linux:
 

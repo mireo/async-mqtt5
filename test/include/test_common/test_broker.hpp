@@ -8,6 +8,12 @@
 #ifndef ASYNC_MQTT5_TEST_TEST_BROKER_HPP
 #define ASYNC_MQTT5_TEST_TEST_BROKER_HPP
 
+#include <boost/test/unit_test.hpp>
+#include <boost/test/tools/interface.hpp>
+
+#include <algorithm>
+#include <cstdint>
+#include <deque>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -17,18 +23,21 @@
 
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/any_io_executor.hpp>
+#include <boost/asio/async_result.hpp>
+#include <boost/asio/buffer.hpp>
 #include <boost/asio/cancellation_signal.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/execution_context.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
-
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/system/error_code.hpp>
 
+#include <async_mqtt5/types.hpp>
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
-#include "test_common/protocol_logging.hpp"
-
 
 namespace async_mqtt5::test {
 
@@ -157,16 +166,15 @@ public:
 				size_t buffers_size = std::distance(
 					asio::buffer_sequence_begin(buffers), asio::buffer_sequence_end(buffers)
 				);
-				BOOST_CHECK_EQUAL(buffers_size, expected.size());
+				BOOST_TEST(buffers_size == expected.size());
 
 				size_t num_packets = std::min(buffers_size, expected.size());
 				auto it = asio::buffer_sequence_begin(buffers);
 				for (size_t i = 0; i < num_packets; ++i, ++it) {
-					BOOST_CHECK_EQUAL(it->size(), expected[i].size());
+					BOOST_TEST(it->size() == expected[i].size());
 					size_t len = std::min(it->size(), expected[i].size());
 					if (memcmp(it->data(), expected[i].data(), len))
-						BOOST_CHECK_MESSAGE(
-							false,
+						BOOST_TEST_MESSAGE(
 							concat_strings(
 								"Packet mismatch!\nExpected: ",
 								to_readable_packet(expected[i]),
@@ -176,12 +184,9 @@ public:
 						);
 				}
 			} else 
-				BOOST_CHECK_MESSAGE(
-					false,
-					concat_strings(
-						"Broker side did not expect: ",
-						boost::algorithm::join(to_readable_packets(buffers), ",")
-					)
+				BOOST_TEST_MESSAGE(
+					"Broker side did not expect: " <<
+					boost::algorithm::join(to_readable_packets(buffers), ",")
 				);
 
 			auto complete_op = reply_action ?

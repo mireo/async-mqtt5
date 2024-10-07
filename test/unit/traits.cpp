@@ -8,8 +8,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <string>
-#include <vector>
+#include <string_view>
 
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/io_context.hpp>
@@ -36,7 +37,7 @@ struct good_authenticator {
 		CompletionToken&& token
 	) {
 		using error_code = boost::system::error_code;
-		using Signature = void(error_code, std::string);
+		using Signature = void (error_code, std::string);
 
 		auto initiate = [](auto, auth_step_e, std::string) {};
 
@@ -60,10 +61,9 @@ struct bad_authenticator {
 	}
 };
 
-BOOST_AUTO_TEST_CASE(is_authenticator) {
-	BOOST_STATIC_ASSERT(detail::is_authenticator<good_authenticator>);
-	BOOST_STATIC_ASSERT(!detail::is_authenticator<bad_authenticator>);
-}
+
+BOOST_STATIC_ASSERT(detail::is_authenticator<good_authenticator>);
+BOOST_STATIC_ASSERT(!detail::is_authenticator<bad_authenticator>);
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
@@ -73,32 +73,27 @@ using tls_layer = asio::ssl::stream<asio::ip::tcp::socket>;
 using websocket_tcp_layer = beast::websocket::stream<tcp_layer>;
 using websocket_tls_layer = beast::websocket::stream<tls_layer>;
 
-BOOST_AUTO_TEST_CASE(has_next_layer) {
-	BOOST_STATIC_ASSERT(!detail::has_next_layer<tcp_layer>);
-	BOOST_STATIC_ASSERT(detail::has_next_layer<tls_layer>);
-	BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tcp_layer>);
-	BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tls_layer>);
-}
 
-BOOST_AUTO_TEST_CASE(has_tls_layer) {
-	BOOST_STATIC_ASSERT(!detail::has_tls_layer<tcp_layer>);
-	BOOST_STATIC_ASSERT(detail::has_tls_layer<tls_layer>);
-	BOOST_STATIC_ASSERT(!detail::has_tls_layer<websocket_tcp_layer>);
-	BOOST_STATIC_ASSERT(detail::has_tls_layer<websocket_tls_layer>);
-}
+BOOST_STATIC_ASSERT(!detail::has_next_layer<tcp_layer>);
+BOOST_STATIC_ASSERT(detail::has_next_layer<tls_layer>);
+BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tls_layer>);
 
-BOOST_AUTO_TEST_CASE(has_tls_handshake) {
-	BOOST_STATIC_ASSERT(!detail::has_tls_handshake<tcp_layer>);
-	BOOST_STATIC_ASSERT(detail::has_tls_handshake<tls_layer>);
-	BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tcp_layer>);
-	BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tls_layer>);
-}
 
-BOOST_AUTO_TEST_CASE(has_ws_handskae) {
-	BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tcp_layer>);
-	BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tls_layer>);
-	BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tcp_layer>);
-	BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tls_layer>);
-}
+BOOST_STATIC_ASSERT(!detail::has_tls_layer<tcp_layer>);
+BOOST_STATIC_ASSERT(detail::has_tls_layer<tls_layer>);
+BOOST_STATIC_ASSERT(!detail::has_tls_layer<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(detail::has_tls_layer<websocket_tls_layer>);
+
+BOOST_STATIC_ASSERT(!detail::has_tls_handshake<tcp_layer>);
+BOOST_STATIC_ASSERT(detail::has_tls_handshake<tls_layer>);
+BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tls_layer>);
+
+
+BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tcp_layer>);
+BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tls_layer>);
+BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tls_layer>);
 
 BOOST_AUTO_TEST_SUITE_END();

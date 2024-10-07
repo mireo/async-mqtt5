@@ -20,23 +20,11 @@
 #include <boost/asio/ssl.hpp>
 
 #include <boost/beast/websocket.hpp>
+#include <boost/beast/ssl/ssl_stream.hpp> // async_teardown specialization for websocket ssl stream
 
 #include <boost/system/error_code.hpp>
 
 #include <async_mqtt5.hpp>
-
-namespace boost::beast::websocket {
-
-template <typename TeardownHandler>
-void async_teardown(
-	boost::beast::role_type /* role */,
-	asio::ssl::stream<asio::ip::tcp::socket>& stream,
-	TeardownHandler&& handler
-) {
-	return stream.async_shutdown(std::forward<TeardownHandler>(handler));
-}
-
-} // end namespace boost::beast::websocket
 
 namespace async_mqtt5 {
 

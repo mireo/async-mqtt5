@@ -35,9 +35,9 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
 
 	auto handler = [&handlers_called](error_code ec, std::vector<reason_code> rcs, suback_props) {
 		++handlers_called;
-		BOOST_CHECK(ec == client::error::pid_overrun);
-		BOOST_ASSERT(rcs.size() == 1);
-		BOOST_CHECK_EQUAL(rcs[0], reason_codes::empty);
+		BOOST_TEST(ec == client::error::pid_overrun);
+		BOOST_TEST_REQUIRE(rcs.size() == 1);
+		BOOST_TEST(rcs[0] == reason_codes::empty);
 	};
 
 	detail::subscribe_op<
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
 	);
 
 	ioc.run_for(std::chrono::milliseconds(500));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_TEST(handlers_called == expected_handlers_called);
 }
 
 void run_test(
@@ -66,11 +66,11 @@ void run_test(
 		(error_code ec, std::vector<reason_code> rcs, suback_props) {
 			++handlers_called;
 
-			BOOST_CHECK(ec == expected_ec);
-			BOOST_ASSERT(rcs.size() == num_tp);
+			BOOST_TEST(ec == expected_ec);
+			BOOST_TEST_REQUIRE(rcs.size() == num_tp);
 
 			for (size_t i = 0; i < rcs.size(); ++i)
-				BOOST_CHECK_EQUAL(rcs[i], reason_codes::empty);
+				BOOST_TEST(rcs[i] == reason_codes::empty);
 		};
 
 	detail::subscribe_op<
@@ -79,7 +79,7 @@ void run_test(
 	.perform(topics, sprops);
 
 	ioc.run_for(std::chrono::milliseconds(500));
-	BOOST_CHECK_EQUAL(handlers_called, expected_handlers_called);
+	BOOST_TEST(handlers_called == expected_handlers_called);
 }
 
 void run_test(
