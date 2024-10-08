@@ -8,18 +8,22 @@
 #ifndef ASYNC_MQTT5_RE_AUTH_OP_hpp
 #define ASYNC_MQTT5_RE_AUTH_OP_hpp
 
+#include <memory>
+#include <string>
+
 #include <boost/asio/detached.hpp>
+#include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>
 
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/reason_codes.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/any_authenticator.hpp>
 
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
-
 #include <async_mqtt5/impl/disconnect_op.hpp>
 
 namespace async_mqtt5::detail {

@@ -5,13 +5,19 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <algorithm>
-
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+#include <chrono>
+#include <cstdint>
+#include <limits>
+#include <string>
+
+#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/test_service.hpp"
@@ -34,7 +40,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 std::string connect_with_keep_alive(uint16_t keep_alive) {
 	return encoders::encode_connect(

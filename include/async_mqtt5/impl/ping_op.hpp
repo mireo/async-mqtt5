@@ -68,7 +68,7 @@ public:
 	}
 
 	using cancellation_slot_type = asio::cancellation_slot;
-	asio::cancellation_slot get_cancellation_slot() const noexcept {
+	cancellation_slot_type get_cancellation_slot() const noexcept {
 		return _cancellation_state.slot();
 	}
 

@@ -5,12 +5,19 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
 #include <boost/test/unit_test.hpp>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/test_service.hpp"
@@ -55,7 +62,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 BOOST_FIXTURE_TEST_CASE(publish_ordering_after_reconnect, shared_test_data) {
 	constexpr int expected_handlers_called = 2;

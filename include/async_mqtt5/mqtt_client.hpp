@@ -8,6 +8,12 @@
 #ifndef ASYNC_MQTT5_MQTT_CLIENT_HPP
 #define ASYNC_MQTT5_MQTT_CLIENT_HPP
 
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <variant> // std::monostate
+#include <vector>
+
 #include <boost/asio/async_result.hpp>
 #include <boost/system/error_code.hpp>
 

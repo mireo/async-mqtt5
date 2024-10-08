@@ -10,14 +10,15 @@
 
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 
+#include <cstdint>
 #include <string>
 #include <variant> // std::monostate
 #include <vector>
 
 #include <boost/asio/io_context.hpp>
-
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
+
 #include <boost/beast/websocket/stream.hpp>
 #include <boost/beast/websocket/ssl.hpp> // async_teardown for asio::ssl::socket
 

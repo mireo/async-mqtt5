@@ -8,6 +8,11 @@
 #ifndef ASYNC_MQTT5_CONNECT_OP_HPP
 #define ASYNC_MQTT5_CONNECT_OP_HPP
 
+#include <cstdint>
+#include <memory>
+#include <string>
+
+#include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/append.hpp>
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
@@ -16,11 +21,11 @@
 #include <boost/asio/consign.hpp>
 #include <boost/asio/completion_condition.hpp>
 #include <boost/asio/dispatch.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/any_completion_handler.hpp>
 
 #include <boost/beast/http/field.hpp>
 #include <boost/beast/websocket/rfc6455.hpp>
@@ -74,8 +79,8 @@ public:
 		_handler(std::forward<Handler>(handler)),
 		_cancellation_state(
 			asio::get_associated_cancellation_slot(_handler),
-			asio::enable_total_cancellation{},
-			asio::enable_total_cancellation{}
+			asio::enable_total_cancellation {},
+			asio::enable_total_cancellation {}
 		)
 	{}
 

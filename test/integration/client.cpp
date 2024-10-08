@@ -10,6 +10,8 @@
 #include <boost/asio/use_awaitable.hpp>
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 
+#include <chrono>
+
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -18,6 +20,8 @@
 #include <boost/asio/ssl.hpp>
 
 #include <boost/beast/websocket.hpp>
+
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5.hpp>
 

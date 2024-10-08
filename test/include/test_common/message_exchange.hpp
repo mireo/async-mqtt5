@@ -8,12 +8,16 @@
 #ifndef ASYNC_MQTT5_TEST_MESSAGE_EXCHANGE_HPP
 #define ASYNC_MQTT5_TEST_MESSAGE_EXCHANGE_HPP
 
+#include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <deque>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
+#include <boost/system/error_code.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 
 #include "test_common/delayed_op.hpp"

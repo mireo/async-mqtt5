@@ -8,7 +8,10 @@
 #ifndef ASYNC_MQTT5_UTF8_MQTT_HPP
 #define ASYNC_MQTT5_UTF8_MQTT_HPP
 
+#include <cstdint>
 #include <string>
+#include <string_view>
+#include <utility>
 
 namespace async_mqtt5::detail {
 

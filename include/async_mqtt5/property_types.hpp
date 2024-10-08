@@ -9,8 +9,10 @@
 #define ASYNC_MQTT5_PROPERTY_TYPES_HPP
 
 #include <cstdint>
+#include <functional>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 

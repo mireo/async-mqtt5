@@ -8,15 +8,21 @@
 #include <boost/test/unit_test.hpp>
 
 #include <chrono>
+#include <cstdint>
 #include <optional>
+#include <string>
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
 
+#include <boost/type_traits/remove_cv_ref.hpp>
+
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
@@ -78,7 +84,7 @@ BOOST_AUTO_TEST_CASE(create_client_with_execution_context) {
 	BOOST_CHECK(c.get_executor() == ioc.get_executor());
 }
 
-BOOST_AUTO_TEST_CASE(assign_tls_context) {
+void assign_tls_context() {
 	// Tests if the tls_context function compiles
 
 	asio::io_context ioc;
@@ -113,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(assign_credentials, shared_test_data) {
 	);
 }
 
-BOOST_FIXTURE_TEST_CASE(assign_credentials_tls_client, shared_test_data) {
+void assign_credentials_tls_client() {
 	// Tests if the assign credentials function compiles
 
 	std::string client_id = "client_id";
@@ -155,7 +161,7 @@ BOOST_FIXTURE_TEST_CASE(assign_will, shared_test_data) {
 	);
 }
 
-BOOST_AUTO_TEST_CASE(assign_authenticator) {
+void assign_authenticator() {
 	// Tests if the authenticator function compiles
 
 	asio::io_context ioc;
@@ -163,7 +169,7 @@ BOOST_AUTO_TEST_CASE(assign_authenticator) {
 	c.authenticator(test::test_authenticator());
 }
 
-BOOST_AUTO_TEST_CASE(assign_authenticator_tls_client) {
+void assign_authenticator_tls_client() {
 	// Tests if the authenticator function compiles
 
 	asio::io_context ioc;
@@ -435,7 +441,7 @@ BOOST_FIXTURE_TEST_CASE(connack_property, shared_connack_prop_test_data) {
 	);
 }
 
-BOOST_FIXTURE_TEST_CASE(connack_property_with_tls_client, shared_connack_prop_test_data) {
+void connack_property_with_tls_client() {
 	// Tests if the connack_properties & connack_property functions compile
 
 	asio::io_context ioc;

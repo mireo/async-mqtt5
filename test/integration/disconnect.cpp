@@ -7,11 +7,15 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <chrono>
+#include <string>
+
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/test_broker.hpp"

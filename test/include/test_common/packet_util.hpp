@@ -9,19 +9,20 @@
 #define ASYNC_MQTT5_TEST_PACKET_UTIL_HPP
 
 #include <bitset>
+#include <cstdint>
 #include <sstream>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 #include <boost/algorithm/string/join.hpp>
-
 #include <boost/asio/buffer.hpp>
-
 #include <boost/range/algorithm/transform.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
-
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
+#include <async_mqtt5/impl/codecs/traits.hpp>
 
 namespace async_mqtt5::test {
 

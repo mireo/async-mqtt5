@@ -8,9 +8,15 @@
 #ifndef ASYNC_MQTT5_BASE_DECODERS_HPP
 #define ASYNC_MQTT5_BASE_DECODERS_HPP
 
+#include <cstdint>
+#include <string>
+#include <utility>
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/binary/binary.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
+#include <boost/fusion/container/deque.hpp>
+#include <boost/optional/optional.hpp>
 
 #include <async_mqtt5/property_types.hpp>
 #include <async_mqtt5/impl/codecs/traits.hpp>

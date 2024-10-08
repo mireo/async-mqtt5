@@ -9,7 +9,10 @@
 #define ASYNC_MQTT5_READ_MESSAGE_OP_HPP
 
 #include <chrono>
+#include <cstdint>
+#include <memory>
 
+#include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>
 

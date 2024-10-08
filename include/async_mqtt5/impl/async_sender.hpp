@@ -8,13 +8,21 @@
 #ifndef ASYNC_MQTT5_ASYNC_SENDER_HPP
 #define ASYNC_MQTT5_ASYNC_SENDER_HPP
 
+#include <algorithm>
+#include <cstdint>
+#include <utility>
+#include <vector>
+
 #include <boost/asio/any_completion_handler.hpp>
+#include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/buffer.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
-#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/recycling_allocator.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/detail/internal_types.hpp>
 

@@ -8,8 +8,15 @@
 #ifndef ASYNC_MQTT5_PUBLISH_SEND_OP_HPP
 #define ASYNC_MQTT5_PUBLISH_SEND_OP_HPP
 
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <type_traits>
+
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
+#include <boost/asio/cancellation_type.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/prepend.hpp>
 

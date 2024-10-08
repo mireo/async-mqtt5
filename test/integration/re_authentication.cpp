@@ -7,10 +7,18 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include <variant>
+#include <vector>
+
+#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
@@ -59,7 +67,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 template <typename Authenticator = std::monostate>
 void run_test(

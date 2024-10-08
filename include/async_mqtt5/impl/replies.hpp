@@ -8,14 +8,23 @@
 #ifndef ASYNC_MQTT5_REPLIES_HPP
 #define ASYNC_MQTT5_REPLIES_HPP
 
+#include <algorithm>
+#include <chrono>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/any_io_executor.hpp>
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/consign.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 
+#include <async_mqtt5/types.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 

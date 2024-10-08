@@ -7,6 +7,12 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include <async_mqtt5/reason_codes.hpp>
 #include <async_mqtt5/types.hpp>
 

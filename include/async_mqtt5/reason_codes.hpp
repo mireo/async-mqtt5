@@ -9,8 +9,11 @@
 #define ASYNC_MQTT5_REASON_CODES_HPP
 
 #include <algorithm>
+#include <cstdint>
 #include <optional>
 #include <ostream>
+#include <type_traits>
+#include <utility>
 
 namespace async_mqtt5 {
 

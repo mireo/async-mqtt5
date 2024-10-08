@@ -9,6 +9,7 @@
 #define ASYNC_MQTT5_CHANNEL_TRAITS_HPP
 
 #include <deque>
+#include <type_traits>
 
 #include <boost/asio/error.hpp>
 

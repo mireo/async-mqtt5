@@ -8,10 +8,19 @@
 #ifndef ASYNC_MQTT5_CLIENT_SERVICE_HPP
 #define ASYNC_MQTT5_CLIENT_SERVICE_HPP
 
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
+#include <boost/asio/async_result.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/experimental/basic_channel.hpp>
+
+#include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/detail/channel_traits.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
@@ -23,7 +32,6 @@
 #include <async_mqtt5/impl/read_message_op.hpp>
 #include <async_mqtt5/impl/replies.hpp>
 #include <async_mqtt5/impl/sentry_op.hpp>
-
 
 namespace async_mqtt5::detail {
 

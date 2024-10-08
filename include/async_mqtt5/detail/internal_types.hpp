@@ -8,9 +8,10 @@
 #ifndef ASYNC_MQTT5_INTERNAL_TYPES_HPP
 #define ASYNC_MQTT5_INTERNAL_TYPES_HPP
 
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
-#include <shared_mutex>
 
 #include <async_mqtt5/detail/any_authenticator.hpp>
 

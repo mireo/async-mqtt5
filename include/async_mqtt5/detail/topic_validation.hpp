@@ -8,7 +8,8 @@
 #ifndef ASYNC_MQTT5_TOPIC_VALIDATION_HPP
 #define ASYNC_MQTT5_TOPIC_VALIDATION_HPP
 
-#include <string>
+#include <cstdint>
+#include <string_view>
 
 #include <async_mqtt5/detail/utf8_mqtt.hpp>
 

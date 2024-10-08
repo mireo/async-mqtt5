@@ -29,7 +29,7 @@ struct tls_handshake_type<boost::asio::ssl::stream<StreamBase>> {
 template <typename StreamBase>
 void assign_tls_sni(
 	const authority_path& ap,
-	boost::asio::ssl::context& ctx,
+	boost::asio::ssl::context& /* ctx */,
 	boost::asio::ssl::stream<StreamBase>& stream
 ) {
 	SSL_set_tlsext_host_name(stream.native_handle(), ap.host.c_str());

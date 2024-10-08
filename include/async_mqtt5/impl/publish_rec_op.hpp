@@ -8,6 +8,8 @@
 #ifndef ASYNC_MQTT5_PUBLISH_REC_OP_HPP
 #define ASYNC_MQTT5_PUBLISH_REC_OP_HPP
 
+#include <cstdint>
+#include <string>
 #include <memory>
 
 #include <boost/asio/consign.hpp>
@@ -18,6 +20,7 @@
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/reason_codes.hpp>
 #include <async_mqtt5/property_types.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>

@@ -8,13 +8,19 @@
 #ifndef ASYNC_MQTT5_ASYNC_MUTEX_HPP
 #define ASYNC_MQTT5_ASYNC_MUTEX_HPP
 
+#include <atomic>
 #include <deque>
+#include <mutex>
 
 #include <boost/asio/any_completion_handler.hpp>
+#include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_cancellation_slot.hpp>
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/execution.hpp>
+#include <boost/asio/require.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/detail/async_traits.hpp>
 #include <async_mqtt5/detail/spinlock.hpp>

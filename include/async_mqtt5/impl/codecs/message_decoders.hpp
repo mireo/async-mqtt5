@@ -9,8 +9,12 @@
 #define ASYNC_MQTT5_MESSAGE_DECODERS_HPP
 
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include <async_mqtt5/types.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/impl/codecs/base_decoders.hpp>
 

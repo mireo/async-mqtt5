@@ -6,8 +6,10 @@
 //
 
 //[publisher
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>

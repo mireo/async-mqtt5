@@ -7,6 +7,14 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cstdint>
+#include <chrono>
+#include <string>
+
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/ip/tcp.hpp>
+
 #include <async_mqtt5.hpp>
 #include <test_common/test_service.hpp>
 

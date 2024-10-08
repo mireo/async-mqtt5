@@ -8,9 +8,15 @@
 #ifndef ASYNC_MQTT5_AUTOCONNECT_STREAM_HPP
 #define ASYNC_MQTT5_AUTOCONNECT_STREAM_HPP
 
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <utility>
 
+#include <boost/asio/async_result.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/detail/async_mutex.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>

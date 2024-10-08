@@ -8,11 +8,17 @@
 #ifndef ASYNC_MQTT5_DISCONNECT_OP_HPP
 #define ASYNC_MQTT5_DISCONNECT_OP_HPP
 
+#include <cstdint>
+#include <memory>
+
+#include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
 #include <boost/asio/associated_cancellation_slot.hpp>
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/consign.hpp>
 #include <boost/asio/deferred.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/experimental/parallel_group.hpp>

@@ -9,6 +9,10 @@
 #define ASYNC_MQTT5_CONTROL_PACKET_HPP
 
 #include <algorithm>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include <boost/smart_ptr/allocate_unique.hpp>

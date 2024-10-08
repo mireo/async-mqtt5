@@ -10,12 +10,15 @@
 #include <boost/asio/use_awaitable.hpp>
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 
+#include <cstdint>
+#include <chrono>
+#include <string>
+
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
-
 #include <boost/asio/ip/tcp.hpp>
 
 #include <boost/asio/experimental/awaitable_operators.hpp>

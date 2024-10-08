@@ -8,12 +8,17 @@
 #ifndef ASYNC_MQTT5_ENDPOINTS_HPP
 #define ASYNC_MQTT5_ENDPOINTS_HPP
 
+#include <array>
+#include <chrono>
+#include <string>
+
 #include <boost/asio/append.hpp>
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
 #include <boost/asio/associated_cancellation_slot.hpp>
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/deferred.hpp>
-#include <boost/asio/dispatch.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/ip/tcp.hpp>

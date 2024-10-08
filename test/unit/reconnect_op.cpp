@@ -7,7 +7,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <boost/asio/io_context.hpp>
+#include <chrono>
+
 #include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/impl/reconnect_op.hpp>

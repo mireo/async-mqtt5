@@ -7,11 +7,17 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cstdint>
+#include <chrono>
+#include <string>
+
 #include <boost/asio/bind_executor.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/thread_pool.hpp>
 
+#include <async_mqtt5/types.hpp>
 #include <async_mqtt5/detail/async_mutex.hpp>
 
 using namespace async_mqtt5;

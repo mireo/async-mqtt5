@@ -10,11 +10,11 @@
 
 #include <optional>
 #include <vector>
+#include <utility>
 
 #include <boost/container/small_vector.hpp>
 #include <boost/range/iterator_range_core.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
-
 
 namespace async_mqtt5 {
 
@@ -57,8 +57,6 @@ template <typename T>
 constexpr bool is_boost_iterator = is_specialization<
 	boost::remove_cv_ref_t<T>, boost::iterator_range
 >;
-
-
 
 } // end namespace async_mqtt5
 

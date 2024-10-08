@@ -10,10 +10,11 @@
 
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
-#include <boost/asio/dispatch.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/detail/async_traits.hpp>
 

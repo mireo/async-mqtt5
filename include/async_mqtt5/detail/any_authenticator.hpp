@@ -8,8 +8,14 @@
 #ifndef ASYNC_MQTT5_ANY_AUTHENTICATOR
 #define ASYNC_MQTT5_ANY_AUTHENTICATOR
 
+#include <memory>
+#include <string>
+#include <string_view>
+#include <type_traits>
+
 #include <boost/asio/any_completion_handler.hpp>
 #include <boost/asio/async_result.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/is_detected_convertible.hpp>
@@ -22,7 +28,7 @@ namespace asio = boost::asio;
 using error_code = boost::system::error_code;
 
 using auth_handler_type = asio::any_completion_handler<
-	void (error_code ec, std::string auth_data)
+	void (error_code, std::string)
 >;
 
 template <typename T, typename ...Ts>

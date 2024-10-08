@@ -6,10 +6,15 @@
 //
 
 //[timeout_with_parallel_group
+#include <array>
+#include <chrono>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/deferred.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/experimental/parallel_group.hpp>
 #include <boost/asio/ip/tcp.hpp>

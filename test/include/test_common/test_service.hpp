@@ -8,10 +8,14 @@
 #ifndef ASYNC_MQTT5_TEST_TEST_SERVICE_HPP
 #define ASYNC_MQTT5_TEST_TEST_SERVICE_HPP
 
+#include <cstdint>
+#include <variant>
+
 #include <boost/asio/any_io_executor.hpp>
-#include <boost/asio/associated_executor.hpp>
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/types.hpp>
 
@@ -32,11 +36,11 @@ class test_service : public async_mqtt5::detail::client_service<StreamType, TlsC
 	asio::any_io_executor _ex;
 	connack_props _test_props;
 public:
-	explicit test_service(const asio::any_io_executor ex)
+	explicit test_service(const asio::any_io_executor& ex)
 		: base(ex), _ex(ex)
 	{}
 
-	test_service(const asio::any_io_executor ex, connack_props props)
+	test_service(const asio::any_io_executor& ex, connack_props props)
 		: base(ex), _ex(ex), _test_props(std::move(props))
 	{}
 
@@ -51,9 +55,9 @@ public:
 			);
 		};
 
-		return asio::async_initiate<
-			CompletionToken, void (error_code)
-		> (std::move(initiation), token);
+		return asio::async_initiate<CompletionToken, void (error_code)>(
+			std::move(initiation), token
+		);
 	}
 
 	template <typename Prop>

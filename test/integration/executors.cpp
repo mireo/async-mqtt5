@@ -7,11 +7,15 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cstdint>
 #include <chrono>
+#include <string>
+#include <vector>
 
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/bind_immediate_executor.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/steady_timer.hpp>
 
@@ -30,7 +34,7 @@ BOOST_AUTO_TEST_SUITE(executors)
 
 BOOST_AUTO_TEST_CASE(bind_executor) {
 	using test::after;
-	using namespace std::chrono;
+	using namespace std::chrono_literals;
 
 	constexpr int expected_handlers_called = 8;
 	int handlers_called = 0;

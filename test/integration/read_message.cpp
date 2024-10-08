@@ -7,9 +7,17 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cstdint>
+#include <chrono>
+#include <string>
+
 #include <boost/asio/any_completion_handler.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/test_service.hpp"
@@ -20,7 +28,7 @@ using namespace async_mqtt5;
 BOOST_AUTO_TEST_SUITE(read_message/*, *boost::unit_test::disabled()*/)
 
 using test::after;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 void test_receive_malformed_packet(
 	std::string malformed_packet, std::string reason_string

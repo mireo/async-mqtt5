@@ -7,11 +7,18 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 
+#include <boost/algorithm/string/join.hpp>
+
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
@@ -55,7 +62,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 void run_test(
 	test::msg_exchange broker_side, connect_props cprops = {}

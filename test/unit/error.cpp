@@ -7,7 +7,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <sstream>
+#include <iosfwd>
+#include <string>
 #include <vector>
 
 #include <async_mqtt5/error.hpp>

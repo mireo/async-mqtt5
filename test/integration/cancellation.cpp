@@ -5,6 +5,8 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <type_traits>
+
 #include <boost/test/unit_test.hpp>
 
 #include <boost/asio/as_tuple.hpp>
@@ -15,6 +17,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 #include <async_mqtt5.hpp>
 
@@ -272,7 +275,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 

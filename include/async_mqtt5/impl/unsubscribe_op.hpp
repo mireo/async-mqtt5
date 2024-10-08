@@ -8,12 +8,22 @@
 #ifndef ASYNC_MQTT5_UNSUBSCRIBE_OP_HPP
 #define ASYNC_MQTT5_UNSUBSCRIBE_OP_HPP
 
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <boost/asio/associated_allocator.hpp>
+#include <boost/asio/associated_cancellation_slot.hpp>
 #include <boost/asio/associated_executor.hpp>
+#include <boost/asio/cancellation_type.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/prepend.hpp>
 
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/reason_codes.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
@@ -31,6 +41,7 @@ namespace asio = boost::asio;
 template <typename ClientService, typename Handler>
 class unsubscribe_op {
 	using client_service = ClientService;
+
 	struct on_unsubscribe {};
 	struct on_unsuback {};
 

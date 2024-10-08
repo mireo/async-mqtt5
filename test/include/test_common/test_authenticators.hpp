@@ -8,12 +8,15 @@
 #ifndef ASYNC_MQTT5_TEST_TEST_AUTHENTICATORS_HPP
 #define ASYNC_MQTT5_TEST_TEST_AUTHENTICATORS_HPP
 
+#include <string>
+#include <string_view>
+
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/prepend.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/types.hpp>
-
-#include <iostream>
 
 namespace async_mqtt5::test {
 

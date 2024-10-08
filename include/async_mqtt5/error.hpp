@@ -8,6 +8,10 @@
 #ifndef ASYNC_MQTT5_ERROR_HPP
 #define ASYNC_MQTT5_ERROR_HPP
 
+#include <cstdint>
+#include <ostream>
+#include <string>
+
 #include <boost/asio/error.hpp>
 
 namespace async_mqtt5 {

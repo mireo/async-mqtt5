@@ -7,9 +7,18 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <chrono>
+#include <cstdint>
+#include <string>
+
+#include <boost/asio/any_completion_handler.hpp>
+#include <boost/asio/bind_cancellation_slot.hpp>
+#include <boost/asio/cancellation_signal.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 
 #include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
@@ -52,7 +61,7 @@ struct shared_test_data {
 };
 
 using test::after;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 template <qos_e qos>
 void run_test(

@@ -8,14 +8,19 @@
 #ifndef ASYNC_MQTT5_TEST_TEST_STREAM_HPP
 #define ASYNC_MQTT5_TEST_TEST_STREAM_HPP
 
+#include <chrono>
+#include <memory>
+
 #include <boost/asio/associated_executor.hpp>
+#include <boost/asio/async_result.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/execution_context.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/recycling_allocator.hpp>
-
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/detail/cancellable_handler.hpp>
 

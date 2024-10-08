@@ -8,8 +8,11 @@
 #ifndef ASYNC_MQTT5_MESSAGE_ENCODERS_HPP
 #define ASYNC_MQTT5_MESSAGE_ENCODERS_HPP
 
-#include <string>
+#include <cstdint>
 #include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #include <async_mqtt5/types.hpp>
 #include <async_mqtt5/impl/codecs/base_encoders.hpp>
