@@ -25,7 +25,7 @@ int main() {
 	> client(ioc);
 
 	// 8083 is the default Webscoket/TCP MQTT port.
-	client.brokers("<your-mqtt-broker>", 8083)
+	client.brokers("<your-mqtt-broker-path>", 8083) // Path example: localhost/mqtt
 		.async_run(boost::asio::detached);
 
 	client.async_publish<async_mqtt5::qos_e::at_most_once>(

@@ -78,7 +78,7 @@ int main() {
 	> client(ioc, std::move(context));
 
 	// 8884 is the default Websocket/TLS MQTT port.
-	client.brokers("<your-mqtt-broker>", 8884)
+	client.brokers("<your-mqtt-broker-path>", 8884) // Path example: localhost/mqtt
 		.async_run(boost::asio::detached);
 
 	client.async_publish<async_mqtt5::qos_e::at_most_once>(
