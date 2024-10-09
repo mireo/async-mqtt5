@@ -42,7 +42,7 @@ The following list contains all the examples that showcase how to use the __Clie
 		[[link async_mqtt5.timeout_with_parallel_group timeout_with_parallel_group.cpp]]
 		[
 			Shows how to use the __Client__ with its support for per-operation cancellation to perform operations under a time constraint
-			using parallel group.
+			using a parallel group.
 		]
 	]
 	[

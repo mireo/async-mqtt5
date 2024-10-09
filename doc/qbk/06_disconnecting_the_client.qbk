@@ -15,7 +15,7 @@ Invoking [refmem mqtt_client cancel] results in the __Client__ closing the conne
 asynchronous operations.
 On the other hand, [refmem mqtt_client async_disconnect] will first attempt to send a __DISCONNECT__ packet
 [footnote The __Client__ will attempt to send the __DISCONNECT__ packet for `5 seconds`. Regardless of the outcome, the connection will be closed.]
-to the Broker in order to notify it about the reason for disconnection,
+to the Broker to notify it about the reason for disconnection,
 then close the connection and cancel all outstanding asynchronous operations (equal effect as [refmem mqtt_client cancel]).
 
 [important Regardless of the method used to stop the __Client__, it is recommended to ensure that all the previous asynchronous operations are
@@ -71,7 +71,7 @@ packets in the queue. However, __DISCONNECT__ packets are prioritised and sent e
 Therefore, the connection will terminate immediately.
 
 If the __Client__ cannot establish a connection to the Broker,
-it will be stopped after `5 seconds`, which is the amount of time the it will spend
+it will be stopped after `5 seconds`, which is the amount of time it will spend
 trying to send the __DISCONNECT__ packet to the Broker before quitting.
 This timeout mechanism ensures that the __Client__ does not indefinitely wait to disconnect,
 preserving resources and maintaining efficient operation.

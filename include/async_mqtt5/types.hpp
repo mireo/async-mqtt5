@@ -17,12 +17,12 @@
 
 namespace async_mqtt5 {
 
-/** An alias for `boost::system::error_code`; */
+/** An alias for `boost::system::error_code`. */
 using error_code = boost::system::error_code;
 
 /**
  * \brief A data structure used to store information related to an authority
- * such as the host name, port, and path.
+ * such as the hostname, port, and path.
  */
 struct authority_path {
 	std::string host, port, path;
@@ -72,16 +72,16 @@ enum class dup_e : std::uint8_t {
  * \brief Represents the stage of \__ENHANCED_AUTH\__ process.
  */
 enum class auth_step_e {
-	/** Client needs to send initial authentication data. */
+	/** The Client needs to send initial authentication data. */
 	client_initial,
 
 	/** Server responded with reason_codes.continue_authentication and possibly
-	 * authentication data, client needs to send further authentication data.
+	 * authentication data, the Client needs to send further authentication data.
 	 */
 	server_challenge,
 
 	/** Server responded with reason_codes.success and final
-	 * authentication data, which client validates.
+	 * authentication data, which the Client validates.
 	 */
 	server_final
 };

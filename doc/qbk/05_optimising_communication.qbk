@@ -8,7 +8,7 @@
 [nochunk]
 
 This chapter provides a detailed breakdown of how __Client__ optimises its communications with the Broker
-with multiflight mode for simultanious message handling and strategies for efficient bandwidth usage.
+with multiflight mode for simultaneous message handling and strategies for efficient bandwidth usage.
 These techniques are key to getting the most out of MQTT in scenarios demanding fast and
 dependable message delivery, all while meeting the protocol's quality of service requirements and network efficiency standards.
 
@@ -19,7 +19,7 @@ This allows the initiation of multiple asynchronous requests simultaneously, wit
 With this feature, you can repeatedly call [refmem mqtt_client async_publish] or any similar `async_xxx` function
 without waiting for the handler invocation of the previous `async_xxx` calls.
 
-This feature is particulary helpful when using __Client__ with callbacks,
+This feature is particularly helpful when using __Client__ with callbacks,
 as it allows you to quickly dispatch multiple requests one after the other,
 instead of nesting them in callbacks.
 
@@ -29,7 +29,7 @@ sending a __PUBLISH__ packet, receiving a __PUBREC__ acknowledgement from the Br
 transmitting a __PUBREL__ packet, and finally receiving a __PUBCOMP__ packet, confirming successful message delivery.
 
 Despite the complexity of initiating several such message exchange sequences consecutively,
-the __Client__ will manage all intermediate packet exchange between the __Client__ and the Broker correctly and complete the message delivery.
+the __Client__ will manage all intermediate packet exchanges between the __Client__ and the Broker correctly and complete the message delivery.
 
 It is important to note that there is no guarantee that the final handlers will be invoked
 in the same order as the corresponding `async_xxx` calls were initiated.

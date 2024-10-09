@@ -189,9 +189,9 @@ public:
 	 *
 	 * \par Completion condition
 	 * The asynchronous operation will complete with
-	 * `boost::asio::error::operation_aborted` when client is cancelled by calling
+	 * `boost::asio::error::operation_aborted` when the client is cancelled by calling
 	 * \ref mqtt_client::async_disconnect, \ref mqtt_client::cancel, destruction or
-	 * if non-recoverable error happens during connection attempt (e.g. access denied).
+	 * if a non-recoverable error happens during a connection attempt (e.g. access denied).
 	 *
 	 *	\par Error codes
 	 *	The list of all possible error codes that this operation can finish with:\n
@@ -795,7 +795,7 @@ public:
 	 *
 	 * \details The Client will receive and complete deliveries for all the
 	 * \__PUBLISH\__ packets received from the Broker throughout its lifetime.
-	 * The Client will store them internally in order they were delivered.
+	 * The Client will store them internally in the order they were delivered.
 	 * Calling this function will attempt to receive an Application Message
 	 * from internal storage.
 	 *
@@ -859,7 +859,7 @@ public:
 	 * See \ref mqtt_client::cancel.
 	 *
 	 * \param reason_code Reason Code to notify
-	 * the Broker of the reason for disconnection.
+	 * the Broker of the reason for the disconnection.
 	 * \param props An instance of \__DISCONNECT_PROPS\__.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
@@ -884,7 +884,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted`[footnote
-				This error code can appear if the Client failed to send the \__DISCONNECT\__ packet to the Server.
+				This error code can appear if the Client fails to send the \__DISCONNECT\__ packet to the Server.
 				Regardless, the connection to the Server is terminated, and the Client is cancelled.
 			]\n
 	 *		- \link async_mqtt5::client::error::malformed_packet \endlink
@@ -948,7 +948,7 @@ public:
 	 *	The list of all possible error codes that this operation can finish with:\n
 	 *		- `boost::system::errc::errc_t::success`\n
 	 *		- `boost::asio::error::operation_aborted`[footnote
-				This error code can appear if the Client failed to send the \__DISCONNECT\__ packet to the Server.
+				This error code can appear if the Client fails to send the \__DISCONNECT\__ packet to the Server.
 				Regardless, the connection to the Server is terminated, and the Client is cancelled.
 			]\n
 	 *		- \link async_mqtt5::client::error::malformed_packet \endlink

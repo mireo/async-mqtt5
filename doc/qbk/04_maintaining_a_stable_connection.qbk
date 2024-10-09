@@ -77,12 +77,12 @@ which responds with __PINGRESP__ packet, affirming its operational status.
 
 The __Client__ will dispatch a __PINGREQ__ at an interval equal to the negotiated `Keep Alive` seconds and expects
 to receive some data
-[footnote The __Client__ does not require to specifically receive __PINGRESP__ to its __PINGREQ__. Any data from the Broker will suffice to confirm its status.]
+[footnote The __Client__ is not required to specifically receive __PINGRESP__ to its __PINGREQ__. Any data from the Broker will suffice to confirm its status.]
 from the Broker within `1.5` times the negotiated `Keep Alive` seconds.
 If no data is received within this time, the __Client__ will assume a half-open state and initiate a reconnect procedure
 described in the [link async_mqtt5.auto_reconnect Built-in auto-reconnect and retry mechanism].
 
-[important If the negotiated `Keep Alive` value is set to `0`, the timeout mechanism to detect half-open connection
+[important If the negotiated `Keep Alive` value is set to `0`, the timeout mechanism to detect a half-open connection
 is disabled. As a result, the __Client__ loses its capability to identify and adequately respond to half-open scenarios.]
 
 [endsect] [/half_open_connections]

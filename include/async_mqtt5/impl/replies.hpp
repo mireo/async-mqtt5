@@ -102,7 +102,7 @@ private:
 
 public:
 	template <typename Executor>
-	explicit replies(Executor ex) : _ex(ex) {}
+	explicit replies(Executor ex) : _ex(std::move(ex)) {}
 
 	replies(replies&&) = default;
 	replies(const replies&) = delete;

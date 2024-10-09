@@ -19,7 +19,7 @@ In situations where the connection is unexpectedly lost mid-protocol flow,
 the __Client__ complies with the MQTT protocol's specified message delivery retry mechanisms.
 
 The following example will showcase how the __Client__ internally manages various scenarios, including successful transmission, offline queuing,
-and connection loss retransmissions, when executing a request to publish a message with QoS 1.
+and connection loss retransmissions when executing a request to publish a message with QoS 1.
 Note that the same principle applies to all other asynchronous functions within the __Client__ 
 (see /Completion condition/ under [refmem mqtt_client async_publish], [refmem mqtt_client async_subscribe], [refmem mqtt_client async_unsubscribe],
 and [refmem mqtt_client async_disconnect]).
@@ -75,7 +75,7 @@ such as when a device connected to the network loses its GSM connectivity.
 However, the connection may be closed (or never established) for other reasons,
 which are typically related to misconfiguration of broker IPs, ports, expired or incorrect TLS, or MQTT-related errors,
 such as trying to communicate with a Broker that does not support MQTT 5.
-In these cases, the __Client__ will still endlessly try to connect to Broker(s), but the connection will never succeed.
+In these cases, the __Client__ will still endlessly try to connect to the Broker(s), but the connection will never succeed.
 
 The most challenging problem here is that users of the __Client__ do not get informed in any way that the connection cannot be established.
 So, if you make a typo in the Broker's IP, run the __Client__, and publish some message, the [refmem mqtt_client async_publish] callback will never be invoked,

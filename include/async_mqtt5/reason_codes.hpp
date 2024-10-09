@@ -61,7 +61,7 @@ public:
 	/**
 	 * \brief Indication if the object holds a Reason Code indicating an error.
 	 *
-	 * \details Any Reason Code holding a value equal or greater than 0x80.
+	 * \details Any Reason Code holding a value equal to or greater than 0x80.
 	 */
 	explicit operator bool() const noexcept {
 		return _code >= 0x80;
@@ -118,7 +118,7 @@ public:
 				return "Initiate a re-authentication";
 			case 0x80:
 				return "The Server does not wish to reveal the reason for the"
-						"failure, or none of the other Reason Codes apply";
+						"failure or none of the other Reason Codes apply";
 			case 0x81:
 				return "Data within the packet could not be correctly parsed";
 			case 0x82:
@@ -159,7 +159,7 @@ public:
 			case 0x92:
 				return "The Packet Identifier is not known";
 			case 0x93:
-				return "The Client or Server has received more than Receive "
+				return "The Client or Server has received more than the Receive "
 						"Maximum publication for which it has not sent PUBACK or PUBCOMP";
 			case 0x94:
 				return "The Client or Server received a PUBLISH packet containing "
@@ -239,7 +239,7 @@ constexpr reason_code continue_authentication { 0x18 };
 constexpr reason_code reauthenticate { 0x19 };
 
 /** The Server does not wish to reveal the reason for the
- failure, or none of the other Reason Codes apply. */
+ failure or none of the other Reason Codes apply. */
 constexpr reason_code unspecified_error { 0x80 };
 
 /** Data within the packet could not be correctly parsed. */
@@ -298,7 +298,7 @@ constexpr reason_code packet_identifier_in_use { 0x91 };
 /** The Packet Identifier is not known. */
 constexpr reason_code packet_identifier_not_found { 0x92 };
 
-/** The Client or Server has received more than Receive
+/** The Client or Server has received more than the Receive
  Maximum publication for which it has not sent PUBACK or PUBCOMP. */
 constexpr reason_code receive_maximum_exceeded { 0x93 };
 
