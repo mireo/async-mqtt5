@@ -88,7 +88,11 @@ public:
 		_owner._connect_timer.expires_after(std::chrono::seconds(5));
 
 		auto timed_resolve = asioex::make_parallel_group(
-			_owner._resolver.async_resolve(ap.host, ap.port, asio::deferred),
+			_owner._resolver.async_resolve(
+				ap.host,
+				ap.port,
+				asio::ip::tcp::resolver::query::canonical_name,
+				asio::deferred),
 			_owner._connect_timer.async_wait(asio::deferred)
 		);
 
