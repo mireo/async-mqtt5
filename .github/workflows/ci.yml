@@ -160,19 +160,19 @@ jobs:
             os: ubuntu-24.04
             container: ubuntu:24.04
             build-type: 'Release'
-            cxxstd: 17
+            cxxstd: 20
             cxxflags: ''
             ldflags: ''
           
-          - toolset: g++-14
+          - toolset: g++-14 -fsanitize=address,undefined
             compiler: g++-14
             install: g++-14
             os: ubuntu-24.04
             container: ubuntu:24.04
-            build-type: 'Release'
+            build-type: 'Debug'
             cxxstd: 20
-            cxxflags: ''
-            ldflags: ''
+            cxxflags: '-fsanitize=address,undefined -fno-sanitize-recover=all'
+            ldflags: '-fsanitize=address,undefined'
 
           - toolset: clang++-12
             compiler: clang++-12
@@ -210,9 +210,39 @@ jobs:
             os: ubuntu-latest
             container: ubuntu:22.04
             build-type: 'Release'
+            cxxstd: 17
+            cxxflags: ''
+            ldflags: ''
+
+          - toolset: clang++-16
+            compiler: clang++-16
+            install: clang++-16
+            os: ubuntu-24.04
+            container: ubuntu:24.04
+            build-type: 'Release'
+            cxxstd: 17
+            cxxflags: ''
+            ldflags: ''
+
+          - toolset: clang++-17
+            compiler: clang++-17
+            install: clang++-17
+            os: ubuntu-24.04
+            container: ubuntu:24.04
+            build-type: 'Release'
             cxxstd: 20
             cxxflags: ''
             ldflags: ''
+
+          - toolset: clang++-18 -fsanitize=address,undefined
+            compiler: clang++-18
+            install: clang++-18
+            os: ubuntu-24.04
+            container: ubuntu:24.04
+            build-type: 'Debug'
+            cxxstd: 20
+            cxxflags: '-fsanitize=address,undefined -fno-sanitize-recover=all'
+            ldflags: '-fsanitize=address,undefined'
 
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}

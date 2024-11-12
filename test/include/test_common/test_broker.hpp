@@ -67,6 +67,8 @@ public:
 
 	size_t consume(const std::vector<uint8_t>& data) {
 		size_t num_bytes = std::min(_buffer_size, data.size());
+		if (num_bytes == 0)
+			return 0;
 		std::memcpy(_buffer_data, data.data(), num_bytes);
 		return num_bytes;
 	}

@@ -128,7 +128,7 @@ Async.MQTT5 is a header-only library. To use Async.MQTT5 it requires the followi
 - **OpenSSL**. Only if you require an SSL connection by using [boost::asio::ssl::stream](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio/reference/ssl__stream.html).
 
 Async.MQTT5 has been tested with the following compilers: 
-- clang 12.0 - 15.0 (Linux)
+- clang 12.0 - 18.0 (Linux)
 - GCC 9 - 14 (Linux)
 - MSVC 14.37 - Visual Studio 2022 (Windows)
 

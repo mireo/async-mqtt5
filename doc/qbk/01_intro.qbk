@@ -127,7 +127,7 @@ To use __Self__ it requires the following:
 
 __Self__ has been tested with the following compilers:
 
-* clang 12.0 - 15.0 (Linux)
+* clang 12.0 - 18.0 (Linux)
 * GCC 9 - 14 (Linux)
 * MSVC 14.37 - Visual Studio 2022 (Windows)
 
