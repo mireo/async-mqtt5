@@ -114,7 +114,7 @@ public:
 		if (ec == asio::error::operation_aborted)
 			// cancelled without acquiring the lock (by calling client.cancel())
 			return std::move(_handler)(ec);
-			
+		
 		if (!_owner.is_open())
 			return complete(asio::error::operation_aborted);
 
@@ -148,8 +148,6 @@ public:
 		on_next_endpoint, error_code ec,
 		epoints eps, authority_path ap
 	) {
-		namespace asioex = boost::asio::experimental;
-
 		// the three error codes below are the only possible codes
 		// that may be returned from async_next_endpont
 
@@ -162,7 +160,17 @@ public:
 		if (ec == asio::error::host_not_found)
 			return complete(asio::error::no_recovery);
 
-		auto sptr = _owner.construct_and_open_next_layer();
+		connect(std::move(eps), std::move(ap));
+	}
+
+	void connect(epoints eps, authority_path ap) {
+		namespace asioex = boost::asio::experimental;
+
+		if (eps.empty())
+			return do_reconnect();
+
+		const auto& ep = eps->endpoint();
+		auto sptr = _owner.construct_and_open_next_layer(ep.protocol());
 
 		if constexpr (has_tls_context<typename Owner::stream_context_type>)
 			setup_tls_sni(
@@ -174,53 +182,58 @@ public:
 
 		auto init_connect = [](
 			auto handler, typename Owner::stream_type& stream,
-			mqtt_ctx& context, const epoints& eps, authority_path ap
+			mqtt_ctx& context, endpoint ep, authority_path ap
 		) {
-			connect_op { stream, std::move(handler), context }
-				.perform(eps, std::move(ap));
+			connect_op { stream, context, std::move(handler) }
+				.perform(ep, std::move(ap));
 		};
 
 		auto timed_connect = asioex::make_parallel_group(
-			asio::async_initiate<const asio::deferred_t, void (error_code)>(
+			asio::async_initiate<const asio::deferred_t, void(error_code)>(
 				init_connect, asio::deferred, std::ref(*sptr),
 				std::ref(_owner._stream_context.mqtt_context()),
-				eps, std::move(ap)
+				ep, ap
 			),
 			_owner._connect_timer.async_wait(asio::deferred)
 		);
 
 		timed_connect.async_wait(
 			asioex::wait_for_one(),
-			asio::prepend(std::move(*this), on_connect {}, std::move(sptr))
+			asio::prepend(
+				std::move(*this), on_connect {},
+				std::move(sptr), std::move(eps), std::move(ap)
+			)
 		);
 	}
 
 	void operator()(
-		on_connect, typename Owner::stream_ptr sptr,
+		on_connect,
+		typename Owner::stream_ptr sptr, epoints eps, authority_path ap,
 		std::array<std::size_t, 2> ord,
 		error_code connect_ec, error_code timer_ec
 	) {
-		// connect_ec may be any of stream.async_connect() error codes
-		// plus access_denied, connection_refused and
-		// client::error::malformed_packet
+		// connect_ec may be any of:
+		//  1) async_connect error codes
+		//  2) async_handshake (TLS) error codes
+		//  3) async_handshake (WebSocket) error codes
+		//  4) async_write error codes
+		//  5) async_read error codes
+		//  5) client::error::malformed_packet
 		if (
-			ord[0] == 0 && connect_ec == asio::error::operation_aborted ||
-			ord[0] == 1 && timer_ec == asio::error::operation_aborted ||
+			(ord[0] == 0 && connect_ec == asio::error::operation_aborted) ||
+			(ord[0] == 1 && timer_ec == asio::error::operation_aborted) ||
 			!_owner.is_open()
 		)
 			return complete(asio::error::operation_aborted);
 
-		// operation timed out so retry
-		if (ord[0] == 1)
+		// retry for operation timed out and any other error_code or client::error::malformed_packet
+		if (ord[0] == 1 || connect_ec) {
+			// if the hostname resolved into more endpoints, try the next one
+			if (++eps != eps.end())
+				return connect(std::move(eps), std::move(ap));
+			// try next server
 			return do_reconnect();
-
-		if (connect_ec == asio::error::access_denied)
-			return complete(asio::error::no_recovery);
-
-		// retry for any other stream.async_connect() error or
-		// connection_refused, client::error::malformed_packet
-		if (connect_ec)
-			return do_reconnect();
+		}
 
 		_owner.replace_next_layer(std::move(sptr));
 		complete(error_code {});

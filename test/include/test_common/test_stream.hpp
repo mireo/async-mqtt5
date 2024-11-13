@@ -54,7 +54,7 @@ private:
 	friend class write_op;
 
 public:
-	explicit test_stream_impl(executor_type ex) : _ex(std::move(ex))	{}
+	explicit test_stream_impl(executor_type ex) : _ex(std::move(ex)) {}
 
 	test_stream_impl(test_stream_impl&&) = default;
 	test_stream_impl(const test_stream_impl&) = delete;

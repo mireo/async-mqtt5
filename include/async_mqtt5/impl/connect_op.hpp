@@ -68,12 +68,11 @@ class connect_op {
 	asio::cancellation_state _cancellation_state;
 
 	using endpoint = asio::ip::tcp::endpoint;
-	using epoints = asio::ip::tcp::resolver::results_type;
 
 public:
 	template <typename Handler>
 	connect_op(
-		Stream& stream, Handler&& handler, mqtt_ctx& ctx
+		Stream& stream, mqtt_ctx& ctx, Handler&& handler
 	) :
 		_stream(stream), _ctx(ctx),
 		_handler(std::forward<Handler>(handler)),
@@ -106,14 +105,12 @@ public:
 		return asio::get_associated_executor(_handler);
 	}
 
-	void perform(
-		const epoints& eps, authority_path ap
-	) {
+	void perform(const endpoint& ep, authority_path ap) {
 		lowest_layer(_stream).async_connect(
-			*std::begin(eps),
+			ep,
 			asio::append(
 				asio::prepend(std::move(*this), on_connect {}),
-				*std::begin(eps), std::move(ap)
+				ep, std::move(ap)
 			)
 		);
 	}

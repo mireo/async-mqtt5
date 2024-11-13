@@ -61,9 +61,6 @@ private:
 	template <typename Stream>
 	friend class reconnect_op;
 
-	template <typename Owner, typename DisconnectContext>
-	friend class disconnect_op;
-
 public:
 	autoconnect_stream(
 		const executor_type& ex, stream_context_type& context
@@ -106,7 +103,7 @@ public:
 	}
 
 	void open() {
-		open_lowest_layer(_stream_ptr);
+		open_lowest_layer(_stream_ptr, asio::ip::tcp::v4());
 	}
 
 	void cancel() {
@@ -169,10 +166,10 @@ public:
 	}
 
 private:
-	static void open_lowest_layer(stream_ptr sptr) {
+	static void open_lowest_layer(const stream_ptr& sptr, asio::ip::tcp protocol) {
 		error_code ec;
 		auto& layer = lowest_layer(*sptr);
-		layer.open(asio::ip::tcp::v4(), ec);
+		layer.open(protocol, ec);
 		layer.set_option(asio::socket_base::reuse_address(true), ec);
 		layer.set_option(asio::ip::tcp::no_delay(true), ec);
 	}
@@ -189,9 +186,9 @@ private:
 		return sptr;
 	}
 
-	stream_ptr construct_and_open_next_layer() const {
+	stream_ptr construct_and_open_next_layer(asio::ip::tcp protocol) const {
 		auto sptr = construct_next_layer();
-		open_lowest_layer(sptr);
+		open_lowest_layer(sptr, protocol);
 		return sptr;
 	}
 
@@ -212,11 +209,11 @@ private:
 		using Signature = void (error_code);
 
 		auto initiation = [](auto handler, self_type& self, stream_ptr s) {
-			reconnect_op { self, std::move(handler) }.perform(s);
+			reconnect_op { self, std::move(handler) }.perform(std::move(s));
 		};
 
 		return asio::async_initiate<CompletionToken, Signature>(
-			initiation, token, std::ref(*this), s
+			initiation, token, std::ref(*this), std::move(s)
 		);
 	}
 };

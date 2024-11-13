@@ -65,8 +65,8 @@ void run_unit_test(
 	};
 
 	detail::connect_op<test::test_stream>(
-		stream, std::move(handler), mqtt_ctx
-	).perform(eps, ap);
+		stream, mqtt_ctx, std::move(handler)
+	).perform(*std::begin(eps), std::move(ap));
 
 	ioc.run_for(1s);
 	BOOST_TEST(handlers_called == expected_handlers_called);
