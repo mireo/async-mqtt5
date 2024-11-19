@@ -8,8 +8,6 @@
 #ifndef ASYNC_MQTT5_REBIND_EXECUTOR_HPP
 #define ASYNC_MQTT5_REBIND_EXECUTOR_HPP
 
-#include <boost/beast/websocket/stream.hpp>
-
 namespace boost::asio::ssl {
 
 // forward declare to preserve optional OpenSSL dependency
@@ -17,6 +15,15 @@ template <typename Stream>
 class stream;
 
 } // end namespace boost::asio::ssl
+
+// forward declare to avoid Beast dependency
+
+namespace boost::beast::websocket {
+
+template <typename Stream, bool deflate_supported>
+class stream;
+
+}// end namespace boost::beast::websocket
 
 namespace async_mqtt5::detail {
 
@@ -30,14 +37,19 @@ struct rebind_executor {
 // asio::ssl::stream does not define a rebind_executor member type
 template <typename Stream, typename Executor>
 struct rebind_executor<asio::ssl::stream<Stream>, Executor> {
-	using other = typename asio::ssl::stream<typename rebind_executor<Stream, Executor>::other>;
+	using other = typename asio::ssl::stream<
+		typename rebind_executor<Stream, Executor>::other
+	>;
 };
 
-template <typename Stream, typename Executor>
-struct rebind_executor<boost::beast::websocket::stream<asio::ssl::stream<Stream>>, Executor> {
+template <typename Stream, bool deflate_supported, typename Executor>
+struct rebind_executor<
+	boost::beast::websocket::stream<asio::ssl::stream<Stream>, deflate_supported>,
+	Executor
+> {
 	using other = typename boost::beast::websocket::stream<
 		asio::ssl::stream<typename rebind_executor<Stream, Executor>::other>,
-		boost::beast::websocket::stream<asio::ssl::stream<Stream>>::is_deflate_supported::value
+		deflate_supported
 	>;
 };
 

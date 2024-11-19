@@ -138,10 +138,10 @@ public:
 			);
 		}
 		else if constexpr (
-			has_tls_handshake<typename next_layer_type<Stream>::type>
+			has_tls_handshake<next_layer_type<Stream>>
 		) {
 			_stream.next_layer().async_handshake(
-				tls_handshake_type<typename next_layer_type<Stream>::type>::client,
+				tls_handshake_type<next_layer_type<Stream>>::client,
 				asio::append(
 					asio::prepend(std::move(*this), on_tls_handshake {}),
 					std::move(ep), std::move(ap)

@@ -23,6 +23,8 @@
 
 #include <boost/asio/experimental/awaitable_operators.hpp>
 
+#include <boost/beast/websocket/stream.hpp>
+
 #include <async_mqtt5.hpp>
 
 BOOST_AUTO_TEST_SUITE(mqtt_features/*, *boost::unit_test::disabled()*/)
@@ -34,9 +36,9 @@ constexpr auto use_nothrow_awaitable = asio::as_tuple(asio::use_awaitable);
 
 constexpr auto test_duration = std::chrono::seconds(5);
 
-using stream_type = asio::ip::tcp::socket;
+using stream_type = boost::beast::websocket::stream<asio::ip::tcp::socket>;
 
-constexpr auto broker = "broker.hivemq.com";
+constexpr auto broker = "broker.hivemq.com/mqtt";
 constexpr auto connect_wait_dur = std::chrono::milliseconds(200);
 constexpr auto topic = "async-mqtt5/test";
 constexpr auto share_topic = "$share/sharename/async-mqtt5/test";
@@ -62,7 +64,7 @@ asio::awaitable<void> test_manual_use_topic_alias() {
 	auto ex = co_await asio::this_coro::executor;
 
 	mqtt_client<stream_type> client(ex);
-	client.brokers(broker)
+	client.brokers(broker, 8000)
 		.connect_property(prop::topic_alias_maximum, uint16_t(10))
 		.async_run(asio::detached);
 
@@ -94,7 +96,7 @@ asio::awaitable<void> test_subscription_identifiers() {
 	auto ex = co_await asio::this_coro::executor;
 
 	mqtt_client<stream_type> client(ex);
-	client.brokers(broker)
+	client.brokers(broker, 8000)
 		.async_run(asio::detached);
 
 	publish_props pprops;
@@ -109,7 +111,7 @@ asio::awaitable<void> test_subscription_identifiers() {
 	sprops[prop::subscription_identifier] = sub_id;
 
 	subscribe_options sub_opts = { .no_local = no_local_e::no };
-	subscribe_topic sub_topic = { share_topic, sub_opts };
+	subscribe_topic sub_topic = { topic, sub_opts };
 	auto&& [ec_2, rcs, __] = co_await client.async_subscribe(
 		sub_topic, sprops, use_nothrow_awaitable
 	);
@@ -135,7 +137,7 @@ asio::awaitable<void> test_shared_subscription() {
 	auto ex = co_await asio::this_coro::executor;
 
 	mqtt_client<stream_type> client(ex);
-	client.brokers(broker)
+	client.brokers(broker, 8000)
 		.async_run(asio::detached);
 
 	subscribe_options sub_opts = { .no_local = no_local_e::no };
@@ -170,7 +172,7 @@ asio::awaitable<void> test_user_property() {
 	auto ex = co_await asio::this_coro::executor;
 
 	mqtt_client<stream_type> client(ex);
-	client.brokers(broker)
+	client.brokers(broker, 8000)
 		.async_run(asio::detached);
 
 	publish_props pprops;

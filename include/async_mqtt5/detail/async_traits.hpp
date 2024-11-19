@@ -15,8 +15,6 @@
 #include <boost/asio/prefer.hpp>
 #include <boost/asio/write.hpp>
 
-#include <boost/beast/core/stream_traits.hpp>
-
 #include <boost/type_traits/detected_or.hpp>
 #include <boost/type_traits/is_detected.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
@@ -35,6 +33,8 @@ void assign_tls_sni(const authority_path& ap, TlsContext& ctx, TlsStream& s);
 
 namespace detail {
 
+// tracking executor
+
 template <typename Handler, typename DfltExecutor>
 using tracking_type = std::decay_t<
 	typename asio::prefer_result<
@@ -52,18 +52,8 @@ tracking_executor(const Handler& handler, const DfltExecutor& ex) {
 	);
 }
 
-template <typename T, typename ...Ts>
-using async_write_sig = decltype(
-	std::declval<T&>().async_write(std::declval<Ts>()...)
-);
 
-constexpr auto write_handler_t = [](error_code, size_t) {};
-
-template <typename T, typename B>
-constexpr bool has_async_write = boost::is_detected<
-	async_write_sig, T, B, decltype(write_handler_t)
->::value;
-
+// tls handshake
 
 constexpr auto handshake_handler_t = [](error_code) {};
 
@@ -84,6 +74,7 @@ constexpr bool has_tls_handshake = boost::is_detected<
 	decltype(handshake_handler_t)
 >::value;
 
+// websocket handshake
 
 template <typename T, typename ...Ts>
 using async_ws_handshake_sig = decltype(
@@ -97,59 +88,67 @@ constexpr bool has_ws_handshake = boost::is_detected<
 	decltype(handshake_handler_t)
 >::value;
 
+// next layer
 
 template <typename T>
-using tls_context_sig = decltype(
-	std::declval<T&>().tls_context()
-);
-
-template <typename T>
-constexpr bool has_tls_context = boost::is_detected<
-	tls_context_sig, T
->::value;
-
-
-template <typename T>
-using next_layer_sig = decltype(
-	std::declval<T&>().next_layer()
-);
+using next_layer_sig = decltype(std::declval<T&>().next_layer());
 
 template <typename T>
 constexpr bool has_next_layer = boost::is_detected<
-	next_layer_sig, T
+	next_layer_sig, boost::remove_cv_ref_t<T>
 >::value;
 
 template <typename T, typename Enable = void>
-struct next_layer_type {
+struct next_layer_type_impl {
 	using type = T;
 };
 
 template <typename T>
-struct next_layer_type<
-	T, std::enable_if_t<has_next_layer<T>>
-> {
-	using type = typename std::remove_reference_t<T>::next_layer_type;
+struct next_layer_type_impl<T, std::enable_if_t<has_next_layer<T>>> {
+	using type = typename T::next_layer_type;
 };
 
 template <typename T>
-typename next_layer_type<T, std::enable_if_t<!has_next_layer<T>>>::type&
-next_layer(T&& a) {
-	return a;
-}
+using next_layer_type = typename next_layer_type_impl<
+	boost::remove_cv_ref_t<T>
+>::type;
 
 template <typename T>
-typename next_layer_type<T, std::enable_if_t<has_next_layer<T>>>::type&
-next_layer(T&& a) {
-	return a.next_layer();
+next_layer_type<T>& next_layer(T&& a) {
+	if constexpr (has_next_layer<T>)
+		return a.next_layer();
+	else
+		return std::forward<T>(a);
 }
 
-template <typename S>
-using lowest_layer_type = typename boost::beast::lowest_layer_type<S>;
+// lowest layer
 
-template <typename S>
-lowest_layer_type<S>& lowest_layer(S&& a) {
-	return boost::beast::get_lowest_layer(std::forward<S>(a));
+template <typename T, typename Enable = void>
+struct lowest_layer_type_impl {
+	using type = T;
+};
+
+template <typename T>
+struct lowest_layer_type_impl<T, std::enable_if_t<has_next_layer<T>>> {
+	using type = typename lowest_layer_type_impl<
+		next_layer_type<T>
+	>::type;
+};
+
+template <typename T>
+using lowest_layer_type = typename lowest_layer_type_impl<
+	boost::remove_cv_ref_t<T>
+>::type;
+
+template <typename T>
+lowest_layer_type<T>& lowest_layer(T&& a) {
+	if constexpr (has_next_layer<T>)
+		return lowest_layer(a.next_layer());
+	else
+		return std::forward<T>(a);
 }
+
+// tls layer
 
 template <typename T, typename Enable = void>
 struct has_tls_layer_impl : std::false_type {};
@@ -171,6 +170,41 @@ constexpr bool has_tls_layer = has_tls_layer_impl<
 	boost::remove_cv_ref_t<T>
 >::value;
 
+// tls context
+
+template <typename T>
+using tls_context_sig = decltype(
+	std::declval<T&>().tls_context()
+);
+
+template <typename T>
+constexpr bool has_tls_context = boost::is_detected<
+	tls_context_sig, T
+>::value;
+
+// setup_tls_sni
+
+template <typename TlsContext, typename Stream>
+void setup_tls_sni(const authority_path& ap, TlsContext& ctx, Stream& s) {
+	if constexpr (has_tls_handshake<Stream>)
+		assign_tls_sni(ap, ctx, s);
+	else if constexpr (has_next_layer<Stream>)
+		setup_tls_sni(ap, ctx, next_layer(s));
+}
+
+// async_write
+
+template <typename T, typename ...Ts>
+using async_write_sig = decltype(
+	std::declval<T&>().async_write(std::declval<Ts>()...)
+);
+
+constexpr auto write_handler_t = [](error_code, size_t) {};
+
+template <typename T, typename B>
+constexpr bool has_async_write = boost::is_detected<
+	async_write_sig, T, B, decltype(write_handler_t)
+>::value;
 
 template <
 	typename Stream,
@@ -190,13 +224,6 @@ decltype(auto) async_write(
 		);
 }
 
-template <typename TlsContext, typename Stream>
-void setup_tls_sni(const authority_path& ap, TlsContext& ctx, Stream& s) {
-	if constexpr (has_tls_handshake<Stream>)
-		assign_tls_sni(ap, ctx, s);
-	else if constexpr (has_next_layer<Stream>)
-		setup_tls_sni(ap, ctx, next_layer(s));
-}
 
 } // end namespace detail
 
