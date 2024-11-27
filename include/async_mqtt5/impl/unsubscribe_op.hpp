@@ -81,9 +81,9 @@ public:
 		return asio::get_associated_allocator(_handler);
 	}
 
-	using executor_type = asio::associated_executor_t<handler_type>;
+	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
-		return asio::get_associated_executor(_handler);
+		return _svc_ptr->get_executor();
 	}
 
 	void perform(

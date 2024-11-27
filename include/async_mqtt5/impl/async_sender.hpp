@@ -79,14 +79,6 @@ public:
 		return !_handler;
 	}
 
-	auto get_executor() {
-		return asio::get_associated_executor(_handler);
-	}
-
-	auto get_allocator() {
-		return asio::get_associated_allocator(_handler);
-	}
-
 	bool throttled() const {
 		return _flags & send_flag::throttled;
 	}
@@ -146,6 +138,11 @@ public:
 	using allocator_type = queue_allocator_type;
 	allocator_type get_allocator() const noexcept {
 		return allocator_type {};
+	}
+
+	using executor_type = typename client_service::executor_type;
+	executor_type get_executor() const noexcept {
+		return _svc.get_executor();
 	}
 
 	serial_num_t next_serial_num() {
@@ -293,17 +290,9 @@ private:
 
 		_svc._replies.clear_fast_replies();
 
-		auto alloc = write_queue.front().get_allocator();
-		auto ex = write_queue.front().get_executor();
 		_svc._stream.async_write(
 			buffers,
-			asio::bind_allocator(
-				alloc,
-				asio::bind_executor(
-					ex,
-					asio::prepend(std::ref(*this), std::move(write_queue))
-				)
-			)
+			asio::prepend(std::ref(*this), std::move(write_queue))
 		);
 	}
 

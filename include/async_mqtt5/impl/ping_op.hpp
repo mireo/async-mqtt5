@@ -10,13 +10,10 @@
 
 #include <limits>
 #include <chrono>
-#include <memory>
 
-#include <boost/asio/cancellation_state.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/consign.hpp>
 #include <boost/asio/prepend.hpp>
-#include <boost/asio/recycling_allocator.hpp>
-#include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
@@ -27,33 +24,20 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename ClientService, typename Executor>
+template <typename ClientService, typename Handler>
 class ping_op {
-public:
-	using executor_type = Executor;
-private:
 	using client_service = ClientService;
+	using handler_type = Handler;
 
 	struct on_timer {};
 	struct on_pingreq {};
 
 	std::shared_ptr<client_service> _svc_ptr;
-	executor_type _executor;
-	std::unique_ptr<asio::steady_timer> _ping_timer;
-	asio::cancellation_state _cancellation_state;
+	handler_type _handler;
 
 public:
-	ping_op(
-		std::shared_ptr<client_service> svc_ptr,
-		executor_type ex
-	) :
-		_svc_ptr(std::move(svc_ptr)), _executor(ex),
-		_ping_timer(new asio::steady_timer(_svc_ptr->get_executor())),
-		_cancellation_state(
-			_svc_ptr->_cancel_ping.slot(),
-			asio::enable_total_cancellation {},
-			asio::enable_total_cancellation {}
-		)
+	ping_op(std::shared_ptr<client_service> svc_ptr, Handler&& handler) :
+		_svc_ptr(std::move(svc_ptr)), _handler(std::move(handler))
 	{}
 
 	ping_op(ping_op&&) noexcept = default;
@@ -62,37 +46,28 @@ public:
 	ping_op& operator=(ping_op&&) noexcept = default;
 	ping_op& operator=(const ping_op&) = delete;
 
-	using allocator_type = asio::recycling_allocator<void>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
-		return allocator_type {};
+		return asio::get_associated_allocator(_handler);
 	}
 
-	using cancellation_slot_type = asio::cancellation_slot;
-	cancellation_slot_type get_cancellation_slot() const noexcept {
-		return _cancellation_state.slot();
-	}
-
+	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
-		return _executor;
+		return _svc_ptr->get_executor();
 	}
 
 	void perform() {
-		_ping_timer->expires_after(compute_wait_time());
-		_ping_timer->async_wait(
+		_svc_ptr->_ping_timer.expires_after(compute_wait_time());
+		_svc_ptr->_ping_timer.async_wait(
 			asio::prepend(std::move(*this), on_timer {})
 		);
 	}
 
-	void operator()(on_timer, error_code) {
-		if (
-			_cancellation_state.cancelled() == asio::cancellation_type::terminal ||
-			!_svc_ptr->is_open()
-		)
-			return;
-		else if (_cancellation_state.cancelled() == asio::cancellation_type::total) {
-			_cancellation_state.clear();
+	void operator()(on_timer, error_code ec) {
+		if (!_svc_ptr->is_open())
+			return complete();
+		else if (ec == asio::error::operation_aborted)
 			return perform();
-		}
 
 		auto pingreq = control_packet<allocator_type>::of(
 			no_pid, get_allocator(), encoders::encode_pingreq
@@ -110,14 +85,10 @@ public:
 	}
 
 	void operator()(on_pingreq, error_code ec) {
-		if (
-			_cancellation_state.cancelled() == asio::cancellation_type::terminal ||
-			ec == asio::error::no_recovery
-		)
-			return;
+		if (!ec || ec == asio::error::try_again)
+			return perform();
 
-		_cancellation_state.clear();
-		perform();
+		complete();
 	}
 
 private:
@@ -126,6 +97,10 @@ private:
 		return negotiated_ka ?
 			std::chrono::seconds(negotiated_ka) :
 			duration(std::numeric_limits<duration::rep>::max());
+	}
+
+	void complete() {
+		return std::move(_handler)();
 	}
 };
 

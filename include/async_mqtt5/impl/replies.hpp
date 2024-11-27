@@ -62,7 +62,7 @@ private:
 			error_code ec,
 			byte_citer first = byte_citer {}, byte_citer last = byte_citer {}
 		) {
-			asio::dispatch(asio::prepend(std::move(_handler), ec, first, last));
+			std::move(_handler)(ec, first, last);
 		}
 
 		void complete_post(const executor_type& ex, error_code ec) {

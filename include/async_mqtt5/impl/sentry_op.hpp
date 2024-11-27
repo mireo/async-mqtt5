@@ -11,11 +11,7 @@
 #include <chrono>
 #include <memory>
 
-#include <boost/asio/cancellation_signal.hpp>
-#include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
-#include <boost/asio/recycling_allocator.hpp>
-#include <boost/asio/steady_timer.hpp>
 
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/types.hpp>
@@ -26,12 +22,10 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename ClientService, typename Executor>
+template <typename ClientService, typename Handler>
 class sentry_op {
-public:
-	using executor_type = Executor;
-private:
 	using client_service = ClientService;
+	using handler_type = Handler;
 
 	struct on_timer {};
 	struct on_disconnect {};
@@ -39,15 +33,11 @@ private:
 	static constexpr auto check_interval = std::chrono::seconds(3);
 
 	std::shared_ptr<client_service> _svc_ptr;
-	executor_type _executor;
-	std::unique_ptr<asio::steady_timer> _sentry_timer;
+	handler_type _handler;
 
 public:
-	sentry_op(
-		std::shared_ptr<client_service> svc_ptr, executor_type ex
-	) :
-		_svc_ptr(std::move(svc_ptr)), _executor(ex),
-		_sentry_timer(new asio::steady_timer(_svc_ptr->get_executor()))
+	sentry_op(std::shared_ptr<client_service> svc_ptr, Handler&& handler) :
+		_svc_ptr(std::move(svc_ptr)), _handler(std::move(handler))
 	{}
 
 	sentry_op(sentry_op&&) noexcept = default;
@@ -56,30 +46,26 @@ public:
 	sentry_op& operator=(sentry_op&&) noexcept = default;
 	sentry_op& operator=(const sentry_op&) = delete;
 
-	using allocator_type = asio::recycling_allocator<void>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
-		return allocator_type {};
+		return asio::get_associated_allocator(_handler);
 	}
 
-	using cancellation_slot_type = asio::cancellation_slot;
-	cancellation_slot_type get_cancellation_slot() const noexcept {
-		return _svc_ptr->_cancel_sentry.slot();
-	}
-
+	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
-		return _executor;
+		return _svc_ptr->get_executor();
 	}
 
 	void perform() {
-		_sentry_timer->expires_after(check_interval);
-		_sentry_timer->async_wait(
+		_svc_ptr->_sentry_timer.expires_after(check_interval);
+		_svc_ptr->_sentry_timer.async_wait(
 			asio::prepend(std::move(*this), on_timer {})
 		);
 	}
 
 	void operator()(on_timer, error_code ec) {
-		if (ec == asio::error::operation_aborted || !_svc_ptr->is_open())
-			return;
+		if (!_svc_ptr->is_open())
+			return complete();
 
 		if (_svc_ptr->_replies.any_expired()) {
 			auto props = disconnect_props {};
@@ -96,8 +82,15 @@ public:
 	}
 
 	void operator()(on_disconnect, error_code ec) {
-		if (!ec)
-			perform();
+		if (ec)
+			return complete();
+		
+		perform();
+	}
+
+private:
+	void complete() {
+		return std::move(_handler)();
 	}
 };
 

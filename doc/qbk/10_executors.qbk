@@ -19,15 +19,7 @@ Upon creating an instance of the __Client__, it is necessary to provide an execu
 The specified executor (or __ExecutionContext__'s executor) will become the default executor associated with the __Client__
 and will be used for the execution of all the intermediate operations and a final completion handler for all asynchronous operations
 that have not bound an executor.
-If an executor is bound to an asynchronous operation, that executor will be used instead.
-
-The [refmem mqtt_client async_run] operation starts the __Client__, which initiates a series of internal asynchronous operations, all of which need an executor.
-If the [refmem mqtt_client async_run] is called with a completion handler that has an associated executor,
-then all the internal asynchronous operations will associate the same executor.
-
-[important
- The same executor *must* execute [refmem mqtt_client async_run] and all the subsequent `async_xxx` operations.
-]
+If an executor is bound to an asynchronous operation, that executor will be used for the final completion handler instead.
 
 The following examples will demonstrate the previously described interactions.
 

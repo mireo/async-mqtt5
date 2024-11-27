@@ -75,7 +75,10 @@ public:
 	template <typename... Args>
 	void complete(Args&&... args) {
 		asio::get_associated_cancellation_slot(_handler).clear();
-		std::move(_handler)(std::forward<Args>(args)...);
+		asio::dispatch(
+			_handler_ex,
+			asio::prepend(std::move(_handler), std::forward<Args>(args)...)
+		);
 	}
 
 	template <typename... Args>

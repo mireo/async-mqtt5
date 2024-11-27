@@ -91,9 +91,9 @@ public:
 		return asio::get_associated_allocator(_handler);
 	}
 
-	using executor_type = typename client_service::executor_type;
+	using executor_type = asio::associated_executor_t<handler_type>;
 	executor_type get_executor() const noexcept {
-		return _svc.get_executor();
+		return asio::get_associated_executor(_handler);
 	}
 
 	template <typename CompletionCondition>
@@ -111,6 +111,7 @@ public:
 
 		if (cc(error_code {}, 0) == 0 && _data_span.size()) {
 			return asio::post(
+				_svc.get_executor(),
 				asio::prepend(
 					std::move(*this), on_read {}, error_code {},
 					0, std::move(cc)

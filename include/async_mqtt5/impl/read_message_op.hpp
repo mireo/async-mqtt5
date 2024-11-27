@@ -8,7 +8,6 @@
 #ifndef ASYNC_MQTT5_READ_MESSAGE_OP_HPP
 #define ASYNC_MQTT5_READ_MESSAGE_OP_HPP
 
-#include <chrono>
 #include <cstdint>
 #include <memory>
 
@@ -30,24 +29,20 @@ namespace async_mqtt5::detail {
 
 namespace asio = boost::asio;
 
-template <typename ClientService, typename Executor>
+template <typename ClientService, typename Handler>
 class read_message_op {
-public:
-	using executor_type = Executor;
-private:
 	using client_service = ClientService;
+	using handler_type = Handler;
 
 	struct on_message {};
 	struct on_disconnect {};
 
 	std::shared_ptr<client_service> _svc_ptr;
-	executor_type _executor;
+	handler_type _handler;
+
 public:
-	read_message_op(
-		std::shared_ptr<client_service> svc_ptr,
-		executor_type ex
-	) :
-		_svc_ptr(std::move(svc_ptr)), _executor(ex)
+	read_message_op(std::shared_ptr<client_service> svc_ptr, Handler&& handler)
+		: _svc_ptr(std::move(svc_ptr)), _handler(std::move(handler))
 	{}
 
 	read_message_op(read_message_op&&) noexcept = default;
@@ -56,13 +51,14 @@ public:
 	read_message_op& operator=(read_message_op&&) noexcept = default;
 	read_message_op& operator=(const read_message_op&) = delete;
 
-	using allocator_type = asio::recycling_allocator<void>;
+	using allocator_type = asio::associated_allocator_t<handler_type>;
 	allocator_type get_allocator() const noexcept {
-		return allocator_type {};
+		return asio::get_associated_allocator(_handler);
 	}
 
+	using executor_type = typename client_service::executor_type;
 	executor_type get_executor() const noexcept {
-		return _executor;
+		return _svc_ptr->get_executor();
 	}
 
 	void perform() {
@@ -82,17 +78,19 @@ public:
 			);
 
 		if (ec == asio::error::no_recovery)
-			return _svc_ptr->cancel();
+			_svc_ptr->cancel();
 
-		if (ec == asio::error::operation_aborted)
-			return;
+		if (ec)
+			return complete();
 
 		dispatch(control_code, first, last);
 	}
 
 	void operator()(on_disconnect, error_code ec) {
-		if (!ec)
-			perform();
+		if (ec)
+			return complete();
+
+		perform();
 	}
 
 private:
@@ -150,6 +148,9 @@ private:
 		);
 	}
 
+	void complete() {
+		return std::move(_handler)();
+	}
 };
 
 

@@ -13,7 +13,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include <boost/asio/async_result.hpp>
 #include <boost/asio/post.hpp>
@@ -28,10 +27,7 @@
 #include <async_mqtt5/impl/assemble_op.hpp>
 #include <async_mqtt5/impl/async_sender.hpp>
 #include <async_mqtt5/impl/autoconnect_stream.hpp>
-#include <async_mqtt5/impl/ping_op.hpp>
-#include <async_mqtt5/impl/read_message_op.hpp>
 #include <async_mqtt5/impl/replies.hpp>
-#include <async_mqtt5/impl/sentry_op.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -235,16 +231,19 @@ private:
 		void (error_code, std::string, std::string, publish_props)
 	>;
 
+	template <typename ClientService, typename Handler>
+	friend class run_op;
+
 	template <typename ClientService>
 	friend class async_sender;
 
 	template <typename ClientService, typename Handler>
 	friend class assemble_op;
 
-	template <typename ClientService, typename Executor>
+	template <typename ClientService, typename Handler>
 	friend class ping_op;
 
-	template <typename ClientService, typename Executor>
+	template <typename ClientService, typename Handler>
 	friend class sentry_op;
 
 	template <typename ClientService>
@@ -264,10 +263,8 @@ private:
 
 	receive_channel _rec_channel;
 
-	asio::cancellation_signal _cancel_ping;
-	asio::cancellation_signal _cancel_sentry;
-
-	asio::any_completion_handler<void(error_code)> _run_handler;
+	asio::steady_timer _ping_timer;
+	asio::steady_timer _sentry_timer;
 
 	client_service(const client_service& other) :
 		_executor(other._executor), _stream_context(other._stream_context),
@@ -275,7 +272,9 @@ private:
 		_replies(_executor),
 		_async_sender(*this),
 		_active_span(_read_buff.cend(), _read_buff.cend()),
-		_rec_channel(_executor, std::numeric_limits<size_t>::max())
+		_rec_channel(_executor, std::numeric_limits<size_t>::max()),
+		_ping_timer(_executor),
+		_sentry_timer(_executor)
 	{
 		_stream.clone_endpoints(other._stream);
 	}
@@ -292,7 +291,9 @@ public:
 		_replies(ex),
 		_async_sender(*this),
 		_active_span(_read_buff.cend(), _read_buff.cend()),
-		_rec_channel(ex, std::numeric_limits<size_t>::max())
+		_rec_channel(ex, std::numeric_limits<size_t>::max()),
+		_ping_timer(ex),
+		_sentry_timer(ex)
 	{}
 
 	executor_type get_executor() const noexcept {
@@ -385,21 +386,6 @@ public:
 		return _stream_context.connack_properties();
 	}
 
-	template <typename Handler>
-	void run(Handler&& handler) {
-		_run_handler = std::move(handler);
-		auto slot = asio::get_associated_cancellation_slot(_run_handler);
-		if (slot.is_connected()) {
-			using c_t = asio::cancellation_type_t;
-			slot.assign([&svc = *this](c_t c) {
-				if ((c & c_t::terminal) != c_t::none)
-					svc.cancel();
-			});
-		}
-		_stream.open();
-		_rec_channel.reset();
-	}
-
 	void open_stream() {
 		_stream.open();
 	}
@@ -413,25 +399,16 @@ public:
 	}
 
 	void cancel() {
-		if (!_run_handler) return;
+		if (!_stream.is_open()) return;
 
-		_cancel_ping.emit(asio::cancellation_type::terminal);
-		_cancel_sentry.emit(asio::cancellation_type::terminal);
+		_ping_timer.cancel();
+		_sentry_timer.cancel();
 
 		_rec_channel.close();
 		_replies.cancel_unanswered();
 		_async_sender.cancel();
 		_stream.cancel();
 		_stream.close();
-
-		asio::get_associated_cancellation_slot(_run_handler).clear();
-		asio::post(
-			get_executor(),
-			asio::prepend(
-				std::move(_run_handler),
-				asio::error::operation_aborted
-			)
-		);
 	}
 
 	uint16_t allocate_pid() {
@@ -469,7 +446,7 @@ public:
 			}
 		}
 
-		_cancel_ping.emit(asio::cancellation_type::total);
+		_ping_timer.cancel();
 	}
 
 	bool channel_store(decoders::publish_message message) {
@@ -531,31 +508,6 @@ public:
 	}
 
 };
-
-template <typename ClientService>
-class initiate_async_run {
-	std::shared_ptr<ClientService> _svc_ptr;
-public:
-	explicit initiate_async_run(std::shared_ptr<ClientService> svc_ptr) :
-		_svc_ptr(std::move(svc_ptr))
-	{}
-
-	using executor_type = typename ClientService::executor_type;
-	executor_type get_executor() const noexcept {
-		return _svc_ptr->get_executor();
-	}
-
-	template <typename Handler>
-	void operator()(Handler&& handler) {
-		auto ex = asio::get_associated_executor(handler, get_executor());
-
-		_svc_ptr->run(std::move(handler));
-		detail::ping_op { _svc_ptr, ex }.perform();
-		detail::read_message_op { _svc_ptr, ex }.perform();
-		detail::sentry_op { _svc_ptr, ex }.perform();
-	}
-};
-
 
 } // namespace async_mqtt5::detail
 

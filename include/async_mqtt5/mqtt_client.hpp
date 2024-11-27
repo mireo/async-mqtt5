@@ -23,6 +23,7 @@
 #include <async_mqtt5/detail/rebind_executor.hpp>
 
 #include <async_mqtt5/impl/client_service.hpp>
+#include <async_mqtt5/impl/run_op.hpp>
 #include <async_mqtt5/impl/publish_send_op.hpp>
 #include <async_mqtt5/impl/re_auth_op.hpp>
 #include <async_mqtt5/impl/subscribe_op.hpp>

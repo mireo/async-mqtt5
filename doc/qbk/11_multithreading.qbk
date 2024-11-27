@@ -68,16 +68,15 @@ or explicit strand.
 Specifically, use __POST__ or __DISPATCH__ to delegate a function call to a strand,
 or __CO_SPAWN__ to spawn the coroutine into the strand.
 For asynchronous functions, this will ensure that the initiation code is executed within the strand in a thread-safe manner.
-The associated executor of all `async_xxx`'s completion handlers must be the same strand.
+__Client__'s executor must be that same strand.
 This will guarantee that the entire sequence of operations
-- from the initiation code through any intermediate operations to the execution of the completion handler -
+- the initiation code and any intermediate operation -
 is carried out within the strand, thereby ensuring thread safety.
 
 [important
 	To conclude, to achieve thread safety,
 	all the member functions of the __Client__ *must* be executed in *the same strand*.
-	This strand *must* be the associated executor of all the completion handlers across
-	all `async_xxx` invocations.
+	This strand must be given in the __Client__ constructor.
 ]
 
 The examples below demonstrate how to publish a "Hello World" Application Message

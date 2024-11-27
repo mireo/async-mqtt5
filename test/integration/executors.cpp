@@ -30,9 +30,11 @@
 
 using namespace async_mqtt5;
 
+using strand_type = asio::strand<asio::any_io_executor>;
+
 BOOST_AUTO_TEST_SUITE(executors)
 
-BOOST_AUTO_TEST_CASE(bind_executor) {
+void run_test(asio::io_context& ioc, strand_type io_ex, auto bind_async_run, auto bind_async_op) {
 	using test::after;
 	using namespace std::chrono_literals;
 
@@ -94,21 +96,16 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 			.complete_with(success, after(0ms))
 		;
 
-	asio::io_context ioc;
-	auto executor = ioc.get_executor();
 	auto& broker = asio::make_service<test::test_broker>(
-		ioc, executor, std::move(broker_side)
+		ioc, io_ex, std::move(broker_side)
 	);
 
-	auto strand = asio::make_strand(ioc);
-
 	using client_type = mqtt_client<test::test_stream>;
-	client_type c(executor);
+	client_type c(io_ex);
 	c.brokers("127.0.0.1")
 		.async_run(
-			asio::bind_executor(
-				strand,
-				[&](error_code ec) {
+			bind_async_run(
+				[&](strand_type strand, error_code ec) {
 					BOOST_TEST(ec == asio::error::operation_aborted);
 					BOOST_TEST(strand.running_in_this_thread());
 					++handlers_called;
@@ -118,9 +115,8 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 
 	c.async_publish<qos_e::at_most_once>(
 		"t_0", "p_0", retain_e::no, {},
-		asio::bind_executor(
-			strand,
-			[&](error_code ec) {
+		bind_async_op(
+			[&](strand_type strand, error_code ec) {
 				BOOST_TEST(!ec);
 				BOOST_TEST(strand.running_in_this_thread());
 				++handlers_called;
@@ -130,9 +126,8 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 
 	c.async_publish<qos_e::at_least_once>(
 		"t_1", "p_1", retain_e::no, {},
-		asio::bind_executor(
-			strand,
-			[&](error_code ec, reason_code rc, auto) {
+		bind_async_op(
+			[&](strand_type strand, error_code ec, reason_code rc, auto) {
 				BOOST_TEST(!ec);
 				BOOST_TEST(!rc);
 				BOOST_TEST(strand.running_in_this_thread());
@@ -143,9 +138,8 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 
 	c.async_publish<qos_e::exactly_once>(
 		"t_2", "p_2", retain_e::no, {},
-		asio::bind_executor(
-			strand,
-			[&](error_code ec, reason_code rc, auto) {
+		bind_async_op(
+			[&](strand_type strand, error_code ec, reason_code rc, auto) {
 				BOOST_TEST(!ec);
 				BOOST_TEST(!rc);
 				BOOST_TEST(strand.running_in_this_thread());
@@ -156,9 +150,11 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 
 	c.async_subscribe(
 		subscribe_topic { "t_0", {} }, {},
-		asio::bind_executor(
-			strand,
-			[&](error_code ec, std::vector<reason_code> rcs, auto) {
+		bind_async_op(
+			[&](
+				strand_type strand,
+				error_code ec, std::vector<reason_code> rcs, auto
+			) {
 				BOOST_TEST(!ec);
 				BOOST_TEST(!rcs[0]);
 				BOOST_TEST(strand.running_in_this_thread());
@@ -168,10 +164,9 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 	);
 
 	c.async_receive(
-		asio::bind_executor(
-			strand,
+		bind_async_op(
 			[&](
-				error_code ec,
+				strand_type strand, error_code ec,
 				std::string rec_topic, std::string rec_payload,
 				publish_props
 			) {
@@ -183,18 +178,19 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 
 				c.async_unsubscribe(
 					"t_0", {},
-					asio::bind_executor(
-						strand,
-						[&](error_code ec, std::vector<reason_code> rcs, auto) {
+					bind_async_op(
+						[&](
+							strand_type strand,
+							error_code ec, std::vector<reason_code> rcs, auto
+						) {
 							BOOST_TEST(!ec);
 							BOOST_TEST(!rcs[0]);
 							BOOST_TEST(strand.running_in_this_thread());
 							++handlers_called;
 
 							c.async_disconnect(
-								asio::bind_executor(
-									strand,
-									[&](error_code ec) {
+								bind_async_op(
+									[&](strand_type strand, error_code ec) {
 										BOOST_TEST(!ec);
 										BOOST_TEST(strand.running_in_this_thread());
 										++handlers_called;
@@ -211,6 +207,34 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 	ioc.run_for(500ms);
 	BOOST_TEST(handlers_called == expected_handlers_called);
 	BOOST_TEST(broker.received_all_expected());
+}
+
+BOOST_AUTO_TEST_CASE(different_bound_executors) {
+	asio::io_context ioc;
+	auto bind_async_op = [&](auto h) {
+		auto strand = asio::make_strand(ioc);
+		return asio::bind_executor(
+			strand,
+			asio::prepend(std::move(h), strand)
+		);
+	};
+	run_test(ioc, asio::make_strand(ioc), bind_async_op, bind_async_op);
+}
+
+BOOST_AUTO_TEST_CASE(default_executor) {
+	asio::io_context ioc;
+	auto io_ex = asio::make_strand(ioc);
+	auto bind_async_run = [&](auto h) {
+		auto strand = asio::make_strand(ioc);
+		return asio::bind_executor(
+			strand,
+			asio::prepend(std::move(h), strand)
+		);
+	};
+	auto bind_async_op = [&](auto h) {
+		return asio::prepend(std::move(h), io_ex);
+	};
+	run_test(ioc, io_ex, bind_async_run, bind_async_op);
 }
 
 BOOST_AUTO_TEST_CASE(immediate_executor_async_publish) {
