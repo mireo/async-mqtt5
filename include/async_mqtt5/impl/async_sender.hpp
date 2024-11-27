@@ -95,9 +95,9 @@ public:
 		auto s2 = other._serial_num;
 
 		if (s1 < s2)
-			return (s2 - s1) < (1 << (SERIAL_BITS - 1));
+			return (s2 - s1) < (1u << (SERIAL_BITS - 1));
 
-		return (s1 - s2) >= (1 << (SERIAL_BITS - 1));
+		return (s1 - s2) >= (1u << (SERIAL_BITS - 1));
 	}
 
 private:

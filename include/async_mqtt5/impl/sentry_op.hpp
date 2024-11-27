@@ -63,7 +63,7 @@ public:
 		);
 	}
 
-	void operator()(on_timer, error_code ec) {
+	void operator()(on_timer, error_code) {
 		if (!_svc_ptr->is_open())
 			return complete();
 

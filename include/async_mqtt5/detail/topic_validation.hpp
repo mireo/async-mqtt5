@@ -15,8 +15,8 @@
 
 namespace async_mqtt5::detail {
 
-static constexpr uint32_t min_subscription_identifier = 1;
-static constexpr uint32_t max_subscription_identifier = 268'435'455;
+static constexpr int32_t min_subscription_identifier = 1;
+static constexpr int32_t max_subscription_identifier = 268'435'455;
 
 static constexpr std::string_view shared_sub_prefix = "$share/";
 
