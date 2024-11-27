@@ -27,6 +27,7 @@
 #include <boost/spirit/home/x3.hpp>
 
 #include <async_mqtt5/types.hpp>
+#include <async_mqtt5/detail/log_invoke.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -107,11 +108,13 @@ public:
 		error_code timer_ec, authority_path ap
 	) {
 		if (
-			ord[0] == 0 && resolve_ec == asio::error::operation_aborted ||
-			ord[0] == 1 && timer_ec == asio::error::operation_aborted
+			(ord[0] == 0 && resolve_ec == asio::error::operation_aborted) ||
+			(ord[0] == 1 && timer_ec == asio::error::operation_aborted)
 		)
 			return complete(asio::error::operation_aborted, {}, {});
 
+		resolve_ec = timer_ec ? resolve_ec : asio::error::timed_out;
+		_owner._log.at_resolve(resolve_ec, ap.host, ap.port, epts);
 		if (!resolve_ec)
 			return complete(error_code {}, std::move(epts), std::move(ap));
 
@@ -136,13 +139,18 @@ private:
 };
 
 
+template <typename LoggerType>
 class endpoints {
+	using logger_type = LoggerType;
+
 	asio::ip::tcp::resolver _resolver;
 	asio::steady_timer& _connect_timer;
 
 	std::vector<authority_path> _servers;
 
 	int _current_host { -1 };
+
+	log_invoke<logger_type>& _log;
 
 	template <typename Owner, typename Handler>
 	friend class resolve_op;
@@ -159,8 +167,12 @@ class endpoints {
 
 public:
 	template <typename Executor>
-	endpoints(Executor ex, asio::steady_timer& timer) :
-		_resolver(ex), _connect_timer(timer)
+	endpoints(
+		Executor ex, asio::steady_timer& timer,
+		log_invoke<logger_type>& log
+	) :
+		_resolver(std::move(ex)), _connect_timer(timer),
+		_log(log)
 	{}
 
 	endpoints(const endpoints&) = delete;

@@ -58,7 +58,7 @@ class control_packet {
 	control_packet(
 		const Allocator& a,
 		uint16_t packet_id, std::string packet
-	) noexcept :
+	) :
 		_packet_id(packet_id),
 		_packet(boost::allocate_unique<std::string>(a, std::move(packet)))
 	{}

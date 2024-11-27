@@ -20,6 +20,7 @@
           <member><link linkend="async_mqtt5.ref.subscribe_options">subscribe_options</link></member>
           <member><link linkend="async_mqtt5.ref.subscribe_topic">subscribe_topic</link></member>
           <member><link linkend="async_mqtt5.ref.will">will</link></member>
+          <member><link linkend="async_mqtt5.ref.logger">logger</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Concepts</bridgehead>
         <simplelist type="vert" columns="1">
@@ -41,6 +42,7 @@
           <member><link linkend="async_mqtt5.ref.disconnect_rc_e">disconnect_rc_e</link></member>
           <member><link linkend="async_mqtt5.ref.qos_e">qos_e</link></member>
           <member><link linkend="async_mqtt5.ref.retain_e">retain_e</link></member>
+          <member><link linkend="async_mqtt5.ref.log_level">log_level</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Functions</bridgehead>
         <simplelist type="vert" columns="1">

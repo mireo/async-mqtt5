@@ -20,6 +20,7 @@
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/types.hpp>
 
+#include <async_mqtt5/detail/log_invoke.hpp>
 #include <async_mqtt5/detail/rebind_executor.hpp>
 
 #include <async_mqtt5/impl/client_service.hpp>
@@ -49,7 +50,8 @@ namespace asio = boost::asio;
  */
 template <
 	typename StreamType,
-	typename TlsContext = std::monostate
+	typename TlsContext = std::monostate,
+	typename LoggerType = detail::noop_logger
 >
 class mqtt_client {
 public:
@@ -69,9 +71,10 @@ public:
 private:
 	using stream_type = StreamType;
 	using tls_context_type = TlsContext;
+	using logger_type = LoggerType;
 
 	using client_service_type = detail::client_service<
-		stream_type, tls_context_type
+		stream_type, tls_context_type, logger_type
 	>;
 	using impl_type = std::shared_ptr<client_service_type>;
 	impl_type _impl;
@@ -81,14 +84,15 @@ public:
 	 * \brief Constructs a Client with given parameters.
 	 *
 	 * \param ex An executor that will be associated with the Client.
-	 * \param tls_context A context object used in TLS/SLL connection.
+	 * \param tls_context A context object used in TLS/SSL connection.
+	 * \param logger An object used to log events within the Client.
 	 */
 	explicit mqtt_client(
 		const executor_type& ex,
-		TlsContext tls_context = {}
+		tls_context_type tls_context = {}, logger_type logger = {}
 	) :
 		_impl(std::make_shared<client_service_type>(
-			ex, std::move(tls_context)
+			ex, std::move(tls_context), std::move(logger)
 		))
 	{}
 
@@ -97,7 +101,8 @@ public:
 	 *
 	 * \tparam \__ExecutionContext\__ Type of a concrete execution context.
 	 * \param context Execution context whose executor will be associated with the Client.
-	 * \param tls_context A context object used in TLS/SLL connection.
+	 * \param tls_context A context object used in TLS/SSL connection.
+	 * \param logger An object used to log events within the Client.
 	 *
 	 * \par Precondition
 	 * \code
@@ -113,9 +118,12 @@ public:
 	>
 	explicit mqtt_client(
 		ExecutionContext& context,
-		TlsContext tls_context = {}
+		tls_context_type tls_context = {}, logger_type logger = {}
 	) :
-		mqtt_client(context.get_executor(), std::move(tls_context))
+		mqtt_client(
+			context.get_executor(),
+			std::move(tls_context), std::move(logger)
+		)
 	{}
 
 	/**
@@ -171,8 +179,7 @@ public:
 		typename Ctx = TlsContext,
 		std::enable_if_t<!std::is_same_v<Ctx, std::monostate>, bool> = true
 	>
-	decltype(auto) tls_context()
-	{
+	decltype(auto) tls_context() {
 		return _impl->tls_context();
 	}
 
@@ -972,7 +979,6 @@ public:
 	}
 
 };
-
 
 } // end namespace async_mqtt5
 

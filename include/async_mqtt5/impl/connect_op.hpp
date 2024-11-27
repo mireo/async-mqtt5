@@ -37,13 +37,14 @@
 #include <async_mqtt5/detail/async_traits.hpp>
 #include <async_mqtt5/detail/control_packet.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
+#include <async_mqtt5/detail/log_invoke.hpp>
 
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
 
 namespace async_mqtt5::detail {
 
-template <typename Stream>
+template <typename Stream, typename LoggerType>
 class connect_op {
 	static constexpr size_t min_packet_sz = 5;
 
@@ -60,6 +61,7 @@ class connect_op {
 
 	Stream& _stream;
 	mqtt_ctx& _ctx;
+	log_invoke<LoggerType>& _log;
 
 	using handler_type = asio::any_completion_handler<void (error_code)>;
 	handler_type _handler;
@@ -72,9 +74,11 @@ class connect_op {
 public:
 	template <typename Handler>
 	connect_op(
-		Stream& stream, mqtt_ctx& ctx, Handler&& handler
+		Stream& stream, mqtt_ctx& ctx,
+		log_invoke<LoggerType>& log,
+		Handler&& handler
 	) :
-		_stream(stream), _ctx(ctx),
+		_stream(stream), _ctx(ctx), _log(log),
 		_handler(std::forward<Handler>(handler)),
 		_cancellation_state(
 			asio::get_associated_cancellation_slot(_handler),
@@ -121,6 +125,7 @@ public:
 		if (is_cancelled())
 			return complete(asio::error::operation_aborted);
 
+		_log.at_tcp_connect(ec, ep);
 		if (ec)
 			return complete(ec);
 
@@ -153,19 +158,19 @@ public:
 	}
 
 	void operator()(
-		on_tls_handshake, error_code ec,
-		endpoint ep, authority_path ap
+		on_tls_handshake, error_code ec, endpoint ep, authority_path ap
 	) {
 		if (is_cancelled())
 			return complete(asio::error::operation_aborted);
 
+		_log.at_tls_handshake(ec, ep);
 		if (ec)
 			return complete(ec);
 
 		do_ws_handshake(std::move(ep), std::move(ap));
 	}
 
-	void do_ws_handshake(endpoint, authority_path ap) {
+	void do_ws_handshake(endpoint ep, authority_path ap) {
 		if constexpr (has_ws_handshake<Stream>) {
 			using namespace boost::beast;
 
@@ -189,16 +194,22 @@ public:
 
 			_stream.async_handshake(
 				ap.host + ':' + ap.port, ap.path,
-				asio::prepend(std::move(*this), on_ws_handshake {})
+				asio::append(
+					asio::prepend(std::move(*this), on_ws_handshake {}),
+					ep
+				)
 			);
 		}
 		else
-			(*this)(on_ws_handshake {}, error_code {});
+			(*this)(on_ws_handshake {}, error_code {}, ep);
 	}
 
-	void operator()(on_ws_handshake, error_code ec) {
+	void operator()(on_ws_handshake, error_code ec, endpoint ep) {
 		if (is_cancelled())
 			return complete(asio::error::operation_aborted);
+
+		if constexpr (has_ws_handshake<Stream>)
+			_log.at_ws_handshake(ec, ep);
 
 		if (ec)
 			return complete(ec);
@@ -343,6 +354,7 @@ public:
 		if (!rc.has_value()) // reason code not allowed in CONNACK
 			return complete(client::error::malformed_packet);
 
+		_log.at_connack(*rc, session_present, ca_props);
 		if (*rc)
 			return complete(asio::error::try_again);
 
@@ -401,7 +413,7 @@ public:
 		detail::async_write(
 			_stream, asio::buffer(wire_data),
 			asio::consign(
-				asio::prepend(std::move(*this), on_send_auth{}),
+				asio::prepend(std::move(*this), on_send_auth {}),
 				std::move(packet)
 			)
 		);

@@ -182,9 +182,10 @@ public:
 
 		auto init_connect = [](
 			auto handler, typename Owner::stream_type& stream,
-			mqtt_ctx& context, endpoint ep, authority_path ap
+			mqtt_ctx& context, log_invoke<typename Owner::logger_type>& log,
+			endpoint ep, authority_path ap
 		) {
-			connect_op { stream, context, std::move(handler) }
+			connect_op { stream, context, log, std::move(handler) }
 				.perform(ep, std::move(ap));
 		};
 
@@ -192,6 +193,7 @@ public:
 			asio::async_initiate<const asio::deferred_t, void(error_code)>(
 				init_connect, asio::deferred, std::ref(*sptr),
 				std::ref(_owner._stream_context.mqtt_context()),
+				std::ref(_owner.log()),
 				ep, ap
 			),
 			_owner._connect_timer.async_wait(asio::deferred)

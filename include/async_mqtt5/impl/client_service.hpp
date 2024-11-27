@@ -19,9 +19,8 @@
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/experimental/basic_channel.hpp>
 
-#include <async_mqtt5/types.hpp>
-
 #include <async_mqtt5/detail/channel_traits.hpp>
+#include <async_mqtt5/detail/log_invoke.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 
 #include <async_mqtt5/impl/assemble_op.hpp>
@@ -213,18 +212,20 @@ public:
 
 template <
 	typename StreamType,
-	typename TlsContext = std::monostate
+	typename TlsContext = std::monostate,
+	typename LoggerType = noop_logger
 >
 class client_service {
-	using self_type = client_service<StreamType, TlsContext>;
+	using self_type = client_service<StreamType, TlsContext, LoggerType>;
 	using stream_context_type = stream_context<StreamType, TlsContext>;
 	using stream_type = autoconnect_stream<
-		StreamType, stream_context_type
+		StreamType, stream_context_type, LoggerType
 	>;
 public:
 	using executor_type = typename stream_type::executor_type;
 private:
 	using tls_context_type = TlsContext;
+	using logger_type = LoggerType;
 	using receive_channel = asio::experimental::basic_channel<
 		executor_type,
 		channel_traits<>,
@@ -251,6 +252,8 @@ private:
 
 	executor_type _executor;
 
+	log_invoke<logger_type> _log;
+
 	stream_context_type _stream_context;
 	stream_type _stream;
 
@@ -267,8 +270,10 @@ private:
 	asio::steady_timer _sentry_timer;
 
 	client_service(const client_service& other) :
-		_executor(other._executor), _stream_context(other._stream_context),
-		_stream(_executor, _stream_context),
+		_executor(other._executor),
+		_log(other._log),
+		_stream_context(other._stream_context),
+		_stream(_executor, _stream_context, _log),
 		_replies(_executor),
 		_async_sender(*this),
 		_active_span(_read_buff.cend(), _read_buff.cend()),
@@ -283,11 +288,12 @@ public:
 
 	explicit client_service(
 		const executor_type& ex,
-		tls_context_type tls_context = {}
+		tls_context_type tls_context = {}, logger_type logger = {}
 	) :
 		_executor(ex),
+		_log(std::move(logger)),
 		_stream_context(std::move(tls_context)),
-		_stream(ex, _stream_context),
+		_stream(ex, _stream_context, _log),
 		_replies(ex),
 		_async_sender(*this),
 		_active_span(_read_buff.cend(), _read_buff.cend()),
@@ -409,6 +415,10 @@ public:
 		_async_sender.cancel();
 		_stream.cancel();
 		_stream.close();
+	}
+
+	log_invoke<LoggerType>& log() {
+		return _log;
 	}
 
 	uint16_t allocate_pid() {

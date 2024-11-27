@@ -16,6 +16,7 @@
 #include <boost/asio/recycling_allocator.hpp>
 
 #include <async_mqtt5/types.hpp>
+#include <async_mqtt5/reason_codes.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
 
@@ -114,6 +115,20 @@ private:
 			}
 			break;
 			case control_code_e::disconnect: {
+				auto rv = decoders::decode_disconnect(
+					static_cast<uint32_t>(std::distance(first, last)), first
+				);
+				if (!rv.has_value())
+					return on_malformed_packet(
+						"Malformed DISCONNECT received: cannot decode"
+					);
+
+				const auto& [rc, props] = *rv;
+				_svc_ptr->log().at_disconnect(
+					to_reason_code<reason_codes::category::disconnect>(rc)
+						.value_or(reason_codes::unspecified_error),
+					props
+				);
 				_svc_ptr->close_stream();
 				_svc_ptr->open_stream();
 			}

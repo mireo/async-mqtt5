@@ -20,6 +20,7 @@
 
 #include <async_mqtt5/detail/async_mutex.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>
+#include <async_mqtt5/detail/log_invoke.hpp>
 
 #include <async_mqtt5/impl/endpoints.hpp>
 #include <async_mqtt5/impl/read_op.hpp>
@@ -33,13 +34,15 @@ using error_code = boost::system::error_code;
 
 template <
 	typename StreamType,
-	typename StreamContext = std::monostate
+	typename StreamContext = std::monostate,
+	typename LoggerType = noop_logger
 >
 class autoconnect_stream {
 public:
-	using self_type = autoconnect_stream<StreamType, StreamContext>;
+	using self_type = autoconnect_stream<StreamType, StreamContext, LoggerType>;
 	using stream_type = StreamType;
 	using stream_context_type = StreamContext;
+	using logger_type = LoggerType;
 	using executor_type = typename stream_type::executor_type;
 private:
 	using stream_ptr = std::shared_ptr<stream_type>;
@@ -47,10 +50,12 @@ private:
 	executor_type _stream_executor;
 	async_mutex _conn_mtx;
 	asio::steady_timer _read_timer, _connect_timer;
-	endpoints _endpoints;
+	endpoints<logger_type> _endpoints;
 
 	stream_ptr _stream_ptr;
 	stream_context_type& _stream_context;
+
+	log_invoke<logger_type>& _log;
 
 	template <typename Owner, typename Handler>
 	friend class read_op;
@@ -58,18 +63,20 @@ private:
 	template <typename Owner, typename Handler>
 	friend class write_op;
 
-	template <typename Stream>
+	template <typename Owner>
 	friend class reconnect_op;
 
 public:
 	autoconnect_stream(
-		const executor_type& ex, stream_context_type& context
+		const executor_type& ex, stream_context_type& context,
+		log_invoke<logger_type>& log
 	) :
 		_stream_executor(ex),
 		_conn_mtx(_stream_executor),
 		_read_timer(_stream_executor), _connect_timer(_stream_executor),
-		_endpoints(_stream_executor, _connect_timer),
-		_stream_context(context)
+		_endpoints(_stream_executor, _connect_timer, log),
+		_stream_context(context),
+		_log(log)
 	{
 		replace_next_layer(construct_next_layer());
 	}
@@ -166,6 +173,11 @@ public:
 	}
 
 private:
+
+	log_invoke<logger_type>& log() {
+		return _log;
+	}
+
 	static void open_lowest_layer(const stream_ptr& sptr, asio::ip::tcp protocol) {
 		error_code ec;
 		auto& layer = lowest_layer(*sptr);

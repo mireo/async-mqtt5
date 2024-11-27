@@ -18,6 +18,7 @@
 
 #include <async_mqtt5/detail/async_mutex.hpp>
 #include <async_mqtt5/detail/async_traits.hpp>
+#include <async_mqtt5/detail/log_invoke.hpp>
 
 #include <async_mqtt5/impl/endpoints.hpp>
 
@@ -28,7 +29,8 @@ using error_code = boost::system::error_code;
 
 template <
 	typename StreamType,
-	typename StreamContext = std::monostate
+	typename StreamContext = std::monostate,
+	typename LoggerType = async_mqtt5::detail::noop_logger
 >
 class test_autoconnect_stream {
 public:
@@ -36,28 +38,33 @@ public:
 	using stream_ptr = std::shared_ptr<stream_type>;
 	using stream_context_type = StreamContext;
 	using executor_type = typename stream_type::executor_type;
-
+	using logger_type = LoggerType;
 private:
 	executor_type _stream_executor;
 	detail::async_mutex _conn_mtx;
 	asio::steady_timer _connect_timer;
-	detail::endpoints _endpoints;
+	detail::endpoints<logger_type> _endpoints;
 
 	stream_ptr _stream_ptr;
 	stream_context_type& _stream_context;
+
+	detail::log_invoke<logger_type> _log;
 
 	template <typename Stream>
 	friend class async_mqtt5::detail::reconnect_op;
 
 public:
 	test_autoconnect_stream(
-		const executor_type& ex, stream_context_type& context
+		const executor_type& ex,
+		stream_context_type& context,
+		detail::log_invoke<logger_type>& log
 	) :
 		_stream_executor(ex),
 		_conn_mtx(_stream_executor),
 		_connect_timer(_stream_executor),
-		_endpoints(_stream_executor, _connect_timer),
-		_stream_context(context)
+		_endpoints(_stream_executor, _connect_timer, log),
+		_stream_context(context),
+		_log(log)
 	{
 		replace_next_layer(construct_next_layer());
 		open_lowest_layer(_stream_ptr, asio::ip::tcp::v4());
@@ -114,6 +121,11 @@ public:
 		if (_stream_ptr)
 			close();
 		std::exchange(_stream_ptr, std::move(sptr));
+	}
+
+private:
+	detail::log_invoke<logger_type>& log() {
+		return _log;
 	}
 };
 

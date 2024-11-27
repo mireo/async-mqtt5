@@ -17,6 +17,7 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include <async_mqtt5/types.hpp>
+#include <async_mqtt5/detail/log_invoke.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
 #include <async_mqtt5/impl/connect_op.hpp>
 
@@ -64,8 +65,9 @@ void run_unit_test(
 		std::move(h)(ec);
 	};
 
-	detail::connect_op<test::test_stream>(
-		stream, mqtt_ctx, std::move(handler)
+	detail::log_invoke d;
+	detail::connect_op<test::test_stream, detail::noop_logger>(
+		stream, mqtt_ctx, d, std::move(handler)
 	).perform(*std::begin(eps), std::move(ap));
 
 	ioc.run_for(1s);
