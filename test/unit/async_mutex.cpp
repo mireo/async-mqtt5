@@ -90,6 +90,7 @@ BOOST_AUTO_TEST_CASE(bind_executor) {
 
 	tp.wait();
 	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(!mutex.is_locked());
 }
 
 BOOST_AUTO_TEST_CASE(per_op_cancellation) {
@@ -124,6 +125,7 @@ BOOST_AUTO_TEST_CASE(per_op_cancellation) {
 
 	ioc.run();
 	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(!mutex.is_locked());
 }
 
 BOOST_AUTO_TEST_CASE(cancel_ops_by_destructor) {
@@ -180,6 +182,7 @@ BOOST_AUTO_TEST_CASE(cancel_ops) {
 	mutex.cancel();
 	ioc.run();
 	BOOST_TEST(handlers_called == expected_handlers_called);
+	BOOST_TEST(!mutex.is_locked());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

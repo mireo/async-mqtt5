@@ -23,7 +23,6 @@
 #include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/detail/async_traits.hpp>
-#include <async_mqtt5/detail/spinlock.hpp>
 
 namespace async_mqtt5::detail {
 
@@ -84,21 +83,16 @@ private:
 	// The helper stores queue iterator to operation since the iterator
 	// would not be invalidated by other queue operations.
 	class cancel_waiting_op {
-		async_mutex& _owner;
 		queue_t::iterator _ihandler;
 	public:
-		cancel_waiting_op(async_mutex& owner, queue_t::iterator ih) :
-			_owner(owner), _ihandler(ih)
-		{}
+		explicit cancel_waiting_op(queue_t::iterator ih) : _ihandler(ih) {}
 
 		void operator()(asio::cancellation_type_t type) {
 			if (type == asio::cancellation_type_t::none)
 				return;
-			std::unique_lock l { _owner._thread_mutex };
 			if (*_ihandler) {
 				auto h = std::move(*_ihandler);
 				auto ex = asio::get_associated_executor(h);
-				l.unlock();
 				asio::require(ex, asio::execution::blocking.possibly)
 					.execute([h = std::move(h)]() mutable {
 						std::move(h)(asio::error::operation_aborted);
@@ -107,8 +101,7 @@ private:
 		}
 	};
 
-	spinlock _thread_mutex;
-	std::atomic<bool> _locked { false };
+	bool _locked { false };
 	queue_t _waiting;
 	executor_type _ex;
 
@@ -128,7 +121,7 @@ public:
 	}
 
 	bool is_locked() const noexcept {
-		return _locked.load(std::memory_order_relaxed);
+		return _locked;
 	}
 
 	// Schedules mutex for lock operation and return immediately.
@@ -151,26 +144,19 @@ public:
 	// Next queued operation, if any, will be executed in a manner
 	// equivalent to asio::post.
 	void unlock() {
-		std::unique_lock l { _thread_mutex };
-		if (_waiting.empty()) {
-			_locked.store(false, std::memory_order_release);
-			return;
-		}
 		while (!_waiting.empty()) {
 			auto op = std::move(_waiting.front());
 			_waiting.pop_front();
 			if (!op) continue;
 			op.get_cancellation_slot().clear();
-			l.unlock();
 			execute_op(std::move(op));
-			break;
+			return;
 		}
+		_locked = false;
 	}
 
 	// Cancels all outstanding operations waiting on the mutex.
 	void cancel() {
-		std::unique_lock l { _thread_mutex };
-
 		while (!_waiting.empty()) {
 			auto op = std::move(_waiting.front());
 			_waiting.pop_front();
@@ -211,19 +197,17 @@ private:
 	// to asio::post to avoid recursion.
 	template <typename Handler>
 	void execute_or_queue(Handler&& handler) noexcept {
-		std::unique_lock l { _thread_mutex };
 		tracked_op h { std::move(handler), _ex };
-		if (_locked.load(std::memory_order_relaxed)) {
+		if (_locked) {
 			_waiting.emplace_back(std::move(h));
 			auto slot = _waiting.back().get_cancellation_slot();
 			if (slot.is_connected())
 				slot.template emplace<cancel_waiting_op>(
-					*this, _waiting.end() - 1
+					_waiting.end() - 1
 				);
 		}
 		else {
-			_locked.store(true, std::memory_order_release);
-			l.unlock();
+			_locked = true;
 			execute_op(queued_op_t { std::move(h) });
 		}
 	}
