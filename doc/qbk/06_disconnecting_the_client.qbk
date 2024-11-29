@@ -90,14 +90,13 @@ In this case, the proper way to disconnect would be to call [refmem mqtt_client 
 	);
 ```
 
-[section:reusing_the_client Restarting the Client after disconnection]
+[section:reusing_the_client Restarting the Client After Disconnection]
 
 Once the __Client__ has been successfully stopped, reactivating it is straightforward and requires invoking [refmem mqtt_client async_run].
 This method can be called right after initiating [refmem mqtt_client async_disconnect], without waiting for it to complete.
 
 The __Client__ is configurable again in the interval between stopping and restarting.
-See `Customising your MQTT connection` in [link async_mqtt5.configuring_the_client Configuring the Client]
-for more information.
+See [link async_mqtt5.getting_started.configuration Configuring Your MQTT Connection] for more information.
 
 ```
 int main() {

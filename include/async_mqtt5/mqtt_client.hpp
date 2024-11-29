@@ -41,6 +41,7 @@ namespace asio = boost::asio;
  * the stream of bytes between the Client and the Broker. The transport must be
  * ordered and lossless.
  * \tparam \__TlsContext\__ Type of the context object used in TLS/SSL connections.
+ * \tparam \__LoggerType\__ Type of object used to log events within the Client.
  *
  * \par Thread safety
  * ['Distinct objects]: safe. \n
@@ -85,7 +86,7 @@ public:
 	 *
 	 * \param ex An executor that will be associated with the Client.
 	 * \param tls_context A context object used in TLS/SSL connection.
-	 * \param logger An object used to log events within the Client.
+	 * \param logger An object satisfying the \__LoggerType\__ concept used to log events within the Client.
 	 */
 	explicit mqtt_client(
 		const executor_type& ex,
@@ -102,7 +103,7 @@ public:
 	 * \tparam \__ExecutionContext\__ Type of a concrete execution context.
 	 * \param context Execution context whose executor will be associated with the Client.
 	 * \param tls_context A context object used in TLS/SSL connection.
-	 * \param logger An object used to log events within the Client.
+	 * \param logger An object satisfying the \__LoggerType\__ concept used to log events within the Client.
 	 *
 	 * \par Precondition
 	 * \code
@@ -442,7 +443,7 @@ public:
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
+	 * equivalent to using \__ASYNC_IMMEDIATE\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation depends on the \ref qos_e specified:\n
@@ -535,7 +536,7 @@ public:
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
+	 * equivalent to using \__ASYNC_IMMEDIATE\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -608,7 +609,7 @@ public:
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
+	 * equivalent to using \__ASYNC_IMMEDIATE\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -677,7 +678,7 @@ public:
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
+	 * equivalent to using \__ASYNC_IMMEDIATE\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -745,7 +746,7 @@ public:
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
 	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
+	 * equivalent to using \__ASYNC_IMMEDIATE\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -871,8 +872,6 @@ public:
 	 * \param props An instance of \__DISCONNECT_PROPS\__.
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
-	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:
@@ -935,8 +934,6 @@ public:
 	 *
 	 * \param token Completion token that will be used to produce a
 	 * completion handler. The handler will be invoked when the operation completes.
-	 * On immediate completion, invocation of the handler will be performed in a manner
-	 * equivalent to using \__POST\__.
 	 *
 	 * \par Handler signature
 	 * The handler signature for this operation:

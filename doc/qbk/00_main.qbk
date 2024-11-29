@@ -37,6 +37,7 @@
 [template mqttlink[id text][@https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc[id] [text]]]
 
 [def __OPENSSL__ [@https://www.openssl.org/ OpenSSL]]
+[def __HIVEMQ__ [@https://www.hivemq.com/ HiveMQ]]
 
 [def __CompletionToken__ [@boost:/doc/html/boost_asio/reference/asynchronous_operations.html#boost_asio.reference.asynchronous_operations.completion_tokens_and_handlers CompletionToken]]
 [def __Executor__ [@boost:/doc/html/boost_asio/reference/Executor1.html Executor]]
@@ -44,6 +45,7 @@
 [def __StreamType__ [reflink StreamType]]
 [def __TlsContext__ [reflink TlsContext]]
 [def __is_authenticator__ [reflink is_authenticator]]
+[def __LoggerType__ [reflink LoggerType]]
 
 [def __Boost__ [@https://www.boost.org/ Boost]]
 [def __Asio__ [@boost:/libs/asio/index.html Boost.Asio]]
@@ -58,6 +60,7 @@
 [def __STRAND__ [@boost:doc/html/boost_asio/reference/io_context__strand.html `boost::asio::io_context::strand`]]
 [def __DISPATCH__ [@boost:doc/html/boost_asio/reference/dispatch.html `boost::asio::dispatch`]]
 [def __POST__ [@boost:doc/html/boost_asio/reference/post.html `boost::asio::post`]]
+[def __ASYNC_IMMEDIATE__ [@https://www.boost.org/doc/libs/1_86_0/doc/html/boost_asio/reference/async_immediate.html `boost::asio::async_immediate`]]
 [def __CO_SPAWN__ [@boost:/doc/html/boost_asio/reference/co_spawn.html `boost::asio::co_spawn`]]
 [def __USE_AWAITABLE__ [@boost:/doc/html/boost_asio/reference/use_awaitable.html `boost::asio::use_awaitable`]]
 [def __USE_FUTURE__ [@boost:/doc/html/boost_asio/reference/use_future.html `boost::asio::use_future`]]
@@ -125,16 +128,27 @@
 [def __REASON_CODES__ [reflink2 Reason_codes `Reason Codes`]]
 [def __ERROR_HANDLING__ [reflink2 Error_handling `Error handling`]]
 
+[import ../../example/hello_world_over_tcp.cpp]
+[import ../../example/hello_world_over_tls.cpp]
+[import ../../example/hello_world_over_websocket_tcp.cpp]
+[import ../../example/hello_world_over_websocket_tls.cpp]
+[import ../../example/publisher.cpp]
+[import ../../example/receiver.cpp]
+[import ../../example/multiflight_client.cpp]
+[import ../../example/timeout_with_parallel_group.cpp]
+[import ../../example/timeout_with_awaitable_operators.cpp]
+[import ../../example/hello_world_in_multithreaded_env.cpp]
+[import ../../example/hello_world_in_coro_multithreaded_env.cpp]
+
 [include 01_intro.qbk]
-[include 02_configuring_the_client.qbk]
+[include 02_getting_started.qbk]
 [include 03_auto_reconnect.qbk]
 [include 04_maintaining_a_stable_connection.qbk]
 [include 05_optimising_communication.qbk]
 [include 06_disconnecting_the_client.qbk]
 [include 07_asio_compliance.qbk]
 [include 11_multithreading.qbk]
-
-[include 15_examples.qbk]
+[include 12_examples.qbk]
 
 [include examples/Examples.qbk]
 

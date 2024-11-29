@@ -130,7 +130,7 @@ public:
 
 		write_prefix();
 		std::clog
-			<< "tls handshake: "
+			<< "TLS handshake: "
 			<< ep.address().to_string() << ":" << ep.port()
 			<< " - " << ec.message()
 		<< std::endl;
@@ -148,7 +148,7 @@ public:
 
 		write_prefix();
 		std::clog
-			<< "ws handshake: "
+			<< "WebSocket handshake: "
 			<< ep.address().to_string() << ":" << ep.port()
 			<< " - " << ec.message()
 		<< std::endl;

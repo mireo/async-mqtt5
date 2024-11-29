@@ -4,7 +4,7 @@
     (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:asio_compliance Compliance with Boost.Asio]
+[section:asio_compliance Compliance With Boost.Asio]
 
 Every asynchronous operation in __Asio__ has associated characteristics that specify their behaviour.
 

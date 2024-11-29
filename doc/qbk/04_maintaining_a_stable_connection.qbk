@@ -4,7 +4,7 @@
     (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:connection_maintenance Maintaining a stable connection]
+[section:connection_maintenance Maintaining a Stable Connection]
 [nochunk]
 
 This chapter delves into the strategies used by the __Client__ to sustain a stable connection with the Broker.
@@ -33,14 +33,14 @@ Use [refmem mqtt_client keep_alive] function during the __Client__ configuration
 Otherwise, the __Client__ defaults to a `Keep Alive` period of `60 seconds`.
 
 [note
-	The MQTT does not use the TCP's built-in keep-alive mechanism as it is inflexible and limited in that it can be configured solely at the operating system level.
+	The MQTT protocol does not use the TCP's built-in keep-alive mechanism as it is inflexible and limited in that it can be configured solely at the operating system level.
 	The default time a connection must be idle before sending the first keep-alive packet is typically set to 2 hours,
 	exceeding the tolerances of most MQTT applications.
 ]
 
 [endsect] [/keep_alive]
 
-[section:half_open_connections Detecting and handling half-open connections]
+[section:half_open_connections Detecting and Handling Half-open Connections]
 
 Ensuring the integrity and stability of network connections is a complex task,
 given the number of potential disruptions such as software anomalies,

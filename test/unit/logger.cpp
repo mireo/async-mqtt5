@@ -115,8 +115,8 @@ BOOST_AUTO_TEST_CASE(successful_connect_debug) {
 	BOOST_TEST_MESSAGE(log);
 	BOOST_TEST_WARN(contains(log, "resolve"));
 	BOOST_TEST_WARN(contains(log, "connect"));
-	BOOST_TEST_WARN(contains(log, "tls handshake"));
-	BOOST_TEST_WARN(contains(log, "ws handshake"));
+	BOOST_TEST_WARN(contains(log, "TLS handshake"));
+	BOOST_TEST_WARN(contains(log, "WebSocket handshake"));
 	BOOST_TEST_WARN(contains(log, "connack"));
 }
 

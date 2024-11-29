@@ -4,7 +4,7 @@
     (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:optimising_communication Optimising communication]
+[section:optimising_communication Optimising Communication]
 [nochunk]
 
 This chapter provides a detailed breakdown of how __Client__ optimises its communications with the Broker
@@ -12,7 +12,7 @@ with multiflight mode for simultaneous message handling and strategies for effic
 These techniques are key to getting the most out of MQTT in scenarios demanding fast and
 dependable message delivery, all while meeting the protocol's quality of service requirements and network efficiency standards.
 
-[section:multiflight The multiflight mode]
+[section:multiflight The Multiflight Mode]
 
 The __Self__ library introduces a multiflight feature.
 This allows the initiation of multiple asynchronous requests simultaneously, without waiting for the completion of the previous requests.
@@ -40,7 +40,7 @@ Source: [link async_mqtt5.multiflight_client multiflight_client.cpp]
 
 [endsect] [/multiflight]
 
-[section:packet_queuing Efficient bandwidth usage with packet queuing]
+[section:packet_queuing Efficient Bandwidth Usage With Packet Queuing]
 
 The __Client__ employs a strategic queuing mechanism crucial in optimising network usage and performance for the user's requests.
 This mechanism bundles multiple MQTT packets for transmission within a single TCP packet whenever feasible 
@@ -62,7 +62,7 @@ if possible [footnote The Broker's `Receive Maximum` is equal to or greater than
 
 [endsect] [/packet_queuing]
 
-[section:packet_ordering Packet ordering]
+[section:packet_ordering Packet Ordering]
 
 The __Client__ uses a packet ordering mechanism to manage the queued packets pending dispatch to the Broker.
 The most important ordering rules are:

@@ -31,6 +31,7 @@
 [include concepts/StreamType.qbk]
 [include concepts/TlsContext.qbk]
 [include concepts/is_authenticator.qbk]
+[include concepts/LoggerType.qbk]
 [include reason_codes/Reason_codes.qbk]
 [include properties/will_props.qbk]
 [include properties/connect_props.qbk]
@@ -1470,18 +1471,24 @@
     <xsl:when test="contains($qualified-name, 'StreamType')">StreamType</xsl:when>
     <xsl:when test="contains($qualified-name, 'TlsContext')">TlsContext</xsl:when>
     <xsl:when test="contains($qualified-name, 'is_authenticator')">is_authenticator</xsl:when>
+    <xsl:when test="contains($qualified-name, 'LoggerType')">LoggerType</xsl:when>
     <xsl:otherwise></xsl:otherwise>
   </xsl:choose>
 </xsl:variable>
-<xsl:if test="string-length($template-type) &gt; 0">
-  <xsl:value-of select="substring-before($qualified-name, $template-type)"/>
-    <xsl:text>__</xsl:text><xsl:value-of select="$template-type"/><xsl:text>__</xsl:text>
+<xsl:choose>
+  <xsl:when test="string-length($template-type) &gt; 0">
+    <xsl:value-of select="substring-before($qualified-name, $template-type)"/>
+      <xsl:text>__</xsl:text><xsl:value-of select="$template-type"/><xsl:text>__</xsl:text>
   <xsl:value-of select="substring-after($qualified-name, $template-type)"/>
   <xsl:if test="count(declname) &gt; 0">
     <xsl:text> </xsl:text>
     <xsl:value-of select="declname"/>
   </xsl:if>
-</xsl:if>
+  </xsl:when>
+  <xsl:otherwise>
+    <xsl:value-of select="$qualified-name"/>
+  </xsl:otherwise>
+</xsl:choose>
 </xsl:template>
 
 <xsl:template name="mqtt-ref-id">
@@ -1524,7 +1531,8 @@
     or contains(type, 'ExecutionContext')
     or contains(type, 'TlsContext')
     or contains(type, 'StreamType')
-    or contains(type, 'is_authenticator')">
+    or contains(type, 'is_authenticator')
+    or contains(type, 'LoggerType')">
     <xsl:call-template name="mqtt-template">
       <xsl:with-param name="qualified-name" select="$type"/>
     </xsl:call-template>

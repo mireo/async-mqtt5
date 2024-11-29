@@ -25,7 +25,14 @@ using error_code = boost::system::error_code;
  * such as the hostname, port, and path.
  */
 struct authority_path {
-	std::string host, port, path;
+	/** The hostname of the authority as a domain name or an IP address. */
+	std::string host;
+
+	/** The port number used for communication. */
+	std::string port;
+
+	/** Specifies the endpoint path relevant to WebSocket connections. */
+	std::string path;
 };
 
 /**
