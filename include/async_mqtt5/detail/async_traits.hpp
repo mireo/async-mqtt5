@@ -25,11 +25,18 @@ namespace async_mqtt5 {
 
 namespace asio = boost::asio;
 
+// TLS
+
 template <typename StreamType>
 struct tls_handshake_type {};
 
 template <typename TlsContext, typename TlsStream>
 void assign_tls_sni(const authority_path& ap, TlsContext& ctx, TlsStream& s);
+
+// WebSocket
+
+template <typename Stream>
+struct ws_handshake_traits {};
 
 namespace detail {
 

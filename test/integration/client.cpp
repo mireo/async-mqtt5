@@ -25,6 +25,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <async_mqtt5.hpp>
+#include <async_mqtt5/websocket.hpp>
 
 namespace async_mqtt5 {
 

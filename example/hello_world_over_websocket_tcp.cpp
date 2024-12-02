@@ -15,6 +15,7 @@
 #include <boost/beast/websocket.hpp>
 
 #include <async_mqtt5.hpp>
+#include <async_mqtt5/websocket.hpp> // WebSocket traits
 
 int main() {
 	boost::asio::io_context ioc;

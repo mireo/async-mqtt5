@@ -17,6 +17,7 @@
 #include <boost/beast/ssl/ssl_stream.hpp> // async_teardown specialization for websocket ssl stream
 
 #include <async_mqtt5.hpp>
+#include <async_mqtt5/websocket.hpp> // WebSocket traits
 
 // External customization point.
 namespace async_mqtt5 {

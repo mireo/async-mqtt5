@@ -27,10 +27,6 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include <boost/beast/http/field.hpp>
-#include <boost/beast/websocket/rfc6455.hpp>
-#include <boost/beast/websocket/stream_base.hpp>
-
 #include <async_mqtt5/error.hpp>
 #include <async_mqtt5/reason_codes.hpp>
 
@@ -171,35 +167,15 @@ public:
 	}
 
 	void do_ws_handshake(endpoint ep, authority_path ap) {
-		if constexpr (has_ws_handshake<Stream>) {
-			using namespace boost::beast;
-
-			// We'll need to turn off read timeouts on the underlying stream
-			// because the websocket stream has its own timeout system.
-
-			// Set suggested timeout settings for the websocket
-			_stream.set_option(
-				websocket::stream_base::timeout::suggested(role_type::client)
-			);
-
-			_stream.binary(true);
-
-			// Set a decorator to change the User-Agent of the handshake
-			_stream.set_option(websocket::stream_base::decorator(
-				[](websocket::request_type& req) {
-					req.set(http::field::sec_websocket_protocol, "mqtt");
-					req.set(http::field::user_agent, "boost.mqtt");
-				})
-			);
-
-			_stream.async_handshake(
-				ap.host + ':' + ap.port, ap.path,
+		if constexpr (has_ws_handshake<Stream>)
+			// If you get a compilation error here,
+			// it might be because of a missing <async_mqtt5/websocket.hpp> include
+			ws_handshake_traits<Stream>::async_handshake(
+				_stream, std::move(ap),
 				asio::append(
-					asio::prepend(std::move(*this), on_ws_handshake {}),
-					ep
+					asio::prepend(std::move(*this), on_ws_handshake {}), ep
 				)
 			);
-		}
 		else
 			(*this)(on_ws_handshake {}, error_code {}, ep);
 	}

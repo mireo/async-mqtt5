@@ -26,6 +26,7 @@
 #include <async_mqtt5/mqtt_client.hpp>
 #include <async_mqtt5/logger.hpp>
 #include <async_mqtt5/logger_traits.hpp>
+#include <async_mqtt5/websocket.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/test_service.hpp"

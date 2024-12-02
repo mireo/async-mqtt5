@@ -23,6 +23,7 @@
 #include <boost/beast/websocket/ssl.hpp> // async_teardown for asio::ssl::socket
 
 #include <async_mqtt5.hpp>
+#include <async_mqtt5/websocket.hpp>
 
 namespace async_mqtt5 {
 

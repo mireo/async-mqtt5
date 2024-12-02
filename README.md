@@ -57,7 +57,7 @@ Getting Started
 ---------
 Async.MQTT5 is a header-only library. To use Async.MQTT5 it requires the following: 
 - **C++17 capable compiler**
-- **Boost 1.82 or later**. In addition to Asio, we use other header-only libraries such as Beast, Spirit, and more. 
+- **Boost 1.82 or later**. In addition to Asio, we use other header-only libraries.
 - **OpenSSL**. If you require an SSL connection by using [boost::asio::ssl::stream](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio/reference/ssl__stream.html).
 
 Async.MQTT5 has been tested with the following compilers: 

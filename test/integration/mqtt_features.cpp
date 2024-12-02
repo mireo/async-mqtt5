@@ -26,6 +26,7 @@
 #include <boost/beast/websocket/stream.hpp>
 
 #include <async_mqtt5.hpp>
+#include <async_mqtt5/websocket.hpp>
 
 BOOST_AUTO_TEST_SUITE(mqtt_features/*, *boost::unit_test::disabled()*/)
 
