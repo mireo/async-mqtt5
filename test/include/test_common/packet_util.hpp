@@ -20,9 +20,9 @@
 #include <boost/range/algorithm/transform.hpp>
 
 #include <async_mqtt5/detail/control_packet.hpp>
+#include <async_mqtt5/detail/traits.hpp>
 #include <async_mqtt5/impl/codecs/message_decoders.hpp>
 #include <async_mqtt5/impl/codecs/message_encoders.hpp>
-#include <async_mqtt5/impl/codecs/traits.hpp>
 
 namespace async_mqtt5::test {
 
@@ -89,6 +89,7 @@ template <typename Props>
 inline std::string to_readable_props(Props props) {
 	std::ostringstream stream;
 	props.visit([&stream](const auto&, const auto& v) -> bool {
+		using namespace async_mqtt5::detail;
 		if constexpr (is_optional<decltype(v)>)
 			if (v.has_value())
 				stream << *v << " ";

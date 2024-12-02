@@ -30,7 +30,7 @@ using error_code = boost::system::error_code;
 template <
 	typename StreamType,
 	typename StreamContext = std::monostate,
-	typename LoggerType = async_mqtt5::detail::noop_logger
+	typename LoggerType = async_mqtt5::noop_logger
 >
 class test_autoconnect_stream {
 public:

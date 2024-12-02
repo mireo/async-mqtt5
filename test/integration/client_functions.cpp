@@ -23,6 +23,7 @@
 
 #include <async_mqtt5/mqtt_client.hpp>
 #include <async_mqtt5/types.hpp>
+#include <async_mqtt5/detail/traits.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
@@ -406,7 +407,7 @@ BOOST_FIXTURE_TEST_CASE(connack_properties, shared_connack_prop_test_data) {
 			connack_props cprops_ = c.connack_properties();
 			cprops_.visit([&](const auto& p, const auto& val) -> bool {
 				BOOST_TEST_REQUIRE(p);
-				if constexpr (is_vector<decltype(val)>)
+				if constexpr (detail::is_vector<decltype(val)>)
 					BOOST_TEST(val == cprops[p]);
 				else {
 					BOOST_TEST_REQUIRE(val.has_value());
@@ -429,7 +430,7 @@ BOOST_FIXTURE_TEST_CASE(connack_property, shared_connack_prop_test_data) {
 		std::move(broker_side),
 		[&](client_type& c) {
 			cprops.visit([&](const auto& p, const auto& val) -> bool{
-				if constexpr (is_vector<decltype(val)>)
+				if constexpr (detail::is_vector<decltype(val)>)
 					BOOST_TEST(val == c.connack_property(p));
 				else {
 					BOOST_TEST_REQUIRE(val.has_value());

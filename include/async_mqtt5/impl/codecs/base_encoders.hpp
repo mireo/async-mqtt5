@@ -20,7 +20,7 @@
 #include <boost/type_traits/remove_cv_ref.hpp>
 
 #include <async_mqtt5/property_types.hpp>
-#include <async_mqtt5/impl/codecs/traits.hpp>
+#include <async_mqtt5/detail/traits.hpp>
 
 namespace async_mqtt5::encoders {
 
@@ -72,7 +72,7 @@ public:
 	template <
 		typename T,
 		typename projection = boost::identity,
-		std::enable_if_t<is_optional<T>, bool> = true
+		std::enable_if_t<detail::is_optional<T>, bool> = true
 	>
 	auto operator()(T&& value, projection proj = {}) const {
 		if constexpr (std::is_same_v<projection, boost::identity>) {
@@ -89,7 +89,7 @@ public:
 	template <
 		typename T,
 		typename projection = boost::identity,
-		std::enable_if_t<!is_optional<T>, bool> = true
+		std::enable_if_t<!detail::is_optional<T>, bool> = true
 	>
 	auto operator()(T&& value, projection proj = {}) const {
 		auto val = static_cast<repr>(std::invoke(proj, value));
@@ -125,7 +125,7 @@ public:
 	int_val(T val) : _val(val) {}
 
 	size_t byte_size() const {
-		if constexpr (is_optional<T>) {
+		if constexpr (detail::is_optional<T>) {
 			if (_val) return val_length(*_val);
 			return 0;
 		}
@@ -134,7 +134,7 @@ public:
 	}
 
 	std::string& encode(std::string& s) const {
-		if constexpr (is_optional<T>) {
+		if constexpr (detail::is_optional<T>) {
 			if (_val) return encode_val(s, *_val);
 			return s;
 		}
@@ -176,7 +176,7 @@ public:
 
 	template <typename T, typename projection>
 	auto operator()(T&& val, projection proj) const {
-		if constexpr (is_optional<T>) {
+		if constexpr (detail::is_optional<T>) {
 			using rv_type = std::invoke_result_t<
 				projection, typename boost::remove_cv_ref_t<T>::value_type
 			>;
@@ -211,14 +211,14 @@ public:
 	}
 
 	size_t byte_size() const {
-		if constexpr (is_optional<T>)
+		if constexpr (detail::is_optional<T>)
 			return _val ? _with_length * 2 + val_length(*_val) : 0;
 		else
 			return _with_length * 2 + val_length(_val);
 	}
 
 	std::string& encode(std::string& s) const {
-		if constexpr (is_optional<T>) {
+		if constexpr (detail::is_optional<T>) {
 			if (_val) return encode_val(s, *_val);
 			return s;
 		}
@@ -268,7 +268,7 @@ public:
 
 	template <typename T, typename projection>
 	auto operator()(T&& val, projection proj) const {
-		if constexpr (is_optional<T>) {
+		if constexpr (detail::is_optional<T>) {
 			using rv_type = std::invoke_result_t<
 				projection, typename boost::remove_cv_ref_t<T>::value_type
 			>;
@@ -346,7 +346,7 @@ auto encoder_for_prop_value(const T& val) {
 		return basic::int_def<uint32_t>{}(val);
 	else if constexpr (std::is_same_v<T, std::string>)
 		return basic::utf8_def{}(val);
-	else if constexpr (is_pair<T>)
+	else if constexpr (detail::is_pair<T>)
 		return encoder_for_prop_value(val.first) &
 			encoder_for_prop_value(val.second);
 }
@@ -359,7 +359,7 @@ template <
 >
 class prop_val<
 	T, p,
-	std::enable_if_t<!is_vector<T> && is_optional<T>>
+	std::enable_if_t<!detail::is_vector<T> && detail::is_optional<T>>
 > : public basic::encoder {
 	// allows T to be reference type to std::optional
 	static inline boost::remove_cv_ref_t<T> nulltype;
@@ -388,7 +388,7 @@ template <
 >
 class prop_val<
 	T, p,
-	std::enable_if_t<is_vector<T> || is_small_vector<T>>
+	std::enable_if_t<detail::is_vector<T> || detail::is_small_vector<T>>
 > : public basic::encoder {
 	// allows T to be reference type to std::vector
 	static inline boost::remove_cv_ref_t<T> nulltype;
@@ -490,7 +490,7 @@ class props_def {
 public:
 	template <typename T>
 	auto operator()(T&& prop_container) const {
-		if constexpr (is_optional<T>) {
+		if constexpr (detail::is_optional<T>) {
 			if (prop_container.has_value())
 				return (*this)(*prop_container);
 			return props_val<

@@ -473,7 +473,7 @@ BOOST_FIXTURE_TEST_CASE(receive_buffer_overflow, shared_test_data) {
 		.async_run(asio::detached);
 
 	asio::steady_timer timer(executor);
-	timer.expires_after(7s);
+	timer.expires_after(10s);
 	timer.async_wait(
 		[&](error_code) {
 			c.async_receive([&](

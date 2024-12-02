@@ -8,17 +8,19 @@
 #ifndef ASYNC_MQTT5_LOGGER_HPP
 #define ASYNC_MQTT5_LOGGER_HPP
 
+#include <cstdint>
 #include <iostream>
 #include <string_view>
 
-#include <boost/system/error_code.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/type_traits/remove_cv_ref.hpp>
 
+#include <async_mqtt5/logger_traits.hpp>
 #include <async_mqtt5/reason_codes.hpp>
 #include <async_mqtt5/property_types.hpp>
 #include <async_mqtt5/types.hpp>
-
-#include <async_mqtt5/impl/codecs/traits.hpp>
+#include <async_mqtt5/detail/traits.hpp>
 
 namespace async_mqtt5 {
 
@@ -83,7 +85,7 @@ public:
 		if (!ec && _level < log_level::info)
 			return;
 
-		write_prefix();
+		output_prefix();
 		std::clog
 			<< "resolve: "
 			<< host << ":" << port;
@@ -110,7 +112,7 @@ public:
 		if (!ec && _level < log_level::info)
 			return;
 
-		write_prefix();
+		output_prefix();
 		std::clog
 			<< "connect: "
 			<< ep.address().to_string() << ":" << ep.port()
@@ -128,7 +130,7 @@ public:
 		if (!ec && _level < log_level::info)
 			return;
 
-		write_prefix();
+		output_prefix();
 		std::clog
 			<< "TLS handshake: "
 			<< ep.address().to_string() << ":" << ep.port()
@@ -146,7 +148,7 @@ public:
 		if (!ec && _level < log_level::info)
 			return;
 
-		write_prefix();
+		output_prefix();
 		std::clog
 			<< "WebSocket handshake: "
 			<< ep.address().to_string() << ":" << ep.port()
@@ -165,13 +167,17 @@ public:
 	 */
 	void at_connack(
 		reason_code rc,
-		bool /* session_present */, const connack_props& /* ca_props */
+		bool session_present, const connack_props& ca_props
 	) {
 		if (!rc && _level < log_level::info)
 			return;
 
-		write_prefix();
+		output_prefix();
 		std::clog << "connack: " << rc.message() << ".";
+		if (_level == log_level::debug) {
+			std::clog << " session_present:" << session_present << " ";
+			output_props(ca_props);
+		}
 		std::clog << std::endl;
 	}
 
@@ -183,18 +189,66 @@ public:
 	 * \param dc_props \__DISCONNECT_PROPS\__ received in the \__DISCONNECT\__ packet.
 	 */
 	void at_disconnect(reason_code rc, const disconnect_props& dc_props) {
-		write_prefix();
+		output_prefix();
 		std::clog << "disconnect: " << rc.message() << ".";
-		if (dc_props[prop::reason_string].has_value())
-			std::clog << " Reason string: " << * dc_props[prop::reason_string];
+		if (_level == log_level::debug)
+			output_props(dc_props);
 		std::clog << std::endl;
 	}
 
 private:
-	void write_prefix() {
+	void output_prefix() {
 		std::clog << prefix << " ";
 	}
+
+	template <typename Props>
+	void output_props(const Props& props) {
+		props.visit(
+			[](const auto& prop, const auto& val) -> bool {
+				if constexpr (detail::is_optional<decltype(val)>) {
+					if (val.has_value()) {
+						std::clog << property_name(prop) << ":";
+						using value_type = boost::remove_cv_ref_t<decltype(*val)>;
+						if constexpr (std::is_same_v<value_type, uint8_t>)
+							std::clog << std::to_string(*val) << " ";
+						else
+							std::clog << *val << " ";
+					}
+				} else { // is vector
+					if (val.empty())
+						return true;
+
+					std::clog << property_name(prop) << ":";
+					std::clog << "[";
+					for (auto i = 0; i < val.size(); i++) {
+						if constexpr (detail::is_pair<decltype(val[i])>)
+							std::clog << "(" << val[i].first << "," << val[i].second << ")";
+						else
+							std::clog << std::to_string(val[i]);
+						if (i + 1 < val.size())
+							std::clog << ", ";
+					}
+					std::clog << "]";
+				}
+				return true;
+			}
+		);
+	}
+
+	template <prop::property_type p>
+	static std::string_view property_name(std::integral_constant<prop::property_type, p>) {
+		return prop::name_v<p>;
+	}
+
 };
+
+// Verify that the logger class satisfies the LoggerType concept
+static_assert(has_at_resolve<logger>);
+static_assert(has_at_tcp_connect<logger>);
+static_assert(has_at_tls_handshake<logger>);
+static_assert(has_at_ws_handshake<logger>);
+static_assert(has_at_connack<logger>);
+static_assert(has_at_disconnect<logger>);
 
 } // end namespace async_mqtt5
 

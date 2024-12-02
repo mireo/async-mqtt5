@@ -54,10 +54,10 @@ public:
 			});
 	}
 
-	run_op(run_op&&) noexcept = default;
+	run_op(run_op&&) = default;
 	run_op(const run_op&) = delete;
 
-	run_op& operator=(run_op&&) noexcept = default;
+	run_op& operator=(run_op&&) = default;
 	run_op& operator=(const run_op&) = delete;
 
 	using allocator_type = asio::associated_allocator_t<handler_type>;

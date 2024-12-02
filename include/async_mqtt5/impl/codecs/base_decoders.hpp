@@ -19,7 +19,7 @@
 #include <boost/optional/optional.hpp>
 
 #include <async_mqtt5/property_types.hpp>
-#include <async_mqtt5/impl/codecs/traits.hpp>
+#include <async_mqtt5/detail/traits.hpp>
 
 namespace async_mqtt5::decoders {
 
@@ -80,7 +80,7 @@ constexpr auto to(T& arg) {
 	return [&](auto& ctx) {
 		using ctx_type = decltype(ctx);
 		using attr_type = decltype(x3::_attr(std::declval<const ctx_type&>()));
-		if constexpr (is_boost_iterator<attr_type>)
+		if constexpr (detail::is_boost_iterator<attr_type>)
 			arg = T { x3::_attr(ctx).begin(), x3::_attr(ctx).end() };
 		else
 			arg = x3::_attr(ctx);
@@ -289,8 +289,8 @@ struct len_prefix_parser : x3::parser<len_prefix_parser> {
 	}
 };
 
-constexpr len_prefix_parser utf8_{};
-constexpr len_prefix_parser binary_{};
+constexpr len_prefix_parser utf8_ {};
+constexpr len_prefix_parser binary_ {};
 
 /*
 	 Boost Spirit incorrectly deduces atribute type for a parser of the form
@@ -362,6 +362,7 @@ bool parse_to_prop(
 	It& iter, const It last,
 	const Ctx& ctx, RCtx& rctx, Prop& prop
 ) {
+	using namespace async_mqtt5::detail;
 	using prop_type = std::remove_reference_t<decltype(prop)>;
 
 	bool rv = false;

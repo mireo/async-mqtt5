@@ -18,6 +18,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <async_mqtt5/error.hpp>
+#include <async_mqtt5/logger_traits.hpp>
 #include <async_mqtt5/types.hpp>
 
 #include <async_mqtt5/detail/log_invoke.hpp>
@@ -52,7 +53,7 @@ namespace asio = boost::asio;
 template <
 	typename StreamType,
 	typename TlsContext = std::monostate,
-	typename LoggerType = detail::noop_logger
+	typename LoggerType = noop_logger
 >
 class mqtt_client {
 public:
@@ -134,7 +135,6 @@ public:
 	 */
 	mqtt_client(mqtt_client&&) noexcept = default;
 
-
 	/**
 	 * \brief Move assignment operator.
 	 *
@@ -162,7 +162,6 @@ public:
 	executor_type get_executor() const noexcept {
 		return _impl->get_executor();
 	}
-
 
 	/**
 	 * \brief Get the context object used in TLS/SSL connection.

@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE(test_pingresp) {
 
 BOOST_AUTO_TEST_CASE(subscription_identifiers) {
 	// check boost::container::small_vector interface
-	BOOST_TEST_REQUIRE(is_small_vector<prop::subscription_identifiers>);
+	BOOST_TEST_REQUIRE(detail::is_small_vector<prop::subscription_identifiers>);
 
 	// check optional interface
 	prop::subscription_identifiers sub_ids;

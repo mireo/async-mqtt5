@@ -16,6 +16,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
+#include <async_mqtt5/logger_traits.hpp>
 #include <async_mqtt5/types.hpp>
 #include <async_mqtt5/detail/log_invoke.hpp>
 #include <async_mqtt5/detail/internal_types.hpp>
@@ -65,8 +66,8 @@ void run_unit_test(
 		std::move(h)(ec);
 	};
 
-	detail::log_invoke d;
-	detail::connect_op<test::test_stream, detail::noop_logger>(
+	detail::log_invoke<noop_logger> d;
+	detail::connect_op<test::test_stream, noop_logger>(
 		stream, mqtt_ctx, d, std::move(handler)
 	).perform(*std::begin(eps), std::move(ap));
 

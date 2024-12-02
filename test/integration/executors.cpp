@@ -34,7 +34,11 @@ using strand_type = asio::strand<asio::any_io_executor>;
 
 BOOST_AUTO_TEST_SUITE(executors)
 
-void run_test(asio::io_context& ioc, strand_type io_ex, auto bind_async_run, auto bind_async_op) {
+template <typename AsyncRunOp, typename AsyncOp>
+void run_test(
+	asio::io_context& ioc, strand_type io_ex,
+	AsyncRunOp&& bind_async_run, AsyncOp&& bind_async_op
+) {
 	using test::after;
 	using namespace std::chrono_literals;
 

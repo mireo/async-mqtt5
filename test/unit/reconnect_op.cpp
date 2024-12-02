@@ -14,6 +14,7 @@
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
 
+#include <async_mqtt5/logger_traits.hpp>
 #include <async_mqtt5/detail/log_invoke.hpp>
 
 #include <async_mqtt5/impl/client_service.hpp>
@@ -113,7 +114,7 @@ void run_connect_to_localhost_test(int succeed_after) {
 	);
 
 	auto stream_ctx = stream_context(std::monostate {});
-	auto log = detail::log_invoke();
+	auto log = detail::log_invoke<noop_logger>();
 	auto auto_stream = astream(ioc.get_executor(), stream_ctx, log);
 	auto_stream.brokers("localhost", 1883);
 
@@ -147,7 +148,7 @@ BOOST_AUTO_TEST_CASE(no_servers) {
 
 	asio::io_context ioc;
 	auto stream_ctx = stream_context(std::monostate{});
-	auto log = detail::log_invoke();
+	auto log = detail::log_invoke<noop_logger>();
 	auto auto_stream = astream(ioc.get_executor(), stream_ctx, log);
 	auto_stream.brokers("", 1883);
 

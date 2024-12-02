@@ -25,6 +25,7 @@
 
 #include <async_mqtt5/mqtt_client.hpp>
 #include <async_mqtt5/logger.hpp>
+#include <async_mqtt5/logger_traits.hpp>
 
 #include "test_common/message_exchange.hpp"
 #include "test_common/test_service.hpp"
@@ -54,12 +55,12 @@ void assign_tls_sni(
 
 
 void logger_test() {
-	BOOST_STATIC_ASSERT(detail::has_at_resolve<logger>);
-	BOOST_STATIC_ASSERT(detail::has_at_tcp_connect<logger>);
-	BOOST_STATIC_ASSERT(detail::has_at_tls_handshake<logger>);
-	BOOST_STATIC_ASSERT(detail::has_at_ws_handshake<logger>);
-	BOOST_STATIC_ASSERT(detail::has_at_connack<logger>);
-	BOOST_STATIC_ASSERT(detail::has_at_disconnect<logger>);
+	BOOST_STATIC_ASSERT(has_at_resolve<logger>);
+	BOOST_STATIC_ASSERT(has_at_tcp_connect<logger>);
+	BOOST_STATIC_ASSERT(has_at_tls_handshake<logger>);
+	BOOST_STATIC_ASSERT(has_at_ws_handshake<logger>);
+	BOOST_STATIC_ASSERT(has_at_connack<logger>);
+	BOOST_STATIC_ASSERT(has_at_disconnect<logger>);
 }
 
 using stream_type = boost::beast::websocket::stream<
