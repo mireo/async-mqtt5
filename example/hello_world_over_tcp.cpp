@@ -20,10 +20,7 @@ int main() {
 	boost::asio::io_context ioc;
 
 	// Construct the Client with ``__TCP_SOCKET__`` as the underlying stream.
-	//async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket, std::monostate /* TlsContext */, async_mqtt5::logger> client(
-		ioc, {} /* tls_context */, async_mqtt5::logger(async_mqtt5::log_level::debug)
-	);
+	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
 	//]
 
 	//[configure_tcp_client
