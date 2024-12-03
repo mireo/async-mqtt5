@@ -19,23 +19,47 @@
 #include <boost/asio/experimental/parallel_group.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include <async_mqtt5.hpp>
+#include <async_mqtt5/logger.hpp>
+#include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/reason_codes.hpp>
+#include <async_mqtt5/types.hpp>
 
-int main() {
+struct config {
+	std::string brokers = "broker.hivemq.com";
+	uint16_t port = 1883;
+	std::string client_id = "async_mqtt5_tester";
+};
+
+int main(int argc, char** argv) {
+	config cfg;
+
+	if (argc == 4) {
+		cfg.brokers = argv[1];
+		cfg.port = uint16_t(std::stoi(argv[2]));
+		cfg.client_id = argv[3];
+	}
+
 	boost::asio::io_context ioc;
 
-	// Construct the Client.
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
+	// Construct the Client with ``__TCP_SOCKET__`` as the underlying stream and enabled logging.
+	// Since we are not establishing a secure connection, set the TlsContext template parameter to std::monostate.
+	async_mqtt5::mqtt_client<
+		boost::asio::ip::tcp::socket, std::monostate /* TlsContext */, async_mqtt5::logger
+	> client(ioc, {} /* tls_context */, async_mqtt5::logger(async_mqtt5::log_level::info));
+
+	// If you want to use the Client without logging, initialise it with the following line instead.
+	//async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
 
 	// Construct the timer.
 	boost::asio::steady_timer timer(ioc, std::chrono::seconds(5));
 
-	client.brokers("<your-mqtt-broker>", 1883)
-		.async_run(boost::asio::detached);
+	client.brokers(cfg.brokers, cfg.port) // Broker that we want to connect to.
+		.credentials(cfg.client_id) // Set the Client Identifier. (optional)
+		.async_run(boost::asio::detached); // Start the Client.
 
 	// Subscribe to a Topic.
 	client.async_subscribe(
-		{ "<your-mqtt-topic>" }, async_mqtt5::subscribe_props {},
+		{ "test" /* Topic */}, async_mqtt5::subscribe_props {},
 		[](async_mqtt5::error_code ec, std::vector<async_mqtt5::reason_code> rcs, async_mqtt5::suback_props) {
 			std::cout << "[subscribe ec]: " << ec.message() << std::endl;
 			std::cout << "[subscribe rc]: " << rcs[0].message() << std::endl;

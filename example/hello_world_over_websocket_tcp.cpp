@@ -7,6 +7,7 @@
 
 //[hello_world_over_websocket_tcp
 #include <iostream>
+#include <string>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/detached.hpp>
@@ -14,24 +15,47 @@
 
 #include <boost/beast/websocket.hpp>
 
-#include <async_mqtt5.hpp>
+#include <async_mqtt5/logger.hpp>
+#include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
+
 #include <async_mqtt5/websocket.hpp> // WebSocket traits
 
-int main() {
+struct config {
+	std::string brokers = "broker.hivemq.com/mqtt"; // Path example: localhost/mqtt
+	uint16_t port = 8000; // 8083 is the default Webscoket/TCP MQTT port. However, HiveMQ's public broker uses 8000 instead.
+	std::string client_id = "async_mqtt5_tester";
+};
+
+int main(int argc, char** argv) {
+	config cfg;
+
+	if (argc == 4) {
+		cfg.brokers = argv[1];
+		cfg.port = uint16_t(std::stoi(argv[2]));
+		cfg.client_id = argv[3];
+	}
+
 	boost::asio::io_context ioc;
 
-	// Construct the Client with WebSocket/TCP as the underlying stream.
+	// Construct the Client with WebSocket/TCP as the underlying stream and enabled logging.
+	// Since we are not establishing a secure connection, set the TlsContext template parameter to std::monostate.
 	async_mqtt5::mqtt_client<
-		boost::beast::websocket::stream<boost::asio::ip::tcp::socket>
-	> client(ioc);
+		boost::beast::websocket::stream<boost::asio::ip::tcp::socket>,
+		std::monostate,
+		async_mqtt5::logger
+	> client(ioc, {}, async_mqtt5::logger(async_mqtt5::log_level::info));
 
-	// 8083 is the default Webscoket/TCP MQTT port.
-	client.brokers("<your-mqtt-broker-path>", 8083) // Path example: localhost/mqtt
-		.async_run(boost::asio::detached);
+	// If you want to use the Client without logging, initialise it with the following line instead.
+	//async_mqtt5::mqtt_client<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> client(ioc);
+
+	client.brokers(cfg.brokers, cfg.port) // Broker that we want to connect to.
+		.credentials(cfg.client_id) // Set the Client Identifier. (optional)
+		.async_run(boost::asio::detached); // Start the Client.
 
 	client.async_publish<async_mqtt5::qos_e::at_most_once>(
-		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props{},
+		"async-mqtt5/test", "Hello world!",
+		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
 		[&client](async_mqtt5::error_code ec) {
 			std::cout << ec.message() << std::endl;
 			client.async_disconnect(boost::asio::detached);

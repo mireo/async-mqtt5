@@ -5,31 +5,48 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <boost/asio/use_awaitable.hpp>
+#ifdef BOOST_ASIO_HAS_CO_AWAIT
+
 //[receiver
 #include <iostream>
+#include <string>
 
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
+#include <boost/asio/deferred.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
-#include <boost/asio/use_awaitable.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 
-#include <async_mqtt5.hpp>
+#include <async_mqtt5/logger.hpp>
+#include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/reason_codes.hpp>
+#include <async_mqtt5/types.hpp>
 
-#ifdef BOOST_ASIO_HAS_CO_AWAIT
+struct config {
+	std::string brokers = "broker.hivemq.com";
+	uint16_t port = 1883;
+	std::string client_id = "async_mqtt5_tester";
+};
 
 // Modified completion token that will prevent co_await from throwing exceptions.
-constexpr auto use_nothrow_awaitable = boost::asio::as_tuple(boost::asio::use_awaitable);
+constexpr auto use_nothrow_awaitable = boost::asio::as_tuple(boost::asio::deferred);
 
-using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
+// client_type with logging enabled
+using client_type = async_mqtt5::mqtt_client<
+	boost::asio::ip::tcp::socket, std::monostate /* TlsContext */, async_mqtt5::logger
+>;
+
+// client_type without logging
+//using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
 
 boost::asio::awaitable<bool> subscribe(client_type& client) {
 	// Configure the request to subscribe to a Topic.
 	async_mqtt5::subscribe_topic sub_topic = async_mqtt5::subscribe_topic{
-		"<your-mqtt-topic>",
+		"test" /* topic */,
 		async_mqtt5::subscribe_options {
 			async_mqtt5::qos_e::exactly_once, // All messages will arrive at QoS 2.
 			async_mqtt5::no_local_e::no, // Forward message from Clients with same ID.
@@ -55,10 +72,13 @@ boost::asio::awaitable<bool> subscribe(client_type& client) {
 	co_return !ec && !sub_codes[0]; // True if the subscription was successfully established.
 }
 
-boost::asio::awaitable<void> subscribe_and_receive(client_type& client) {
+boost::asio::awaitable<void> subscribe_and_receive(
+	const config& cfg, client_type& client
+) {
 	// Configure the Client.
 	// It is mandatory to call brokers() and async_run() to configure the Brokers to connect to and start the Client.
-	client.brokers("<your-mqtt-broker>", 1883) // Broker that we want to connect to. 1883 is the default TCP port.
+	client.brokers(cfg.brokers, cfg.port) // Broker that we want to connect to.
+		.credentials(cfg.client_id) // Set the Client Identifier. (optional)
 		.async_run(boost::asio::detached); // Start the client.
 
 	// Before attempting to receive an Application Message from the Topic we just subscribed to,
@@ -90,12 +110,20 @@ boost::asio::awaitable<void> subscribe_and_receive(client_type& client) {
 	co_return;
 }
 
-int main() {
+int main(int argc, char** argv) {
+	config cfg;
+
+	if (argc == 4) {
+		cfg.brokers = argv[1];
+		cfg.port = uint16_t(std::stoi(argv[2]));
+		cfg.client_id = argv[3];
+	}
+
 	// Initialise execution context.
 	boost::asio::io_context ioc;
 
 	// Initialise the Client to connect to the Broker over TCP.
-	client_type client(ioc);
+	client_type client(ioc, {} /* tls_context */, async_mqtt5::logger(async_mqtt5::log_level::info));
 
 	// Set up signals to stop the program on demand.
 	boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);
@@ -106,12 +134,27 @@ int main() {
 	});
 
 	// Spawn the coroutine.
-	co_spawn(ioc, subscribe_and_receive(client), boost::asio::detached);
+	co_spawn(
+		ioc,
+		subscribe_and_receive(cfg, client),
+		[](std::exception_ptr e) {
+			if (e)
+				std::rethrow_exception(e);
+		}
+	);
 
 	// Start the execution.
 	ioc.run();
 }
 
-#endif
-
 //]
+
+#else
+
+#include <iostream>
+
+int main() {
+	std::cout << "This example requires C++20 standard to compile and run" << std::endl;
+}
+
+#endif

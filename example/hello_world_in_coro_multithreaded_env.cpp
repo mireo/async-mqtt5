@@ -5,31 +5,47 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-//[hello_world_in_coro_multithreaded_env
-#include <vector>
-#include <thread>
-
 #include <boost/asio/use_awaitable.hpp>
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
+
+//[hello_world_in_coro_multithreaded_env
+#include <vector>
+#include <string>
+#include <thread>
 
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/io_context.hpp>
+#include <boost/asio/deferred.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/asio/thread_pool.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 
-#include <async_mqtt5.hpp>
+#include <async_mqtt5/logger.hpp>
+#include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
-using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
+struct config {
+	std::string brokers = "broker.hivemq.com";
+	uint16_t port = 1883;
+	std::string client_id = "async_mqtt5_tester";
+};
+
+// client_type with logging enabled
+using client_type = async_mqtt5::mqtt_client<
+	boost::asio::ip::tcp::socket, std::monostate /* TlsContext */, async_mqtt5::logger
+>;
+
+// client_type without logging
+//using client_type = async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket>;
 
 // Modified completion token that will prevent co_await from throwing exceptions.
-constexpr auto use_nothrow_awaitable = boost::asio::as_tuple(boost::asio::use_awaitable);
+constexpr auto use_nothrow_awaitable = boost::asio::as_tuple(boost::asio::deferred);
 
 boost::asio::awaitable<void> publish_hello_world(
-	client_type& client,
-	const boost::asio::strand<boost::asio::io_context::executor_type>& strand
+	const config& cfg, client_type& client,
+	const boost::asio::strand<boost::asio::thread_pool::executor_type>& strand
 ) {
 	// Confirmation that the coroutine running in the strand.
 	assert(strand.running_in_this_thread());
@@ -37,55 +53,63 @@ boost::asio::awaitable<void> publish_hello_world(
 	// All these function calls will be executed by the strand that is executing the coroutine.
 	// All the completion handler's associated executors will be that same strand
 	// because the Client was constructed with it as the default associated executor.
-	client.brokers("<your-mqtt-broker>", 1883)
-		.async_run(boost::asio::detached);
+	client.brokers(cfg.brokers, cfg.port) // Set the Broker to connect to.
+		.credentials(cfg.client_id) // Set the Client Identifier. (optional)
+		.async_run(boost::asio::detached); // Start the Client.
 
 	auto&& [ec, rc, puback_props] = co_await client.async_publish<async_mqtt5::qos_e::at_least_once>(
-		"<your-mqtt-topic>", "Hello world!", async_mqtt5::retain_e::no,
+		"async-mqtt5/test" /* topic */, "Hello world!" /* payload*/, async_mqtt5::retain_e::no,
 		async_mqtt5::publish_props {}, use_nothrow_awaitable);
 
 	co_await client.async_disconnect(use_nothrow_awaitable);
 	co_return;
 }
 
-int main() {
-	// Create a multithreaded environment where 4 threads
-	// will be calling ioc.run().
+int main(int argc, char** argv) {
+	config cfg;
 
-	// Number of threads that will call io_context::run().
-	int thread_num = 4;
-	boost::asio::io_context ioc(4);
+	if (argc == 4) {
+		cfg.brokers = argv[1];
+		cfg.port = uint16_t(std::stoi(argv[2]));
+		cfg.client_id = argv[3];
+	}
 
-	// Create the remaining threads (aside of this one).
-	std::vector<std::thread> threads;
-	threads.reserve(thread_num - 1);
+	// Create a thread pool with 4 threads.
+	boost::asio::thread_pool tp(4);
 
 	// Create an explicit strand from io_context's executor.
 	// The strand guarantees a serialised handler execution regardless of the 
 	// number of threads running in the io_context.
-	boost::asio::strand strand = boost::asio::make_strand(ioc.get_executor());
+	boost::asio::strand strand = boost::asio::make_strand(tp.get_executor());
 
 	// Create the Client with the explicit strand as the default associated executor.
-	client_type client(strand);
+	client_type client(strand, {} /* tls_context */, async_mqtt5::logger(async_mqtt5::log_level::info));
 
 	// Spawn the coroutine.
 	// The executor that executes the coroutine must be the same executor
 	// that is the Client's default associated executor.
-	co_spawn(strand, publish_hello_world(client, strand), boost::asio::detached);
+	co_spawn(
+		strand,
+		publish_hello_world(cfg, client, strand),
+		[](std::exception_ptr e) {
+			if (e)
+				std::rethrow_exception(e);
+		}
+	);
 
-	// Call ioc.run() in the other threads.
-	for (int i = 0; i < thread_num - 1; ++i)
-		threads.emplace_back([&ioc] { ioc.run(); });
-
-	// Call ioc.run() on this thread.
-	ioc.run();
-
-	for (auto& t : threads)
-		if (t.joinable()) t.join();
+	tp.join();
 
 	return 0;
 }
 
-#endif
-
 //]
+
+#else
+
+#include <iostream>
+
+int main() {
+	std::cout << "This example requires C++20 standard to compile and run" << std::endl;
+}
+
+#endif

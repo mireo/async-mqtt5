@@ -89,15 +89,16 @@ The following example illustrates a scenario of configuring a Client and publish
 #include <boost/asio/detached.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include <async_mqtt5.hpp>
+#include <async_mqtt5/mqtt_client.hpp>
+#include <async_mqtt5/types.hpp>
 
 int main() {
 	boost::asio::io_context ioc;
 
 	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> c(ioc);
 
-	c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
-		.brokers("<your-mqtt-broker>", 1883)
+	c.brokers("<your-mqtt-broker>", 1883)
+		.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
 		.async_run(boost::asio::detached);
 
 	c.async_publish<async_mqtt5::qos_e::at_most_once>(
@@ -113,27 +114,6 @@ int main() {
 }
 ```
 To see more examples, visit [Examples](https://github.com/mireo/async-mqtt5/tree/master/example).
-
-Building with CMake
----------
-You can use the `CMakeLists.txt` provided in our repository to compile and run any of the [examples](https://github.com/mireo/async-mqtt5/tree/master/example) or your own source files. 
-The following commands demonstrate compiling and running the previous code using CMake on Linux.
-The source file is located at [example/hello_world_over_tcp.cpp](https://github.com/mireo/async-mqtt5/blob/master/example/hello_world_over_tcp.cpp).
-
-```bash
-	# navigate to the root folder of Async.MQTT5
-
-	# compile the example
-	cmake -S . -B {build-folder} -DBUILD_EXAMPLES=ON -DCMAKE_EXE_LINKER_FLAGS="-pthread"
-	cmake --build {build-folder}
-
-	# run the example
-	./{build-folder}/example/example
-```
-
-You can edit the [example/CMakeLists.txt](https://github.com/mireo/async-mqtt5/blob/master/example/CMakeLists.txt) file to compile the source file of your choice.
-By default, it will compile [example/hello_world_over_tcp.cpp](https://github.com/mireo/async-mqtt5/blob/master/example/hello_world_over_tcp.cpp).
-
 
 Contributing
 ---------

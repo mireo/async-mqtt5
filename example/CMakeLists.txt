@@ -8,10 +8,20 @@ if(PROJECT_IS_TOP_LEVEL)
   find_package(async-mqtt5 REQUIRED)
 endif()
 
-# set(EXAMPLE <your-source-file>.cpp)
-set(EXAMPLE hello_world_over_tcp.cpp)
+function(add_example name)
+  add_executable("${name}" ${ARGN})
+  target_link_libraries("${name}" PRIVATE Async::MQTT5)
+  string(FIND "${example_name}" "tls" found_tls)
+  if(found_tls GREATER -1)
+    target_link_libraries("${name}" PRIVATE OpenSSL::SSL)
+  endif()
+endfunction()
 
-find_package(OpenSSL REQUIRED) # if you require SSL connection 
-add_executable(example ${EXAMPLE})
-target_compile_features(example PRIVATE cxx_std_17) # or cxx_std_20
-target_link_libraries(example PRIVATE Async::MQTT5 OpenSSL::SSL)
+file(GLOB examples "*.cpp")
+
+foreach(file_path ${examples})
+  get_filename_component(example_name "${file_path}" NAME_WE)
+  add_example("${example_name}" "${file_path}")
+endforeach()
+
+find_package(OpenSSL REQUIRED)

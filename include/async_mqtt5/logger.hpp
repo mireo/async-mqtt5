@@ -98,8 +98,9 @@ public:
 				if (++it != eps.end())
 					std::clog << ",";
 			}
-			std::clog << "]" << std::endl;
+			std::clog << "]";
 		}
+		std::clog << std::endl;
 	}
 
 	/**
@@ -114,7 +115,7 @@ public:
 
 		output_prefix();
 		std::clog
-			<< "connect: "
+			<< "TCP connect: "
 			<< ep.address().to_string() << ":" << ep.port()
 			<< " - " << ec.message()
 		<< std::endl;

@@ -208,23 +208,6 @@ The following example illustrates a scenario of configuring a Client and publish
 
 To see more examples, visit [link async_mqtt5.examples Examples].
 
-[heading Building with CMake]
-You can use the `CMakeLists.txt` provided in our repository to compile and run any of the [link async_mqtt5.examples examples] or your own source files.
-The following commands demonstrate compiling and running the previous code using CMake on Linux. 
-The source file is located at [ghreflink example/hello_world_over_tcp.cpp example/hello_world_over_tcp.cpp].
-
-	# navigate to the root folder of Async.MQTT5
-
-	# compile the example
-	cmake -S . -B {build-folder} -DBUILD_EXAMPLES=ON -DCMAKE_EXE_LINKER_FLAGS="-pthread"
-	cmake --build {build-folder}
-
-	# run the example
-	./{build-folder}/example/example
-
-You can edit the [ghreflink example/CMakeLists.txt example/CMakeLists.txt] file to compile the source file of your choice.
-By default, it will compile [ghreflink example/hello_world_over_tcp.cpp example/hello_world_over_tcp.cpp].
-
 [heading Acknowledgements]
 We thank [@https://github.com/chriskohlhoff Christopher Kohlhoff] for his outstanding __Asio__ library,
 which inspired the design of all interfaces and implementation strategies. 
