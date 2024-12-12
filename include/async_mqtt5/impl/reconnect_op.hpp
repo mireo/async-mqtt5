@@ -160,14 +160,11 @@ public:
 		if (ec == asio::error::host_not_found)
 			return complete(asio::error::no_recovery);
 
-		connect(std::move(eps), std::move(ap));
+		connect(eps.cbegin(), std::move(ap));
 	}
 
-	void connect(epoints eps, authority_path ap) {
+	void connect(epoints::const_iterator eps, authority_path ap) {
 		namespace asioex = boost::asio::experimental;
-
-		if (eps.empty())
-			return do_reconnect();
 
 		const auto& ep = eps->endpoint();
 		auto sptr = _owner.construct_and_open_next_layer(ep.protocol());
@@ -210,7 +207,7 @@ public:
 
 	void operator()(
 		on_connect,
-		typename Owner::stream_ptr sptr, epoints eps, authority_path ap,
+		typename Owner::stream_ptr sptr, epoints::const_iterator eps, authority_path ap,
 		std::array<std::size_t, 2> ord,
 		error_code connect_ec, error_code timer_ec
 	) {
@@ -231,7 +228,7 @@ public:
 		// retry for operation timed out and any other error_code or client::error::malformed_packet
 		if (ord[0] == 1 || connect_ec) {
 			// if the hostname resolved into more endpoints, try the next one
-			if (++eps != eps.end())
+			if (++eps != epoints::const_iterator())
 				return connect(std::move(eps), std::move(ap));
 			// try next server
 			return do_reconnect();
