@@ -5,18 +5,18 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define BOOST_TEST_MODULE async_mqtt5_tests
+#define BOOST_TEST_MODULE boost::mqtt5_tests
 
 #include <boost/test/included/unit_test.hpp>
 
 boost::unit_test::test_suite* init_tests(
-	int /*argc*/, char* /*argv*/[]
+    int /*argc*/, char* /*argv*/[]
 ) {
-	return nullptr;
+    return nullptr;
 }
 
 int main(int argc, char* argv[]) {
-	return boost::unit_test::unit_test_main(&init_tests, argc, argv);
+    return boost::unit_test::unit_test_main(&init_tests, argc, argv);
 }
 
 /*

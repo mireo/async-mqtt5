@@ -70,7 +70,7 @@ The library attempts to embody this belief with a range of key features designed
 		[
 			The MQTT protocol requires an underlying network protocol that provides ordered, lossless, bi-directional connection (stream).
 			Users can customize this stream through a template parameter.
-			The Async.MQTT5 library has been tested with the most used transport protocols:
+			The Boost.MQTT5 library has been tested with the most used transport protocols:
 			TCP/IP using `boost::asio::ip::tcp::socket`, TLS/SSL using `boost::asio::ssl::stream`, WebSocket/TCP and WebSocket/TLS using `boost::beast::websocket::stream`).
 		]
 	]
@@ -101,7 +101,7 @@ The library attempts to embody this belief with a range of key features designed
 		[[*Custom allocators]]
 		[
 			Support for custom allocators allows extra flexibility and control over the memory resources.
-			Async.MQTT5 will use allocators associated with handlers from asynchronous functions to create instances of objects needed in the library implementation.
+			Boost.MQTT5 will use allocators associated with handlers from asynchronous functions to create instances of objects needed in the library implementation.
 		]
 	]
 	[
@@ -166,7 +166,7 @@ __Self__ has been tested with the following compilers:
 [heading Using the Library]
 # Download [@https://www.boost.org/users/download/ Boost], and add it to your include path.
 # If you use SSL, download [@https://www.openssl.org/ OpenSSL], link the library and add it to your include path.
-# Add Async.MQTT5's `include` folder to your include path.
+# Add Boost.MQTT5's `include` folder to your include path.
 
 You can compile the example below with the following command line on Linux:
 
@@ -177,32 +177,33 @@ The following example illustrates a scenario of configuring a Client and publish
 "Hello World!" Application Message with `QoS` 0.
 
 [!c++]
-	#include <iostream>
+	#include <boost/mqtt5/mqtt_client.hpp>
+	#include <boost/mqtt5/types.hpp>
 
-	#include <boost/asio/detached.hpp>
 	#include <boost/asio/io_context.hpp>
+	#include <boost/asio/detached.hpp>
 	#include <boost/asio/ip/tcp.hpp>
 
-	#include <async_mqtt5.hpp>
+	#include <iostream>
 
 	int main() {
 		boost::asio::io_context ioc;
 
-		async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> c(ioc);
+		boost::mqtt5::mqtt_client<boost::asio::ip::tcp::socket> c(ioc);
 
-		c.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
-			.brokers("<your-mqtt-broker>", 1883)
+		c.brokers("<your-mqtt-broker>", 1883)
+			.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
 			.async_run(boost::asio::detached);
 
-		c.async_publish<async_mqtt5::qos_e::at_most_once>(
+		c.async_publish<boost::mqtt5::qos_e::at_most_once>(
 			"<topic>", "Hello world!",
-			async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-			[&c](async_mqtt5::error_code ec) {
+			boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
+			[&c](boost::mqtt5::error_code ec) {
 				std::cout << ec.message() << std::endl;
 				c.async_disconnect(boost::asio::detached); // disconnect and close the Client
 			}
 		);
-
+		
 		ioc.run();
 	}
 

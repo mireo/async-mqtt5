@@ -4,7 +4,7 @@
     (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[library Async.MQTT5: a C++17 MQTT client
+[library Boost.MQTT5: a C++17 MQTT client
     [quickbook 1.7]
     [copyright 2023-2024 Mireo]
     [id async_mqtt5]
@@ -74,7 +74,7 @@
 
 [/ MQTT ]
 [def __MQTT__ [@https://mqtt.org/ MQTT]]
-[def __Self__ [@https://github.com/mireo/async-mqtt5/ Async.MQTT5]]
+[def __Self__ [@https://github.com/mireo/async-mqtt5/ Boost.MQTT5]]
 [def __Client__ [reflink2 mqtt_client `mqtt_client`]]
 
 [def __UTF8_STRING_PAIR__ [mqttlink 3901013 `UTF-8 String Pair`]]

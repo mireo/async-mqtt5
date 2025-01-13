@@ -1,18 +1,18 @@
-Async.MQTT5: A C++17 MQTT client based on Boost.Asio
+Boost.MQTT5: A C++17 MQTT client based on Boost.Asio
 ===============================
 
 Branch | Windows/Linux Build | Coverage | Documentation |
 -------|---------------------|----------|---------------|
 [`master`](https://github.com/mireo/async-mqtt5/tree/master) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/master) | [Documentation](https://spacetime.mireo.com/async-mqtt5/)
 
-Async.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This Client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. Async.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
+Boost.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This Client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. Boost.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
 
-~~Our clear intention is to include the Async.MQTT5 library into [Boost](https://www.boost.org/). We are actively working on it.~~\
-As of October 2024, the Async.MQTT5 library has been **conditionally ACCEPTED** into [Boost](https://www.boost.org/).
+~~Our clear intention is to include the Boost.MQTT5 library into [Boost](https://www.boost.org/). We are actively working on it.~~\
+As of October 2024, the Boost.MQTT5 library has been **conditionally ACCEPTED** into [Boost](https://www.boost.org/).
 
 Motivation
 ---------
- The [MQTT](https://mqtt.org/) protocol is widely used for communication in various real-world scenarios, primarily as a reliable communication protocol for data transfer to and from IoT devices. While the MQTT protocol is relatively straightforward, integrating it into an application can be complex, primarily due to the challenging implementation of message retransmission after a disconnect/reconnect sequence. To address these challenges and simplify MQTT integration once and for all, Async.MQTT5 was designed with the following core objectives in mind:
+ The [MQTT](https://mqtt.org/) protocol is widely used for communication in various real-world scenarios, primarily as a reliable communication protocol for data transfer to and from IoT devices. While the MQTT protocol is relatively straightforward, integrating it into an application can be complex, primarily due to the challenging implementation of message retransmission after a disconnect/reconnect sequence. To address these challenges and simplify MQTT integration once and for all, Boost.MQTT5 was designed with the following core objectives in mind:
 
  Objective | Description |
  ----------|---------|
@@ -22,7 +22,7 @@ Complete adherence to the Boost.Asio's universal asynchronous model | The interf
 
 When to Use
 ---------
- Async.MQTT5 might be suitable for you if any of the following statements is true:
+ Boost.MQTT5 might be suitable for you if any of the following statements is true:
 
 - Your application uses Boost.Asio and requires integrating an MQTT Client.
 - You require asynchronous access to an MQTT Broker.
@@ -35,17 +35,17 @@ It may not be suitable for you if:
 
 Features
 ---------
-Async.MQTT5 is a library designed with the core belief that users should focus solely on their application logic, not the network complexities.
+Boost.MQTT5 is a library designed with the core belief that users should focus solely on their application logic, not the network complexities.
 The library attempts to embody this belief with a range of key features designed to elevate the development experience: 
 
 Feature | Description |
 --------|-------------|
-**Complete TCP, TLS/SSL, and WebSocket support** | The MQTT protocol requires an underlying network protocol that provides ordered, lossless, bi-directional connection (stream). Users can customize this stream through a template parameter. The Async.MQTT5 library has been tested with the most used transport protocols: TCP/IP using `boost::asio::ip::tcp::socket`, TLS/SSL using `boost::asio::ssl::stream`, WebSocket/TCP and WebSocket/TLS using `boost::beast::websocket::stream`). |
+**Complete TCP, TLS/SSL, and WebSocket support** | The MQTT protocol requires an underlying network protocol that provides ordered, lossless, bi-directional connection (stream). Users can customize this stream through a template parameter. The Boost.MQTT5 library has been tested with the most used transport protocols: TCP/IP using `boost::asio::ip::tcp::socket`, TLS/SSL using `boost::asio::ssl::stream`, WebSocket/TCP and WebSocket/TLS using `boost::beast::websocket::stream`). |
 **Automatic reconnect and retry mechanism** | Automatically handles connection loss, backoffs, reconnections, and message transmissions. Automating these processes enables users to focus entirely on the application's functionality. See [Built-in Auto-Reconnect and Retry Mechanism](https://spacetime.mireo.com/async-mqtt5/async_mqtt5/auto_reconnect.html). |
 **Prioritised efficiency** | Utilises network and memory resources as efficiently as possible. |
 **Minimal memory footprint** | Ensures optimal performance in resource-constrained environments typical of IoT devices. |
  **Completion token** | All asynchronous functions are implemented using Boost.Asio's universal asynchronous model and support CompletionToken. This allows versatile usage with callbacks, coroutines, and futures. |
-**Custom allocators** | Support for custom allocators allows extra flexibility and control over the memory resources. Async.MQTT5 will use allocators associated with handlers from asynchronous functions to create instances of objects needed in the library implementation. |
+**Custom allocators** | Support for custom allocators allows extra flexibility and control over the memory resources. Boost.MQTT5 will use allocators associated with handlers from asynchronous functions to create instances of objects needed in the library implementation. |
 **Per-operation cancellation** | All asynchronous operations support individual, targeted cancellation as per Asio's [Per-Operation Cancellation](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio/overview/core/cancellation.html). This enables all asynchronous functions to be used in [Parallel Operations](https://www.boost.org/doc/libs/1_86_0/doc/html/boost_asio/overview/composition/parallel_group.html), which is especially beneficial for executing operations that require a timeout mechanism.
 **Full implementation of MQTT 5.0 specification** | Ensures full compatibility with [MQTT 5.0 standard](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html). This latest version introduces essential features that enhance system robustness, including advanced error-handling mechanisms, session and message expiry, and other improvements designed to support modern IoT use cases.  |
 **Support for QoS 0, QoS 1, and QoS 2**| Fully implements all quality-of-service levels defined by the MQTT protocol to match different reliability needs in message delivery. |
@@ -55,12 +55,12 @@ Feature | Description |
 
 Getting Started
 ---------
-Async.MQTT5 is a header-only library. To use Async.MQTT5 it requires the following: 
+Boost.MQTT5 is a header-only library. To use Boost.MQTT5 it requires the following: 
 - **C++17 capable compiler**
 - **Boost 1.82 or later**. In addition to Asio, we use other header-only libraries.
 - **OpenSSL**. If you require an SSL connection by using [boost::asio::ssl::stream](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio/reference/ssl__stream.html).
 
-Async.MQTT5 has been tested with the following compilers: 
+Boost.MQTT5 has been tested with the following compilers: 
 - clang 12.0 - 18.0 (Linux)
 - GCC 9 - 14 (Linux)
 - MSVC 14.37 - Visual Studio 2022 (Windows)
@@ -70,7 +70,7 @@ Using the Library
 
 1. Download [Boost](https://www.boost.org/users/download/), and add it to your include path.
 2. If you use SSL, download [OpenSSL](https://www.openssl.org/), link the library and add it to your include path.
-3. Add Async.MQTT5's `include` folder to your include path.
+3. Add Boost.MQTT5's `include` folder to your include path.
 
 You can compile the example below with the following command line on Linux:
 
@@ -83,28 +83,28 @@ The following example illustrates a scenario of configuring a Client and publish
 "Hello World!" Application Message with `QoS` 0. 
 
 ```cpp
-#include <iostream>
+#include <boost/mqtt5/mqtt_client.hpp>
+#include <boost/mqtt5/types.hpp>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include <async_mqtt5/mqtt_client.hpp>
-#include <async_mqtt5/types.hpp>
+#include <iostream>
 
 int main() {
 	boost::asio::io_context ioc;
 
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> c(ioc);
+	boost::mqtt5::mqtt_client<boost::asio::ip::tcp::socket> c(ioc);
 
 	c.brokers("<your-mqtt-broker>", 1883)
 		.credentials("<your-client-id>", "<client-username>", "<client-pwd>")
 		.async_run(boost::asio::detached);
 
-	c.async_publish<async_mqtt5::qos_e::at_most_once>(
+	c.async_publish<boost::mqtt5::qos_e::at_most_once>(
 		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		[&c](async_mqtt5::error_code ec) {
+		boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
+		[&c](boost::mqtt5::error_code ec) {
 			std::cout << ec.message() << std::endl;
 			c.async_disconnect(boost::asio::detached); // disconnect and close the Client
 		}

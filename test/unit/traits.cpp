@@ -5,59 +5,56 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <boost/test/unit_test.hpp>
+#include <boost/mqtt5/mqtt_client.hpp>
 
-#include <string>
-#include <string_view>
-#include <type_traits>
+#include <boost/mqtt5/detail/any_authenticator.hpp>
+#include <boost/mqtt5/detail/async_traits.hpp>
 
 #include <boost/asio/async_result.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/system_executor.hpp>
-
 #include <boost/beast/websocket/stream.hpp>
-
+#include <boost/test/unit_test.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 
-#include <async_mqtt5/detail/any_authenticator.hpp>
-#include <async_mqtt5/detail/async_traits.hpp>
+#include <string>
+#include <string_view>
+#include <type_traits>
 
-#include <async_mqtt5/mqtt_client.hpp>
-
-using namespace async_mqtt5;
+using namespace boost::mqtt5;
 
 struct good_authenticator {
-	good_authenticator() = default;
+    good_authenticator() = default;
 
-	template <typename CompletionToken>
-	decltype(auto) async_auth(
-		auth_step_e step, std::string data,
-		CompletionToken&& token
-	) {
-		using error_code = boost::system::error_code;
-		using Signature = void (error_code, std::string);
+    template <typename CompletionToken>
+    decltype(auto) async_auth(
+        auth_step_e step, std::string data,
+        CompletionToken&& token
+    ) {
+        using error_code = boost::system::error_code;
+        using Signature = void (error_code, std::string);
 
-		auto initiate = [](auto, auth_step_e, std::string) {};
+        auto initiate = [](auto, auth_step_e, std::string) {};
 
-		return asio::async_initiate<CompletionToken, Signature>(
-			initiate, token, step, std::move(data)
-		);
-	}
+        return asio::async_initiate<CompletionToken, Signature>(
+            initiate, token, step, std::move(data)
+        );
+    }
 
-	std::string_view method() const {
-		return "method";
-	}
+    std::string_view method() const {
+        return "method";
+    }
 };
 
 struct bad_authenticator {
-	bad_authenticator() = default;
+    bad_authenticator() = default;
 
-	void async_auth(std::string /* data */) {}
+    void async_auth(std::string /* data */) {}
 
-	std::string_view method() const {
-		return "method";
-	}
+    std::string_view method() const {
+        return "method";
+    }
 };
 
 
@@ -109,47 +106,47 @@ BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<websocket_tcp_layer
 BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<websocket_tls_layer>, tcp_layer>);
 
 void tcp_layers_test() {
-	asio::system_executor ex;
-	tcp_layer layer(ex);
+    asio::system_executor ex;
+    tcp_layer layer(ex);
 
-	detail::next_layer_type<tcp_layer>& nlayer = detail::next_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tcp_layer>);
+    detail::next_layer_type<tcp_layer>& nlayer = detail::next_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tcp_layer>);
 
-	detail::lowest_layer_type<tcp_layer>& llayer = detail::lowest_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
+    detail::lowest_layer_type<tcp_layer>& llayer = detail::lowest_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
 }
 
 void tls_layers_test() {
-	asio::system_executor ex; 
-	asio::ssl::context ctx(asio::ssl::context::tls_client);
-	tls_layer layer(ex, ctx);
+    asio::system_executor ex; 
+    asio::ssl::context ctx(asio::ssl::context::tls_client);
+    tls_layer layer(ex, ctx);
 
-	detail::next_layer_type<tls_layer>& nlayer = detail::next_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tcp_layer>);
+    detail::next_layer_type<tls_layer>& nlayer = detail::next_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tcp_layer>);
 
-	detail::lowest_layer_type<tls_layer>& llayer = detail::lowest_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
+    detail::lowest_layer_type<tls_layer>& llayer = detail::lowest_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
 }
 
 void websocket_tcp_layers_test() {
-	asio::system_executor ex;
-	websocket_tcp_layer layer(ex);
+    asio::system_executor ex;
+    websocket_tcp_layer layer(ex);
 
-	detail::next_layer_type<websocket_tcp_layer>& nlayer = detail::next_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tcp_layer>);
+    detail::next_layer_type<websocket_tcp_layer>& nlayer = detail::next_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tcp_layer>);
 
-	detail::lowest_layer_type<websocket_tcp_layer>& llayer = detail::lowest_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
+    detail::lowest_layer_type<websocket_tcp_layer>& llayer = detail::lowest_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
 }
 
 void websocket_tls_layers_test() {
-	asio::system_executor ex;
-	asio::ssl::context ctx(asio::ssl::context::tls_client);
-	websocket_tls_layer layer(ex, ctx);
+    asio::system_executor ex;
+    asio::ssl::context ctx(asio::ssl::context::tls_client);
+    websocket_tls_layer layer(ex, ctx);
 
-	detail::next_layer_type<websocket_tls_layer>& nlayer = detail::next_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tls_layer>);
+    detail::next_layer_type<websocket_tls_layer>& nlayer = detail::next_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(nlayer)>, tls_layer>);
 
-	detail::lowest_layer_type<websocket_tls_layer>& llayer = detail::lowest_layer(layer);
-	BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
+    detail::lowest_layer_type<websocket_tls_layer>& llayer = detail::lowest_layer(layer);
+    BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
 }
