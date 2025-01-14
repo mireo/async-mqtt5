@@ -111,7 +111,7 @@ public:
     }
 
     void operator()(std::array<std::size_t, 3> /* ord */) {
-        _handler.complete(asio::error::operation_aborted);
+        _handler.complete(make_error_code(asio::error::operation_aborted));
     }
 };
 
