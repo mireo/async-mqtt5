@@ -66,7 +66,8 @@ public:
 		/// The client type when rebound to the specified executor.
 		using other = mqtt_client<
 			typename detail::rebind_executor<StreamType, Executor>::other,
-			TlsContext
+			TlsContext,
+			LoggerType
 		>;
 	};
 
