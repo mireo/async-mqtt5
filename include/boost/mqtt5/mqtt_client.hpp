@@ -45,9 +45,9 @@ namespace asio = boost::asio;
  * \tparam \__LoggerType\__ Type of object used to log events within the Client.
  *
  * \par Thread safety
- * ['Distinct objects]: safe. \n
- * ['Shared objects]: unsafe. \n
- * This class is [*not thread-safe].
+ * Distinct objects: safe. \n
+ * Shared objects: unsafe. \n
+ * This class is <b>not thread-safe</b>.
  * The application must also ensure that all asynchronous operations are performed within the same implicit or explicit strand.
  */
 template <
@@ -150,7 +150,7 @@ public:
     /**
      * \brief Destructor.
      *
-     * \details Automatically calls \ref mqtt_client::cancel.
+     * \details Automatically calls \ref cancel.
      */
     ~mqtt_client() {
         if (_impl)
@@ -192,23 +192,23 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (__ERROR_CODE__)
-     *	\endcode
+     *    \code
+     *        void (__ERROR_CODE__)
+     *    \endcode
      *
      * \par Completion condition
      * The asynchronous operation will complete with
      * `boost::asio::error::operation_aborted` when the client is cancelled by calling
-     * \ref mqtt_client::async_disconnect, \ref mqtt_client::cancel, destruction or
+     * \ref async_disconnect, \ref cancel, destruction or
      * if a non-recoverable error happens during a connection attempt (e.g. access denied).
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::asio::error::operation_aborted`\n
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::asio::error::operation_aborted`\n
      *
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref cancel \n
      */
     template <
         typename CompletionToken =
@@ -228,7 +228,7 @@ public:
      * with `boost::asio::error::operation_aborted`.
      *
      * \attention This function has terminal effects and will close the Client.
-     * The Client cannot be used before calling \ref mqtt_client::async_run again.
+     * The Client cannot be used before calling \ref async_run again.
      */
     void cancel() {
         auto impl = _impl;
@@ -297,8 +297,8 @@ public:
      * Some valid `hosts` string:
      *
      * \code
-     *		std::string valid_hosts_1 = "broker1:1883, broker2, broker3:1883";
-     *		std::string valid_hosts_2 = "broker1";
+     *        std::string valid_hosts_1 = "broker1:1883, broker2, broker3:1883";
+     *        std::string valid_hosts_2 = "broker1";
      * \endcode
      *
      */
@@ -387,7 +387,7 @@ public:
     }
 
     /**
-     * \brief Initiates [mqttlink 3901257 Re-authentication]
+     * \brief Initiates \__RE_AUTHENTICATION\__
      * using the authenticator given in the \ref authenticator method.
      *
      * \note If \ref authenticator was not called, this method does nothing.
@@ -408,8 +408,8 @@ public:
      *
      * \par Example
      * \code
-     *	std::optional<std::string> auth_method = client.connack_property(boost::mqtt5::prop::authentication_method); // ok
-     *	std::optional<std::string> c_type = client.connack_property(boost::mqtt5::prop::content_type); // does not compile, not a CONNACK prop!
+     *    std::optional<std::string> auth_method = client.connack_property(boost::mqtt5::prop::authentication_method); // ok
+     *    std::optional<std::string> c_type = client.connack_property(boost::mqtt5::prop::content_type); // does not compile, not a CONNACK prop!
      * \endcode
      *
      * \see See \__CONNACK_PROPS\__ for all eligible properties.
@@ -448,61 +448,61 @@ public:
      * \par Handler signature
      * The handler signature for this operation depends on the \ref qos_e specified:\n
      *
-     *	`qos` == `qos_e::at_most_once`:
-     *		\code
-     *			void (
-     *				__ERROR_CODE__	// Result of operation
-     *			)
-     *		\endcode
+     *    `qos` == `qos_e::at_most_once`:
+     *        \code
+     *            void (
+     *                __ERROR_CODE__    // Result of operation
+     *            )
+     *        \endcode
      *
-     *	`qos` == `qos_e::at_least_once`:
-     *		\code
-     *			void (
-     *				__ERROR_CODE__,	// Result of operation.
-     *				__REASON_CODE__,	// Reason Code received from Broker.
-     *				__PUBACK_PROPS__	// Properties received in the PUBACK packet.
-     *			)
-     *		\endcode
+     *    `qos` == `qos_e::at_least_once`:
+     *        \code
+     *            void (
+     *                __ERROR_CODE__,    // Result of operation.
+     *                __REASON_CODE__,   // Reason Code received from Broker.
+     *                __PUBACK_PROPS__   // Properties received in the PUBACK packet.
+     *            )
+     *        \endcode
      *
-     *	`qos` == `qos_e::exactly_once`:
-     *		\code
-     *			void (
-     *				__ERROR_CODE__,	// Result of operation.
-     *				__REASON_CODE__,	// Reason Code received from Broker.
-     *				__PUBCOMP_PROPS__	// Properties received in the PUBCOMP packet.
-     *			)
-     *		\endcode
+     *    `qos` == `qos_e::exactly_once`:
+     *        \code
+     *            void (
+     *                __ERROR_CODE__,    // Result of operation.
+     *                __REASON_CODE__,   // Reason Code received from Broker.
+     *                __PUBCOMP_PROPS__  // Properties received in the PUBCOMP packet.
+     *            )
+     *        \endcode
      *
-     *	\par Completion condition
-     *	Depending on the \ref qos_e specified, the asynchronous operation will complete
-     *	when one of the following conditions is true:\n
-     *		- If `qos` == `qos_e::at_most_once` and the Client
-     *		has successfully written the packet to the transport. \n
-     *		- If `qos` == `qos_e::at_least_once` and the packet has
-     *		been sent and acknowledged through the reception of a \__PUBACK\__ packet.
-     *		- If `qos` == `qos_e::exactly_once` and the packet has
-     *		been sent and fully acknowledged through the reception of a \__PUBCOMP\__ packet.
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    \par Completion condition
+     *    Depending on the \ref qos_e specified, the asynchronous operation will complete
+     *    when one of the following conditions is true:\n
+     *        - If `qos` == `qos_e::at_most_once` and the Client
+     *        has successfully written the packet to the transport. \n
+     *        - If `qos` == `qos_e::at_least_once` and the packet has
+     *        been sent and acknowledged through the reception of a \__PUBACK\__ packet.
+     *        - If `qos` == `qos_e::exactly_once` and the packet has
+     *        been sent and fully acknowledged through the reception of a \__PUBCOMP\__ packet.
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success` \n
-     *		- `boost::asio::error::operation_aborted` \n
-     *		- `boost::asio::error::no_recovery` \n
-     *		- \link boost::mqtt5::client::error::malformed_packet \endlink
-     *		- \link boost::mqtt5::client::error::packet_too_large \endlink
-     *		- \link boost::mqtt5::client::error::pid_overrun \endlink
-     *		- \link boost::mqtt5::client::error::qos_not_supported \endlink
-     *		- \link boost::mqtt5::client::error::retain_not_available \endlink
-     *		- \link boost::mqtt5::client::error::topic_alias_maximum_reached \endlink
-     *		- \link boost::mqtt5::client::error::invalid_topic \endlink
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success` \n
+     *        - `boost::asio::error::operation_aborted` \n
+     *        - `boost::asio::error::no_recovery` \n
+     *        - \ref boost::mqtt5::client::error::malformed_packet
+     *        - \ref boost::mqtt5::client::error::packet_too_large
+     *        - \ref boost::mqtt5::client::error::pid_overrun
+     *        - \ref boost::mqtt5::client::error::qos_not_supported
+     *        - \ref boost::mqtt5::client::error::retain_not_available
+     *        - \ref boost::mqtt5::client::error::topic_alias_maximum_reached
+     *        - \ref boost::mqtt5::client::error::invalid_topic
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      * 
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
-     *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__PUBLISH\__ packet \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref cancel \n
+     *        - `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__PUBLISH\__ packet \n
      *
      */
     template <qos_e qos_type, 
@@ -540,41 +540,41 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (
-     *			__ERROR_CODE__,	// Result of operation.
-     *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes indicating
-     *													// the subscription result for each Topic
-     *													// in the SUBSCRIBE packet.
-     *			__SUBACK_PROPS__,	// Properties received in the SUBACK packet.
-     *		)
-     *	\endcode
+     *    \code
+     *        void (
+     *            __ERROR_CODE__,    // Result of operation.
+     *            std::vector<__REASON_CODE__>,  // Vector of Reason Codes indicating
+     *                                           // the subscription result for each Topic
+     *                                           // in the SUBSCRIBE packet.
+     *            __SUBACK_PROPS__,  // Properties received in the SUBACK packet.
+     *        )
+     *    \endcode
      *
-     *	\par Completion condition
-     *	The asynchronous operation will complete when one of the following conditions is true:\n
-     *		- The Client has successfully sent a \__SUBSCRIBE\__ packet
-     *		and has received a \__SUBACK\__ response from the Broker.\n
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    \par Completion condition
+     *    The asynchronous operation will complete when one of the following conditions is true:\n
+     *        - The Client has successfully sent a \__SUBSCRIBE\__ packet
+     *        and has received a \__SUBACK\__ response from the Broker.\n
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success` \n
-     *		- `boost::asio::error::no_recovery` \n
-     *		- `boost::asio::error::operation_aborted` \n
-     *		- \link boost::mqtt5::client::error::malformed_packet \endlink
-     *		- \link boost::mqtt5::client::error::packet_too_large \endlink
-     *		- \link boost::mqtt5::client::error::pid_overrun \endlink
-     *		- \link boost::mqtt5::client::error::invalid_topic \endlink
-     *		- \link boost::mqtt5::client::error::wildcard_subscription_not_available \endlink
-     *		- \link boost::mqtt5::client::error::subscription_identifier_not_available \endlink
-     *		- \link boost::mqtt5::client::error::shared_subscription_not_available \endlink
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success` \n
+     *        - `boost::asio::error::no_recovery` \n
+     *        - `boost::asio::error::operation_aborted` \n
+     *        - \ref boost::mqtt5::client::error::malformed_packet
+     *        - \ref boost::mqtt5::client::error::packet_too_large
+     *        - \ref boost::mqtt5::client::error::pid_overrun
+     *        - \ref boost::mqtt5::client::error::invalid_topic
+     *        - \ref boost::mqtt5::client::error::wildcard_subscription_not_available
+     *        - \ref boost::mqtt5::client::error::subscription_identifier_not_available
+     *        - \ref boost::mqtt5::client::error::shared_subscription_not_available
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      * 
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
-     *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__SUBSCRIBE\__ packet \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+     *        - `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__SUBSCRIBE\__ packet \n
      *
      */
     template <
@@ -613,41 +613,41 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (
-     *			__ERROR_CODE__,	// Result of operation.
-     *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes containing the
-     *													// single subscription result for the Topic
-     *													// in the SUBSCRIBE packet.
-     *			__SUBACK_PROPS__,	// Properties received in the SUBACK packet.
-     *		)
-     *	\endcode
+     *    \code
+     *        void (
+     *            __ERROR_CODE__,    // Result of operation.
+     *            std::vector<__REASON_CODE__>,  // Vector of Reason Codes containing the
+     *                                           // single subscription result for the Topic
+     *                                           // in the SUBSCRIBE packet.
+     *            __SUBACK_PROPS__,  // Properties received in the SUBACK packet.
+     *        )
+     *    \endcode
      *
-     *	\par Completion condition
-     *	The asynchronous operation will complete when one of the following conditions is true:\n
-     *		- The Client has successfully sent a \__SUBSCRIBE\__ packet
-     *		and has received a \__SUBACK\__ response from the Broker.\n
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    \par Completion condition
+     *    The asynchronous operation will complete when one of the following conditions is true:\n
+     *        - The Client has successfully sent a \__SUBSCRIBE\__ packet
+     *        and has received a \__SUBACK\__ response from the Broker.\n
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success` \n
-     *		- `boost::asio::error::no_recovery` \n
-     *		- `boost::asio::error::operation_aborted` \n
-     *		- \link boost::mqtt5::client::error::malformed_packet \endlink
-     *		- \link boost::mqtt5::client::error::packet_too_large \endlink
-     *		- \link boost::mqtt5::client::error::pid_overrun \endlink
-     *		- \link boost::mqtt5::client::error::invalid_topic \endlink
-     *		- \link boost::mqtt5::client::error::wildcard_subscription_not_available \endlink
-     *		- \link boost::mqtt5::client::error::subscription_identifier_not_available \endlink
-     *		- \link boost::mqtt5::client::error::shared_subscription_not_available \endlink
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success` \n
+     *        - `boost::asio::error::no_recovery` \n
+     *        - `boost::asio::error::operation_aborted` \n
+     *        - \ref boost::mqtt5::client::error::malformed_packet
+     *        - \ref boost::mqtt5::client::error::packet_too_large
+     *        - \ref boost::mqtt5::client::error::pid_overrun
+     *        - \ref boost::mqtt5::client::error::invalid_topic
+     *        - \ref boost::mqtt5::client::error::wildcard_subscription_not_available
+     *        - \ref boost::mqtt5::client::error::subscription_identifier_not_available
+     *        - \ref boost::mqtt5::client::error::shared_subscription_not_available
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      * 
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
-     *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__SUBSCRIBE\__ packet \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+     *        - `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__SUBSCRIBE\__ packet \n
      *
      */
     template <
@@ -682,38 +682,38 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (
-     *			__ERROR_CODE__, // Result of operation.
-     *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes indicating
-     *													// the result of unsubscribe operation
-     *													// for each Topic in the UNSUBSCRIBE packet.
-     *			__UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
-     *		)
-     *	\endcode
+     *    \code
+     *        void (
+     *            __ERROR_CODE__, // Result of operation.
+     *            std::vector<__REASON_CODE__>,  // Vector of Reason Codes indicating
+     *                                           // the result of unsubscribe operation
+     *                                           // for each Topic in the UNSUBSCRIBE packet.
+     *            __UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
+     *        )
+     *    \endcode
      *
-     *	\par Completion condition
-     *	The asynchronous operation will complete when one of the following conditions is true:\n
-     *		- The Client has successfully sent an \__UNSUBSCRIBE\__ packet
-     *		and has received an \__UNSUBACK\__ response from the Broker.\n
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    \par Completion condition
+     *    The asynchronous operation will complete when one of the following conditions is true:\n
+     *        - The Client has successfully sent an \__UNSUBSCRIBE\__ packet
+     *        and has received an \__UNSUBACK\__ response from the Broker.\n
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success` \n
-     *		- `boost::asio::error::no_recovery` \n
-     *		- `boost::asio::error::operation_aborted` \n
-     *		- \link boost::mqtt5::client::error::malformed_packet \endlink
-     *		- \link boost::mqtt5::client::error::packet_too_large \endlink
-     *		- \link boost::mqtt5::client::error::pid_overrun \endlink
-     *		- \link boost::mqtt5::client::error::invalid_topic \endlink
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success` \n
+     *        - `boost::asio::error::no_recovery` \n
+     *        - `boost::asio::error::operation_aborted` \n
+     *        - \ref boost::mqtt5::client::error::malformed_packet
+     *        - \ref boost::mqtt5::client::error::packet_too_large
+     *        - \ref boost::mqtt5::client::error::pid_overrun
+     *        - \ref boost::mqtt5::client::error::invalid_topic
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      * 
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
-     *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__UNSUBSCRIBE\__ packet \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+     *        - `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__UNSUBSCRIBE\__ packet \n
      *
      */
     template <
@@ -721,7 +721,7 @@ public:
             typename asio::default_completion_token<executor_type>::type
     >
     decltype(auto) async_unsubscribe(
-        const std::vector<std::string>& topics,	const unsubscribe_props& props,
+        const std::vector<std::string>& topics,    const unsubscribe_props& props,
         CompletionToken&& token = {}
     ) {
         using Signature = void (
@@ -750,38 +750,38 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (
-     *			__ERROR_CODE__, // Result of operation.
-     *			std::vector<__REASON_CODE__>,	// Vector of Reason Codes containing
-     *													// the result of unsubscribe operation
-     *													// for the Topic in the UNSUBSCRIBE packet.
-     *			__UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
-     *		)
-     *	\endcode
+     *    \code
+     *        void (
+     *            __ERROR_CODE__, // Result of operation.
+     *            std::vector<__REASON_CODE__>,  // Vector of Reason Codes containing
+     *                                           // the result of unsubscribe operation
+     *                                           // for the Topic in the UNSUBSCRIBE packet.
+     *            __UNSUBACK_PROPS__, // Properties received in the UNSUBACK packet.
+     *        )
+     *    \endcode
      *
-     *	\par Completion condition
-     *	The asynchronous operation will complete when one of the following conditions is true:\n
-     *		- The Client has successfully sent an \__UNSUBSCRIBE\__ packet
-     *		and has received an \__UNSUBACK\__ response from the Broker.\n
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    \par Completion condition
+     *    The asynchronous operation will complete when one of the following conditions is true:\n
+     *        - The Client has successfully sent an \__UNSUBSCRIBE\__ packet
+     *        and has received an \__UNSUBACK\__ response from the Broker.\n
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success` \n
-     *		- `boost::asio::error::no_recovery` \n
-     *		- `boost::asio::error::operation_aborted` \n
-     *		- \link boost::mqtt5::client::error::malformed_packet \endlink
-     *		- \link boost::mqtt5::client::error::packet_too_large \endlink
-     *		- \link boost::mqtt5::client::error::pid_overrun \endlink
-     *		- \link boost::mqtt5::client::error::invalid_topic \endlink
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success` \n
+     *        - `boost::asio::error::no_recovery` \n
+     *        - `boost::asio::error::operation_aborted` \n
+     *        - \ref boost::mqtt5::client::error::malformed_packet
+     *        - \ref boost::mqtt5::client::error::packet_too_large
+     *        - \ref boost::mqtt5::client::error::pid_overrun
+     *        - \ref boost::mqtt5::client::error::invalid_topic
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      * 
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
-     *		- `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__UNSUBSCRIBE\__ packet \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+     *        - `cancellation_type::partial` & `cancellation_type::total` - prevents potential resending of the \__UNSUBSCRIBE\__ packet \n
      *
      */
     template <
@@ -818,34 +818,34 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (
-     *			__ERROR_CODE__, // Result of operation.
-     *			std::string,	// Topic, the origin of the Application Message.
-     *			std::string,	// Payload, the content of the Application Message.
-     *			__PUBLISH_PROPS__, // Properties received in the PUBLISH packet.
-     *		)
-     *	\endcode
+     *    \code
+     *        void (
+     *            __ERROR_CODE__, // Result of operation.
+     *            std::string,    // Topic, the origin of the Application Message.
+     *            std::string,    // Payload, the content of the Application Message.
+     *            __PUBLISH_PROPS__, // Properties received in the PUBLISH packet.
+     *        )
+     *    \endcode
      *
      * \par Completion condition
-     *	The asynchronous operation will complete when one of the following conditions is true:\n
-     *		- The Client has a pending Application Message in its internal storage
-     *		ready to be received.
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    The asynchronous operation will complete when one of the following conditions is true:\n
+     *        - The Client has a pending Application Message in its internal storage
+     *        ready to be received.
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success`\n
-     *		- `boost::asio::error::operation_aborted`\n
-     *		- \link boost::mqtt5::client::error::session_expired \endlink
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success`\n
+     *        - `boost::asio::error::operation_aborted`\n
+     *        - \ref boost::mqtt5::client::error::session_expired
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      * 
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` \n
-     *		- `cancellation_type::partial` \n
-     *		- `cancellation_type::total` \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` \n
+     *        - `cancellation_type::partial` \n
+     *        - `cancellation_type::total` \n
      */
     template <
         typename CompletionToken =
@@ -875,32 +875,32 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (
-     *			__ERROR_CODE__ // Result of operation.
-     *		)
-     *	\endcode
+     *    \code
+     *        void (
+     *            __ERROR_CODE__ // Result of operation.
+     *        )
+     *    \endcode
      *
-     *	\par Completion condition
-     *	The asynchronous operation will complete when one of the following conditions is true:\n
-     *		- The Client has sent a \__DISCONNECT\__ packet.\n
-     *		- 5 seconds have elapsed without a successful send.\n
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    \par Completion condition
+     *    The asynchronous operation will complete when one of the following conditions is true:\n
+     *        - The Client has sent a \__DISCONNECT\__ packet.\n
+     *        - 5 seconds have elapsed without a successful send.\n
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success`\n
-     *		- `boost::asio::error::operation_aborted`[footnote
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success`\n
+     *        - `boost::asio::error::operation_aborted`[footnote
                 This error code can appear if the Client fails to send the \__DISCONNECT\__ packet to the Server.
                 Regardless, the connection to the Server is terminated, and the Client is cancelled.
             ]\n
-     *		- \link boost::mqtt5::client::error::malformed_packet \endlink
+     *        - \ref boost::mqtt5::client::error::malformed_packet
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      * 
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
      * 
      */
     template <
@@ -937,32 +937,32 @@ public:
      *
      * \par Handler signature
      * The handler signature for this operation:
-     *	\code
-     *		void (
-     *			__ERROR_CODE__ // Result of operation.
-     *		)
-     *	\endcode
+     *    \code
+     *        void (
+     *            __ERROR_CODE__ // Result of operation.
+     *        )
+     *    \endcode
      *
-     *	\par Completion condition
-     *	The asynchronous operation will complete when one of the following conditions is true:\n
-     *		- The Client has attempted to send a \__DISCONNECT\__ packet, regardless of whether
-     *		the sending was successful or not.\n
-     *		- An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
+     *    \par Completion condition
+     *    The asynchronous operation will complete when one of the following conditions is true:\n
+     *        - The Client has attempted to send a \__DISCONNECT\__ packet, regardless of whether
+     *        the sending was successful or not.\n
+     *        - An error occurred. This is indicated by an associated \__ERROR_CODE\__ in the handler.\n
      *
-     *	\par Error codes
-     *	The list of all possible error codes that this operation can finish with:\n
-     *		- `boost::system::errc::errc_t::success`\n
-     *		- `boost::asio::error::operation_aborted`[footnote
+     *    \par Error codes
+     *    The list of all possible error codes that this operation can finish with:\n
+     *        - `boost::system::errc::errc_t::success`\n
+     *        - `boost::asio::error::operation_aborted`[footnote
                 This error code can appear if the Client fails to send the \__DISCONNECT\__ packet to the Server.
                 Regardless, the connection to the Server is terminated, and the Client is cancelled.
             ]\n
-     *		- \link boost::mqtt5::client::error::malformed_packet \endlink
+     *        - \ref boost::mqtt5::client::error::malformed_packet
      *
      * Refer to the section on \__ERROR_HANDLING\__ to find the underlying causes for each error code.
      *
-     *	\par Per-Operation Cancellation
-     *	This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
-     *		- `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
+     *    \par Per-Operation Cancellation
+     *    This asynchronous operation supports cancellation for the following \__CANCELLATION_TYPE\__ values:\n
+     *        - `cancellation_type::terminal` - invokes \ref mqtt_client::cancel \n
      */
     template <
         typename CompletionToken =

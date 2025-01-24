@@ -74,16 +74,16 @@ This will guarantee that the entire sequence of operations
 is carried out within the strand, thereby ensuring thread safety.
 
 [important
-	To conclude, to achieve thread safety,
-	all the member functions of the __Client__ *must* be executed in *the same strand*.
-	This strand must be given in the __Client__ constructor.
+    To conclude, to achieve thread safety,
+    all the member functions of the __Client__ *must* be executed in *the same strand*.
+    This strand must be given in the __Client__ constructor.
 ]
 
 The examples below demonstrate how to publish a "Hello World" Application Message
 in a multithreaded setting using callbacks (`post`/`dispatch`) and coroutines (`co_spawn`):
 
-* [link async_mqtt5.hello_world_in_multithreaded_env hello_world_in_multithreaded_env.cpp]
-* [link async_mqtt5.hello_world_in_coro_multithreaded_env hello_world_in_coro_multithreaded_env.cpp]
+* [link mqtt5.hello_world_in_multithreaded_env hello_world_in_multithreaded_env.cpp]
+* [link mqtt5.hello_world_in_coro_multithreaded_env hello_world_in_coro_multithreaded_env.cpp]
 
 
 [endsect] [/thread_safe_code]

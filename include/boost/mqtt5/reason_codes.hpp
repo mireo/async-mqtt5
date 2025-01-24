@@ -35,14 +35,14 @@ enum class category : uint8_t {
  * \brief A class holding Reason Code values originating from Control Packets.
  *
  * \details A Reason Code is a one byte unsigned value that indicates the result of an operation.
- *	Reason Codes less than 0x80 indicate successful completion of an operation.
- *	The normal Reason Code for success is 0.
- *	Reason Code values of 0x80 or greater indicate failure.
- *	The \__CONNACK\__,  \__PUBACK\__,  \__PUBREC\__,  \__PUBREL\__,  \__PUBCOMP\__,  \__DISCONNECT\__
- *	and  \__AUTH\__ Control Packets have a single Reason Code as part of the Variable Header.
- *	The \__SUBACK\__ and \__UNSUBACK\__ packets contain a list of one or more Reason Codes in the Payload.
+ *    Reason Codes less than 0x80 indicate successful completion of an operation.
+ *    The normal Reason Code for success is 0.
+ *    Reason Code values of 0x80 or greater indicate failure.
+ *    The \__CONNACK\__,  \__PUBACK\__,  \__PUBREC\__,  \__PUBREL\__,  \__PUBCOMP\__,  \__DISCONNECT\__
+ *    and  \__AUTH\__ Control Packets have a single Reason Code as part of the Variable Header.
+ *    The \__SUBACK\__ and \__UNSUBACK\__ packets contain a list of one or more Reason Codes in the Payload.
  *
- *	\see See \__REASON_CODES\__ for a complete list of all possible instances of this class.
+ *    \see See \__REASON_CODES\__ for a complete list of all possible instances of this class.
  */
 class reason_code {
     uint8_t _code;
@@ -204,150 +204,150 @@ public:
 
 namespace reason_codes {
 
-/** No Reason Code. A \ref client::error occurred.*/
+/** \brief  No Reason Code. A \ref client::error occurred.*/
 constexpr reason_code empty {};
 
-/** The operation completed successfully. */
+/** \brief The operation completed successfully. */
 constexpr reason_code success { 0x00 };
 
-/** Close the connection normally. Do not send the Will Message. */
+/** \brief Close the connection normally. Do not send the Will Message. */
 constexpr reason_code normal_disconnection { 0x00, category::disconnect };
 
-/** The subscription is accepted with maximum QoS sent at 0. */
+/** \brief The subscription is accepted with maximum QoS sent at 0. */
 constexpr reason_code granted_qos_0 { 0x00, category::suback };
 
-/** The subscription is accepted with maximum QoS sent at 1. */
+/** \brief The subscription is accepted with maximum QoS sent at 1. */
 constexpr reason_code granted_qos_1 { 0x01 };
 
-/** The subscription is accepted with maximum QoS sent at 2 */
+/** \brief The subscription is accepted with maximum QoS sent at 2 */
 constexpr reason_code granted_qos_2 { 0x02 };
 
-/** The Client wishes to disconnect but requires that
+/** \brief The Client wishes to disconnect but requires that
  the Server also publishes its Will Message. */
 constexpr reason_code disconnect_with_will_message { 0x04 };
 
-/** The message is accepted but there are no subscribers. */
+/** \brief The message is accepted but there are no subscribers. */
 constexpr reason_code no_matching_subscribers { 0x10 };
 
-/** No matching Topic Filter is being used by the Client. */
+/** \brief No matching Topic Filter is being used by the Client. */
 constexpr reason_code no_subscription_existed { 0x11 };
 
-/** Continue the authentication with another step. */
+/** \brief Continue the authentication with another step. */
 constexpr reason_code continue_authentication { 0x18 };
 
-/** Initiate a re-authentication. */
+/** \brief Initiate a re-authentication. */
 constexpr reason_code reauthenticate { 0x19 };
 
-/** The Server does not wish to reveal the reason for the
+/** \brief The Server does not wish to reveal the reason for the
  failure or none of the other Reason Codes apply. */
 constexpr reason_code unspecified_error { 0x80 };
 
-/** Data within the packet could not be correctly parsed. */
+/** \brief Data within the packet could not be correctly parsed. */
 constexpr reason_code malformed_packet { 0x81 };
 
-/** Data in the packet does not conform to this specification. */
+/** \brief Data in the packet does not conform to this specification. */
 constexpr reason_code protocol_error { 0x82 };
 
-/** The packet is valid but not accepted by this Server. */
+/** \brief The packet is valid but not accepted by this Server. */
 constexpr reason_code implementation_specific_error { 0x83 };
 
-/** The Server does not support the requested version of the MQTT protocol. */
+/** \brief The Server does not support the requested version of the MQTT protocol. */
 constexpr reason_code unsupported_protocol_version { 0x84 };
 
-/** The Client ID is valid but not allowed by this Server. */
+/** \brief The Client ID is valid but not allowed by this Server. */
 constexpr reason_code client_identifier_not_valid { 0x85 };
 
-/** The Server does not accept the User Name or Password provided. */
+/** \brief The Server does not accept the User Name or Password provided. */
 constexpr reason_code bad_username_or_password { 0x86 };
 
-/** The request is not authorized. */
+/** \brief The request is not authorized. */
 constexpr reason_code not_authorized { 0x87 };
 
-/** The MQTT Server is not available. */
+/** \brief The MQTT Server is not available. */
 constexpr reason_code server_unavailable { 0x88 };
 
-/** The MQTT Server is busy, try again later. */
+/** \brief The MQTT Server is busy, try again later. */
 constexpr reason_code server_busy { 0x89 };
 
-/** The Client has been banned by administrative action. */
+/** \brief The Client has been banned by administrative action. */
 constexpr reason_code banned { 0x8a };
 
-/** The Server is shutting down. */
+/** \brief The Server is shutting down. */
 constexpr reason_code server_shutting_down { 0x8b };
 
-/** The authentication method is not supported or
+/** \brief The authentication method is not supported or
  does not match the method currently in use. */
 constexpr reason_code bad_authentication_method { 0x8c };
 
-/** No packet has been received for 1.5 times the Keepalive time. */
+/** \brief No packet has been received for 1.5 times the Keepalive time. */
 constexpr reason_code keep_alive_timeout { 0x8d };
 
-/** Another Connection using the same ClientID has connected
+/** \brief Another Connection using the same ClientID has connected
  causing this Connection to be closed. */
 constexpr reason_code session_taken_over { 0x8e };
 
-/** The Topic Filter is not malformed, but it is not accepted. */
+/** \brief The Topic Filter is not malformed, but it is not accepted. */
 constexpr reason_code topic_filter_invalid { 0x8f };
 
-/** The Topic Name is not malformed, but it is not accepted. */
+/** \brief The Topic Name is not malformed, but it is not accepted. */
 constexpr reason_code topic_name_invalid { 0x90 };
 
-/** The Packet Identifier is already in use. */
+/** \brief The Packet Identifier is already in use. */
 constexpr reason_code packet_identifier_in_use { 0x91 };
 
-/** The Packet Identifier is not known. */
+/** \brief The Packet Identifier is not known. */
 constexpr reason_code packet_identifier_not_found { 0x92 };
 
-/** The Client or Server has received more than the Receive
+/** \brief The Client or Server has received more than the Receive
  Maximum publication for which it has not sent PUBACK or PUBCOMP. */
 constexpr reason_code receive_maximum_exceeded { 0x93 };
 
-/** The Client or Server received a PUBLISH packet containing
+/** \brief The Client or Server received a PUBLISH packet containing
  a Topic Alias greater than the Maximum Topic Alias. */
 constexpr reason_code topic_alias_invalid { 0x94 };
 
-/** The packet exceeded the maximum permissible size. */
+/** \brief The packet exceeded the maximum permissible size. */
 constexpr reason_code packet_too_large { 0x95 };
 
-/** The received data rate is too high. */
+/** \brief The received data rate is too high. */
 constexpr reason_code message_rate_too_high { 0x96 };
 
-/** An implementation or administrative imposed limit has been exceeded. */
+/** \brief An implementation or administrative imposed limit has been exceeded. */
 constexpr reason_code quota_exceeded { 0x97 };
 
-/** The Connection is closed due to an administrative action. */
+/** \brief The Connection is closed due to an administrative action. */
 constexpr reason_code administrative_action { 0x98 };
 
-/** The Payload does not match the specified Payload Format Indicator. */
+/** \brief The Payload does not match the specified Payload Format Indicator. */
 constexpr reason_code payload_format_invalid { 0x99 };
 
-/** The Server does not support retained messages. */
+/** \brief The Server does not support retained messages. */
 constexpr reason_code retain_not_supported { 0x9a };
 
-/** The Server does not support the QoS the Client specified or
+/** \brief The Server does not support the QoS the Client specified or
  it is greater than the Maximum QoS specified. */
 constexpr reason_code qos_not_supported { 0x9b };
 
-/** The Client should temporarily use another server. */
+/** \brief The Client should temporarily use another server. */
 constexpr reason_code use_another_server { 0x9c };
 
-/** The Client should permanently use another server. */
+/** \brief The Client should permanently use another server. */
 constexpr reason_code server_moved { 0x9d };
 
-/** The Server does not support Shared Subscriptions for this Client. */
+/** \brief The Server does not support Shared Subscriptions for this Client. */
 constexpr reason_code shared_subscriptions_not_supported { 0x9e };
 
-/** The connection rate limit has been exceeded. */
+/** \brief The connection rate limit has been exceeded. */
 constexpr reason_code connection_rate_exceeded { 0x9f };
 
-/** The maximum connection time authorized for this
+/** \brief The maximum connection time authorized for this
  connection has been exceeded. */
 constexpr reason_code maximum_connect_time { 0xa0 };
 
-/** The Server does not support Subscription Identifiers. */
+/** \brief The Server does not support Subscription Identifiers. */
 constexpr reason_code subscription_ids_not_supported { 0xa1 };
 
-/** The Server does not support Wildcard Subscriptions. */
+/** \brief The Server does not support Wildcard Subscriptions. */
 constexpr reason_code wildcard_subscriptions_not_supported { 0xa2 };
 
 namespace detail {

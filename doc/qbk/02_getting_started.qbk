@@ -31,11 +31,11 @@ which might be required for establishing a secure connection.
 In this example, we choose TCP/IP as the underlying protocol to initialize the __Client__.
 
 [!c++]
-	// Initialize the execution context required to run I/O operations.
-	boost::asio::io_context ioc;
-	
-	// Construct the Client with ``__TCP_SOCKET__`` as the underlying stream.
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
+    // Initialize the execution context required to run I/O operations.
+    boost::asio::io_context ioc;
+    
+    // Construct the Client with ``__TCP_SOCKET__`` as the underlying stream.
+    boost::mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
 
 [endsect] [/transport_protocol]
 
@@ -90,7 +90,7 @@ If this connection attempt is unsuccessful, it proceeds to the next Broker in or
 Upon reaching the end of the list without a successful connection, the __Client__ enters a backoff period before making another round of attempts with the entire list. 
 The duration of this backoff period in milliseconds is determined by the formula:
 
-	2^(min(retry_count, 4)) * 1000 + jitter
+    2^(min(retry_count, 4)) * 1000 + jitter
 
 In this formula, `retry_count` represents the number of complete cycles through the list without a successful connection,
 and `jitter` is a randomly chosen value between `-500ms` to `500ms`, intended to prevent synchronised reconnection attempts in scenarios with multiple clients.
@@ -106,13 +106,13 @@ In this case, we will publish a "Hello World!" message to `async-mqtt5/test` top
 
 You can find the full program listing for this chapter at the link below:
 
-* [link async_mqtt5.hello_world_over_tcp hello_world_over_tcp.cpp]
+* [link mqtt5.hello_world_over_tcp hello_world_over_tcp.cpp]
 
 Additional "Hello World!" examples for different underlying transport protocols can be found here:
 
-* [link async_mqtt5.hello_world_over_tls hello_world_over_tls.cpp]
-* [link async_mqtt5.hello_world_over_websocket_tcp hello_world_over_websocket_tcp.cpp]
-* [link async_mqtt5.hello_world_over_websocket_tls hello_world_over_websocket_tls.cpp]
+* [link mqtt5.hello_world_over_tls hello_world_over_tls.cpp]
+* [link mqtt5.hello_world_over_websocket_tcp hello_world_over_websocket_tcp.cpp]
+* [link mqtt5.hello_world_over_websocket_tls hello_world_over_websocket_tls.cpp]
 
 [endsect] [/using_the_client]
 
@@ -121,7 +121,7 @@ Additional "Hello World!" examples for different underlying transport protocols 
 If you encounter configuration or connection issues, you can use our logging mechanism to debug problems.
 The __Client__ introduces a __LoggerType__ as its third template parameter, which specifies the type used for logging events within the __Client__.
 
-The __Self__ library provides a built-in [ghreflink include/async_mqtt5/logger.hpp logger] implementation that outputs operation results to stderr.
+The __Self__ library provides a built-in [ghreflink include/boost/mqtt5/logger.hpp logger] implementation that outputs operation results to stderr.
 This logger outputs detailed information about each step in the connection process, including DNS resolution, TCP connection, TLS handshake, WebSocket handshake, and MQTT handshake.
 To enable this functionality, construct the __Client__ with an instance of this logger class:
 

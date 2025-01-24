@@ -54,9 +54,9 @@ enum class log_level : uint8_t {
  * implicit strand, none of the functions will be invoked concurrently.
  * 
  * \par Thread safety
- * ['Distinct objects]: unsafe. \n
- * ['Shared objects]: unsafe. \n
- * This class is [*not thread-safe].
+ * Distinct objects: usafe. \n
+ * Shared objects: unsafe. \n
+ * This class is <b>not thread-safe</b>.
 */
 class logger {
     constexpr static auto prefix = "[Boost.MQTT5]";

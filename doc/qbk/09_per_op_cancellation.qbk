@@ -42,25 +42,25 @@ In such cases, the cancellation would specifically target resending the __PUBLIS
 preventing it from being retransmitted should the client reconnect during the ongoing operation.
 
 ```
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
-	
-	client.brokers("<your-mqtt-broker>", 1883)
-		.async_run(boost::asio::detached);
-	
-	boost::asio::cancellation_signal signal;
+    boost::mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
+    
+    client.brokers("<your-mqtt-broker>", 1883)
+        .async_run(boost::asio::detached);
+    
+    boost::asio::cancellation_signal signal;
 
-	client.async_publish<async_mqtt5::qos_e::at_least_once>(
-		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		boost::asio::bind_cancellation_slot(
-			signal.slot(),
-			[&client](async_mqtt5::error_code ec, async_mqtt5::reason_code rc, async_mqtt5::puback_props props ) {
-				std::cout << ec.message() << std::endl;
-			}
-		)
-	);
+    client.async_publish<boost::mqtt5::qos_e::at_least_once>(
+        "<topic>", "Hello world!",
+        boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
+        boost::asio::bind_cancellation_slot(
+            signal.slot(),
+            [&client](boost::mqtt5::error_code ec, boost::mqtt5::reason_code rc, boost::mqtt5::puback_props props ) {
+                std::cout << ec.message() << std::endl;
+            }
+        )
+    );
 
-	signal.emit(boost::asio::cancellation_type_t::terminal);
+    signal.emit(boost::asio::cancellation_type_t::terminal);
 ```
 
 [section:parallel_group parallel_group/operator || and asynchronous functions in the mqtt_client]
@@ -70,8 +70,8 @@ This feature is especially beneficial for executing operations that require a ti
 
 Below are two examples illustrating how to implement a timeout:
 
-* [link async_mqtt5.timeout_with_parallel_group timeout_with_parallel_group.cpp]
-* [link async_mqtt5.timeout_with_awaitable_operators timeout_with_awaitable_operators.cpp]
+* [link mqtt5.timeout_with_parallel_group timeout_with_parallel_group.cpp]
+* [link mqtt5.timeout_with_awaitable_operators timeout_with_awaitable_operators.cpp]
 
 [endsect] [/parallel_group]
 

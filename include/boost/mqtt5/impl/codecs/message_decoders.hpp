@@ -83,7 +83,7 @@ inline std::optional<connect_message> decode_connect(
         basic::utf8_ >> // client_id
         basic::if_(has_will)[prop::props_<will_props>] >>
         basic::if_(has_will)[basic::utf8_] >> // will topic
-     	basic::if_(has_will)[basic::binary_] >>  // will message
+        basic::if_(has_will)[basic::binary_] >> // will message
         basic::if_(has_uname)[basic::utf8_] >> // username
         basic::if_(has_pwd)[basic::utf8_]; // password
 
@@ -266,7 +266,7 @@ inline std::optional<unsuback_message> decode_unsuback(
     uint32_t remain_length, byte_citer& it
 ) {
     auto unsuback_ = basic::scope_limit_(remain_length)[
-        prop::props_<unsuback_props> >>	+x3::byte_
+        prop::props_<unsuback_props> >> +x3::byte_
     ];
     return type_parse(it, it + remain_length, unsuback_);
 }

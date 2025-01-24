@@ -322,9 +322,9 @@ public:
 
         //  Unexpected result handling:
         //  - If we don't have a Session State, and we get session_present = true,
-        //	  we must close the network connection (and restart with a clean start)
+        //      we must close the network connection (and restart with a clean start)
         //  - If we have a Session State, and we get session_present = false,
-        //	  we must discard our Session State
+        //      we must discard our Session State
 
         auto rc = to_reason_code<reason_codes::category::connack>(reason_code);
         if (!rc.has_value()) // reason code not allowed in CONNACK

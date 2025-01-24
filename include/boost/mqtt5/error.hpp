@@ -23,10 +23,10 @@ namespace boost::mqtt5 {
  * in the \__DISCONNECT\__ packet as the reason for the disconnection.
  */
 enum class disconnect_rc_e : uint8_t {
-    /** Close the connection normally. Do not send the Will Message. */
+    /** \brief Close the connection normally. Do not send the Will Message. */
     normal_disconnection = 0x00,
 
-    /** The Client wishes to disconnect but requires that
+    /** \brief The Client wishes to disconnect but requires that
      the Server also publishes its Will Message. */
     disconnect_with_will_message = 0x04
 };
@@ -61,39 +61,39 @@ namespace client {
  * \details Encapsulates errors that occur on the client side.
  */
 enum class error : int {
-    /** The packet is malformed */
+    /** \brief The packet is malformed */
     malformed_packet = 100,
 
-    /** The packet has exceeded the Maximum Packet Size the Server is willing to accept */
+    /** \brief The packet has exceeded the Maximum Packet Size the Server is willing to accept */
     packet_too_large,
 
-    /** The Client's session does not exist or it has expired */
+    /** \brief The Client's session does not exist or it has expired */
     session_expired,
 
-    /** There are no more available Packet Identifiers to use */
+    /** \brief There are no more available Packet Identifiers to use */
     pid_overrun,
 
-    /** The Topic is invalid and does not conform to the specification */
+    /** \brief The Topic is invalid and does not conform to the specification */
     invalid_topic,
 
     // publish
-    /** The Server does not support the specified \ref qos_e */
+    /** \brief The Server does not support the specified \ref qos_e */
     qos_not_supported,
 
-    /** The Server does not support retained messages */
+    /** \brief The Server does not support retained messages */
     retain_not_available,
 
-    /** The Client attempted to send a Topic Alias that is greater than Topic Alias Maximum */
+    /** \brief The Client attempted to send a Topic Alias that is greater than Topic Alias Maximum */
     topic_alias_maximum_reached,
 
     // subscribe
-    /** The Server does not support Wildcard Subscriptions */
+    /** \brief The Server does not support Wildcard Subscriptions */
     wildcard_subscription_not_available,
 
-    /** The Server does not support this Subscription Identifier */
+    /** \brief The Server does not support this Subscription Identifier */
     subscription_identifier_not_available,
 
-    /** The Server does not support Shared Subscriptions */
+    /** \brief The Server does not support Shared Subscriptions */
     shared_subscription_not_available
 };
 

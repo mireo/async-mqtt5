@@ -61,7 +61,7 @@ inline std::string encode_connect(
         basic::utf8_(client_id) &
         prop::props_(w) &
         basic::utf8_(w, &will::topic) &
-     	basic::binary_(w, &will::message) &
+        basic::binary_(w, &will::message) &
         basic::utf8_(user_name) &
         basic::utf8_(password);
 

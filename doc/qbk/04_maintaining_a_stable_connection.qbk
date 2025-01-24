@@ -33,9 +33,9 @@ Use [refmem mqtt_client keep_alive] function during the __Client__ configuration
 Otherwise, the __Client__ defaults to a `Keep Alive` period of `60 seconds`.
 
 [note
-	The MQTT protocol does not use the TCP's built-in keep-alive mechanism as it is inflexible and limited in that it can be configured solely at the operating system level.
-	The default time a connection must be idle before sending the first keep-alive packet is typically set to 2 hours,
-	exceeding the tolerances of most MQTT applications.
+    The MQTT protocol does not use the TCP's built-in keep-alive mechanism as it is inflexible and limited in that it can be configured solely at the operating system level.
+    The default time a connection must be idle before sending the first keep-alive packet is typically set to 2 hours,
+    exceeding the tolerances of most MQTT applications.
 ]
 
 [endsect] [/keep_alive]
@@ -80,7 +80,7 @@ to receive some data
 [footnote The __Client__ is not required to specifically receive __PINGRESP__ to its __PINGREQ__. Any data from the Broker will suffice to confirm its status.]
 from the Broker within `1.5` times the negotiated `Keep Alive` seconds.
 If no data is received within this time, the __Client__ will assume a half-open state and initiate a reconnect procedure
-described in the [link async_mqtt5.auto_reconnect Built-in auto-reconnect and retry mechanism].
+described in the [link mqtt5.auto_reconnect Built-in auto-reconnect and retry mechanism].
 
 [important If the negotiated `Keep Alive` value is set to `0`, the timeout mechanism to detect a half-open connection
 is disabled. As a result, the __Client__ loses its capability to identify and adequately respond to half-open scenarios.]

@@ -25,8 +25,6 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/steady_timer.hpp>
 
-#include <boost/mysql/any_connection.hpp>
-
 #include <chrono>
 #include <iostream>
 #include <string>

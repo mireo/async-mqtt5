@@ -31,27 +31,27 @@ which is used to execute the [refmem mqtt_client async_publish] operation.
 
 ```
 int main() {
-	boost::asio::io_context ioc;
+    boost::asio::io_context ioc;
 
-	// Construct the Client with a strand.
-	auto strand = boost::asio::make_strand(ioc.get_executor());
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(strand);
+    // Construct the Client with a strand.
+    auto strand = boost::asio::make_strand(ioc.get_executor());
+    boost::mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(strand);
 
-	client.brokers("<your-mqtt-broker>", 1883)
-		.async_run(boost::asio::detached);
+    client.brokers("<your-mqtt-broker>", 1883)
+        .async_run(boost::asio::detached);
 
-	// This asynchronous operation will use the default associated executor,
-	// which is the strand with which the Client is constructed.
-	client.async_publish<async_mqtt5::qos_e::at_most_once>(
-		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		[&client, &strand](async_mqtt5::error_code /* ec */) {
-			assert(strand.running_in_this_thread());
-			client.cancel();
-		}
-	);
+    // This asynchronous operation will use the default associated executor,
+    // which is the strand with which the Client is constructed.
+    client.async_publish<boost::mqtt5::qos_e::at_most_once>(
+        "<topic>", "Hello world!",
+        boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
+        [&client, &strand](boost::mqtt5::error_code /* ec */) {
+            assert(strand.running_in_this_thread());
+            client.cancel();
+        }
+    );
 
-	ioc.run();
+    ioc.run();
 }
 
 ```

@@ -35,7 +35,7 @@ It is important to note that there is no guarantee that the final handlers will 
 in the same order as the corresponding `async_xxx` calls were initiated.
 
 [import ../../example/multiflight_client.cpp]
-Source: [link async_mqtt5.multiflight_client multiflight_client.cpp]
+Source: [link mqtt5.multiflight_client multiflight_client.cpp]
 [multiflight_client]
 
 [endsect] [/multiflight]
@@ -56,7 +56,7 @@ __Client__ evaluates the current count of unacknowledged __PUBLISH__ packets aga
 If the count is below this threshold, __Client__ dispatches the __PUBLISH__ packet.
 Otherwise, it remains in the queue until the count decreases below the threshold.
 
-As a result, in the [link async_mqtt5.multiflight_client multiflight_client.cpp] example,
+As a result, in the [link mqtt5.multiflight_client multiflight_client.cpp] example,
 the __Client__ will transmit all `5` __PUBLISH__ packets in a single TCP packet
 if possible [footnote The Broker's `Receive Maximum` is equal to or greater than `5`.].
 
@@ -75,7 +75,7 @@ A Broker can set this value to limit the number of simultaneous QoS > 0 messages
 potentially causing QoS 0 messages to be transmitted ahead of QoS > 0 messages in the delivery order.
 
 - The __DISCONNECT__ packet is sent *in a single TCP packet before any other packets* in the queue.
-See [link async_mqtt5.disconnecting_the_client Disconnecting the client] for more information about disconnecting.
+See [link mqtt5.disconnecting_the_client Disconnecting the client] for more information about disconnecting.
 
 [endsect] [/packet_ordering]
 

@@ -15,11 +15,11 @@ Every asynchronous operation in __Asio__ has associated characteristics that spe
 This section expands further into the roles of allocators,
 cancellation slots, and executors, highlighting their integration and usage within the __Client__.
 
-* See [link async_mqtt5.asio_compliance.allocators Allocators] for more information about how the 
+* See [link mqtt5.asio_compliance.allocators Allocators] for more information about how the 
 __Client__ supports and uses associated allocators.
-* See [link async_mqtt5.asio_compliance.per_op_cancellation Per-Operation Cancellation] for more information about how
+* See [link mqtt5.asio_compliance.per_op_cancellation Per-Operation Cancellation] for more information about how
 asynchronous operations within the __Client__ support cancellation.
-* See [link async_mqtt5.asio_compliance.executors Executors] for more information about executors.
+* See [link mqtt5.asio_compliance.executors Executors] for more information about executors.
 
 [include 08_allocators.qbk]
 [include 09_per_op_cancellation.qbk]

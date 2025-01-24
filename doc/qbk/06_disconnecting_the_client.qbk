@@ -38,23 +38,23 @@ followed by the request to disconnect the __Client__.
 
 ```
 int main() {
-	boost::asio::io_context ioc;
+    boost::asio::io_context ioc;
 
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
-	client.brokers("<your-mqtt-broker>", 1883)
-		.async_run(boost::asio::detached);
+    boost::mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
+    client.brokers("<your-mqtt-broker>", 1883)
+        .async_run(boost::asio::detached);
 
-	client.async_publish<async_mqtt5::qos_e::at_most_once>(
-		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		[](async_mqtt5::error_code ec) {
-			std::cout << ec.message() << std::endl;
-		}
-	);
-	
-	client.async_disconnect(boost::asio::detached);
+    client.async_publish<boost::mqtt5::qos_e::at_most_once>(
+        "<topic>", "Hello world!",
+        boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
+        [](boost::mqtt5::error_code ec) {
+            std::cout << ec.message() << std::endl;
+        }
+    );
+    
+    client.async_disconnect(boost::asio::detached);
 
-	ioc.run();
+    ioc.run();
 }
 ```
 
@@ -65,7 +65,7 @@ order of events will unfold:
 # The Client will send a __DISCONNECT__ packet with Reason Code `0x00` (`Normal Disconnection`).
 
 It is important to note that the __PUBLISH__ packet containing the "Hello World!" message will not be transmitted.
-As outlined in the `Packet Ordering` in [link async_mqtt5.optimising_communication Optimising communication] section,
+As outlined in the `Packet Ordering` in [link mqtt5.optimising_communication Optimising communication] section,
 [refmem mqtt_client async_publish] and [refmem mqtt_client async_disconnect] will place their corresponding
 packets in the queue. However, __DISCONNECT__ packets are prioritised and sent exclusively, ahead of other queued packets.
 Therefore, the connection will terminate immediately.
@@ -80,14 +80,14 @@ In this case, the proper way to disconnect would be to call [refmem mqtt_client 
 [refmem mqtt_client async_publish] has been completed.
 
 ```
-	client.async_publish<async_mqtt5::qos_e::at_most_once>(
-		"<topic>", "Hello world!",
-		async_mqtt5::retain_e::no, async_mqtt5::publish_props {},
-		[&client](async_mqtt5::error_code ec) {
-			std::cout << ec.message() << std::endl;
-			client.async_disconnect(boost::asio::detached);
-		}
-	);
+    client.async_publish<boost::mqtt5::qos_e::at_most_once>(
+        "<topic>", "Hello world!",
+        boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
+        [&client](boost::mqtt5::error_code ec) {
+            std::cout << ec.message() << std::endl;
+            client.async_disconnect(boost::asio::detached);
+        }
+    );
 ```
 
 [section:reusing_the_client Restarting the Client After Disconnection]
@@ -96,26 +96,26 @@ Once the __Client__ has been successfully stopped, reactivating it is straightfo
 This method can be called right after initiating [refmem mqtt_client async_disconnect], without waiting for it to complete.
 
 The __Client__ is configurable again in the interval between stopping and restarting.
-See [link async_mqtt5.getting_started.configuration Configuring Your MQTT Connection] for more information.
+See [link mqtt5.getting_started.configuration Configuring Your MQTT Connection] for more information.
 
 ```
 int main() {
-	boost::asio::io_context ioc;
+    boost::asio::io_context ioc;
 
-	async_mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
-	client.brokers("<your-mqtt-broker>", 1883)
-		.async_run(boost::asio::detached);
+    boost::mqtt5::mqtt_client<boost::asio::ip::tcp::socket> client(ioc);
+    client.brokers("<your-mqtt-broker>", 1883)
+        .async_run(boost::asio::detached);
 
-	client.async_disconnect(boost::asio::detached);
+    client.async_disconnect(boost::asio::detached);
 
-	// The Client can be reconfigured again.
-	client.connect_property(async_mqtt5::prop::session_expiry_interval, 120)
-		.keep_alive(30)
-		.async_run(boost::asio::detached); // Restart the Client again.
+    // The Client can be reconfigured again.
+    client.connect_property(boost::mqtt5::prop::session_expiry_interval, 120)
+        .keep_alive(30)
+        .async_run(boost::asio::detached); // Restart the Client again.
 
-	// Use the Client...
+    // Use the Client...
 
-	ioc.run();
+    ioc.run();
 }
 ```
 

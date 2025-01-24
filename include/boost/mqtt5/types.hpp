@@ -17,7 +17,7 @@
 
 namespace boost::mqtt5 {
 
-/** An alias for `boost::system::error_code`. */
+/// An alias for `boost::system::error_code`.
 using error_code = boost::system::error_code;
 
 /**
@@ -25,13 +25,13 @@ using error_code = boost::system::error_code;
  * such as the hostname, port, and path.
  */
 struct authority_path {
-    /** The hostname of the authority as a domain name or an IP address. */
+    /** \brief The hostname of the authority as a domain name or an IP address. */
     std::string host;
 
-    /** The port number used for communication. */
+    /** \brief The port number used for communication. */
     std::string port;
 
-    /** Specifies the endpoint path relevant to WebSocket connections. */
+    /** \brief Specifies the endpoint path relevant to WebSocket connections. */
     std::string path;
 };
 
@@ -43,13 +43,13 @@ struct authority_path {
  * from the sender to the receiver.
  */
 enum class qos_e : std::uint8_t {
-    /** The message arrives at the receiver either once or not at all. */
+    /** \brief The message arrives at the receiver either once or not at all. */
     at_most_once = 0b00,
 
-    /** Ensures the message arrives at the receiver at least once. */
+    /** \brief Ensures the message arrives at the receiver at least once. */
     at_least_once = 0b01,
 
-    /** All messages arrive at the receiver exactly once without
+    /** \brief All messages arrive at the receiver exactly once without
      loss or duplication of the messages. */
     exactly_once = 0b10
 };
@@ -61,15 +61,14 @@ enum class qos_e : std::uint8_t {
  * store the current message.
  */
 enum class retain_e : std::uint8_t {
-    /** The Server will replace any existing retained message for this Topic
+    /** \brief The Server will replace any existing retained message for this Topic
      with this message. */
     yes = 0b1,
 
-    /** The Server will not store this message and will not remove or replace
+    /** \brief The Server will not store this message and will not remove or replace
      any existing retained message. */
     no = 0b0
 };
-
 
 enum class dup_e : std::uint8_t {
     yes = 0b1, no = 0b0
@@ -79,15 +78,15 @@ enum class dup_e : std::uint8_t {
  * \brief Represents the stage of \__ENHANCED_AUTH\__ process.
  */
 enum class auth_step_e {
-    /** The Client needs to send initial authentication data. */
+    /** \brief The Client needs to send initial authentication data. */
     client_initial,
 
-    /** Server responded with reason_codes.continue_authentication and possibly
+    /** \brief Server responded with reason_codes.continue_authentication and possibly
      * authentication data, the Client needs to send further authentication data.
      */
     server_challenge,
 
-    /** Server responded with reason_codes.success and final
+    /** \brief Server responded with reason_codes.success and final
      * authentication data, which the Client validates.
      */
     server_final
@@ -101,10 +100,10 @@ enum class auth_step_e {
  * publishing connection.
  */
 enum class no_local_e : std::uint8_t {
-    /** Application Messages can be forwarded to a connection with equal ClientID. */
+    /** \brief Application Messages can be forwarded to a connection with equal ClientID. */
     no = 0b0,
 
-    /** Application Messages MUST NOT be forwarded to a connection with equal ClientID. */
+    /** \brief  Application Messages MUST NOT be forwarded to a connection with equal ClientID. */
     yes = 0b1
 };
 
@@ -115,10 +114,10 @@ enum class no_local_e : std::uint8_t {
  * using this subscription keep the \__RETAIN\__ flag they were published with.
  */
 enum class retain_as_published_e : std::uint8_t {
-    /** Application Messages have the \__RETAIN\__ flag set to 0. */
+    /** \brief Application Messages have the \__RETAIN\__ flag set to 0. */
     dont = 0b0,
 
-    /** Application Messages keep the \__RETAIN\__ flag they were published with. */
+    /** \brief Application Messages keep the \__RETAIN\__ flag they were published with. */
     retain = 0b1
 };
 
@@ -129,13 +128,13 @@ enum class retain_as_published_e : std::uint8_t {
  * when the subscription is established.
  */
 enum class retain_handling_e : std::uint8_t {
-    /** Send retained messages at the time of subscribe. */
+    /** \brief Send retained messages at the time of subscribe. */
     send = 0b00,
 
-    /** Send retained message only if the subscription does not currently exist. */
+    /** \brief Send retained message only if the subscription does not currently exist. */
     new_subscription_only = 0b01,
 
-    /** Do not send retained messages at the time of subscribe. */
+    /** \brief Do not send retained messages at the time of subscribe. */
     not_send = 0b10
 };
 
@@ -143,16 +142,18 @@ enum class retain_handling_e : std::uint8_t {
  * \brief Represents the \__SUBSCRIBE_OPTIONS\__ associated with each Subscription.
  */
 struct subscribe_options {
-    /// Maximum \__QOS\__ level at which the Server can send Application Messages to the Client.
+    /** \brief Maximum \__QOS\__ level at which the Server can send Application Messages to the Client.
     qos_e max_qos = qos_e::exactly_once;
 
-    /// Option determining if Application Messages will be forwarded to a connection with an equal ClientID.
+    /** \brief Option determining if Application Messages will be
+    forwarded to a connection with an equal ClientID. */
     no_local_e no_local = no_local_e::yes;
 
-    /// Option determining if Application Message will keep their \__RETAIN\__ flag.
+    /** \brief Option determining if Application Message will keep their \__RETAIN\__ flag. */
     retain_as_published_e retain_as_published = retain_as_published_e::retain;
 
-    /// Option determining if retained messages are sent when the subscription is established.
+    /** \brief Option determining if retained messages are sent
+    when the subscription is established. */
     retain_handling_e retain_handling = retain_handling_e::new_subscription_only;
 };
 
@@ -161,10 +162,10 @@ struct subscribe_options {
  * Subscribe Options.
  */
 struct subscribe_topic {
-    /// An UTF-8 Encoded String indicating the Topics to which the Client wants to subscribe.
+    /** \brief An UTF-8 Encoded String indicating the Topics to which the Client wants to subscribe. */
     std::string topic_filter;
 
-    /// The \ref subscribe_options associated with the subscription.
+    /** \brief The \ref subscribe_options associated with the subscription. */
     subscribe_options sub_opts;
 };
 

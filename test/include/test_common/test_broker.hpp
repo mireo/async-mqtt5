@@ -195,7 +195,7 @@ public:
                 delayed_op<error_code>(ex, 0ms, error_code {});
 
             async_delay(
-                make_cancel_slot(),	std::move(complete_op),
+                make_cancel_slot(), std::move(complete_op),
                 asio::prepend(
                     std::ref(*this), on_delayed_complete {},
                     std::move(handler), bytes_written
@@ -207,7 +207,7 @@ public:
 
             for (auto& op : reply_action->pop_reply_ops(ex))
                 async_delay(
-                    make_cancel_slot(),	std::move(op),
+                    make_cancel_slot(), std::move(op),
                     asio::prepend(std::ref(*this), on_receive {})
                 );
         };
@@ -314,7 +314,7 @@ private:
         _cancel_signals.erase(
             std::remove_if(
                 _cancel_signals.begin(), _cancel_signals.end(),
-                [](auto& sig_ptr) {	return !sig_ptr->slot().has_handler(); }
+                [](auto& sig_ptr) { return !sig_ptr->slot().has_handler(); }
             ),
             _cancel_signals.end()
         );
