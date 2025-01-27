@@ -67,7 +67,7 @@ boost::asio::awaitable<void> publish_sensor_readings(
         auto&& [ec, rc, props] = co_await client.async_publish<boost::mqtt5::qos_e::at_least_once>(
             "async-mqtt5/test" /* topic */, reading /* payload */,
             boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {}, use_nothrow_awaitable
-        );		
+        );
         // An error can occur as a result of:
         //  a) wrong publish parameters
         //  b) mqtt_client::cancel is called while the Client is publishing the message

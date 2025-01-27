@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
+#include <variant> // std::monostate
 
 namespace boost::mqtt5::detail {
 

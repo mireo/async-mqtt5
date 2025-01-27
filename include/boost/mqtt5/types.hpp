@@ -142,7 +142,7 @@ enum class retain_handling_e : std::uint8_t {
  * \brief Represents the \__SUBSCRIBE_OPTIONS\__ associated with each Subscription.
  */
 struct subscribe_options {
-    /** \brief Maximum \__QOS\__ level at which the Server can send Application Messages to the Client.
+    /** \brief Maximum \__QOS\__ level at which the Server can send Application Messages to the Client. */
     qos_e max_qos = qos_e::exactly_once;
 
     /** \brief Option determining if Application Messages will be

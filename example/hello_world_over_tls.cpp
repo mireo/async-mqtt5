@@ -79,15 +79,15 @@ int main(int argc, char** argv) {
 
     // If you want to use the Client without logging, initialise it with the following line instead.
     //boost::mqtt5::mqtt_client<
-    //	boost::asio::ssl::stream<boost::asio::ip::tcp::socket>,
-    //	boost::asio::ssl::context
+    //    boost::asio::ssl::stream<boost::asio::ip::tcp::socket>,
+    //    boost::asio::ssl::context
     //> client(ioc, std::move(context));
 
     client.brokers(cfg.brokers, cfg.port) // Broker that we want to connect to.
         .credentials(cfg.client_id) // Set the Client Identifier. (optional)
         .async_run(boost::asio::detached); // Start the Client.
 
-    client.async_publish<boost/mqtt5::qos_e::at_most_once>(
+    client.async_publish<boost::mqtt5::qos_e::at_most_once>(
         "async-mqtt5/test", "Hello world!",
         boost::mqtt5::retain_e::no, boost::mqtt5::publish_props{},
         [&client](boost::mqtt5::error_code ec) {

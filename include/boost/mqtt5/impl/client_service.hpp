@@ -26,7 +26,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
-#include <utility>
+#include <variant> // std::monostate
 
 namespace boost::mqtt5::detail {
 

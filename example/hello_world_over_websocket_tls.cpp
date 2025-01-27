@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
 
     // If you want to use the Client without logging, initialise it with the following line instead.
     //boost::mqtt5::mqtt_client<
-    //	boost::beast::websocket::stream<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>,
-    //	boost::asio::ssl::context
+    //    boost::beast::websocket::stream<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>,
+    //    boost::asio::ssl::context
     //> client(ioc, std::move(context));
 
     client.brokers(cfg.brokers, cfg.port) // Broker that we want to connect to.

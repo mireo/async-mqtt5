@@ -47,19 +47,19 @@ namespace test {
 // the following code needs to compile
 
 template <
-	typename StreamType,
-	typename TlsContextType = std::monostate,
-	typename Logger = noop_logger
+    typename StreamType,
+    typename TlsContextType = std::monostate,
+    typename Logger = noop_logger
 >
 asio::awaitable<void> test_default_completion_tokens_impl(
-	TlsContextType tls_context = {}, Logger logger = {}
+    TlsContextType tls_context = {}, Logger logger = {}
 ) {
     asio::io_context ioc;
 
-	using client_type = asio::use_awaitable_t<>::as_default_on_t<
-		mqtt_client<StreamType, TlsContextType, Logger>
-	>;
-	client_type c(ioc, std::move(tls_context), std::move(logger));
+    using client_type = asio::use_awaitable_t<>::as_default_on_t<
+        mqtt_client<StreamType, TlsContextType, Logger>
+    >;
+    client_type c(ioc, std::move(tls_context), std::move(logger));
 
     co_await c.async_run();
     
@@ -98,14 +98,14 @@ asio::awaitable<void> test_default_completion_tokens() {
         boost::beast::websocket::stream<asio::ip::tcp::socket>
     >();
 
-	co_await test_default_completion_tokens_impl<
-		boost::beast::websocket::stream<asio::ssl::stream<asio::ip::tcp::socket>>,
-		asio::ssl::context,
-		logger
-	>(
-		asio::ssl::context(asio::ssl::context::tls_client),
-		logger(log_level::debug)
-	);
+    co_await test_default_completion_tokens_impl<
+        boost::beast::websocket::stream<asio::ssl::stream<asio::ip::tcp::socket>>,
+        asio::ssl::context,
+        logger
+    >(
+        asio::ssl::context(asio::ssl::context::tls_client),
+        logger(log_level::debug)
+    );
 }
 
 } // end namespace test
