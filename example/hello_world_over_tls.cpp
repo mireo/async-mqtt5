@@ -9,6 +9,7 @@
 #include <boost/mqtt5/logger.hpp>
 #include <boost/mqtt5/mqtt_client.hpp>
 #include <boost/mqtt5/types.hpp>
+#include <boost/mqtt5/ssl.hpp> // OpenSSL traits
 
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>

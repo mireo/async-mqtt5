@@ -15,6 +15,7 @@
 #include <boost/mqtt5/detail/control_packet.hpp>
 #include <boost/mqtt5/detail/internal_types.hpp>
 #include <boost/mqtt5/detail/log_invoke.hpp>
+#include <boost/mqtt5/detail/shutdown.hpp>
 
 #include <boost/mqtt5/impl/codecs/message_decoders.hpp>
 #include <boost/mqtt5/impl/codecs/message_encoders.hpp>
@@ -54,6 +55,7 @@ class connect_op {
     struct on_auth_data {};
     struct on_send_auth {};
     struct on_complete_auth {};
+    struct on_shutdown {};
 
     Stream& _stream;
     mqtt_ctx& _ctx;
@@ -94,8 +96,7 @@ public:
         return asio::get_associated_allocator(_handler);
     }
 
-    using cancellation_slot_type =
-        asio::associated_cancellation_slot_t<handler_type>;
+    using cancellation_slot_type = asio::cancellation_slot;
     cancellation_slot_type get_cancellation_slot() const noexcept {
         return _cancellation_state.slot();
     }
@@ -207,7 +208,7 @@ public:
             return complete(asio::error::operation_aborted);
 
         if (ec)
-            return complete(asio::error::try_again);
+            return do_shutdown(asio::error::try_again);
 
         _ctx.co_props[prop::authentication_data] = std::move(data);
         send_connect();
@@ -238,7 +239,7 @@ public:
             return complete(asio::error::operation_aborted);
 
         if (ec)
-            return complete(ec);
+            return do_shutdown(ec);
 
         _buffer_ptr = std::make_unique<std::string>(min_packet_sz, char(0));
 
@@ -256,12 +257,12 @@ public:
             return complete(asio::error::operation_aborted);
 
         if (ec)
-            return complete(ec);
+            return do_shutdown(ec);
 
         auto code = control_code_e((*_buffer_ptr)[0] & 0b11110000);
 
         if (code != control_code_e::auth && code != control_code_e::connack)
-            return complete(asio::error::try_again);
+            return do_shutdown(asio::error::try_again);
 
         auto varlen_ptr = _buffer_ptr->cbegin() + 1;
         auto varlen = decoders::type_parse(
@@ -269,7 +270,7 @@ public:
         );
 
         if (!varlen)
-            return complete(asio::error::try_again);
+            return do_shutdown(asio::error::try_again);
 
         auto varlen_sz = std::distance(_buffer_ptr->cbegin() + 1, varlen_ptr);
         auto remain_len = *varlen -
@@ -299,13 +300,13 @@ public:
             return complete(asio::error::operation_aborted);
 
         if (ec)
-            return complete(ec);
+            return do_shutdown(ec);
 
         if (code == control_code_e::connack)
             return on_connack(first, last);
 
         if (!_ctx.co_props[prop::authentication_method].has_value())
-            return complete(client::error::malformed_packet);
+            return do_shutdown(client::error::malformed_packet);
 
         on_auth(first, last);
     }
@@ -314,7 +315,7 @@ public:
         auto packet_length = static_cast<uint32_t>(std::distance(first, last));
         auto rv = decoders::decode_connack(packet_length, first);
         if (!rv.has_value())
-            return complete(client::error::malformed_packet);
+            return do_shutdown(client::error::malformed_packet);
         const auto& [session_present, reason_code, ca_props] = *rv;
 
         _ctx.ca_props = ca_props;
@@ -328,11 +329,11 @@ public:
 
         auto rc = to_reason_code<reason_codes::category::connack>(reason_code);
         if (!rc.has_value()) // reason code not allowed in CONNACK
-            return complete(client::error::malformed_packet);
+            return do_shutdown(client::error::malformed_packet);
 
         _log.at_connack(*rc, session_present, ca_props);
         if (*rc)
-            return complete(asio::error::try_again);
+            return do_shutdown(asio::error::try_again);
 
         if (_ctx.co_props[prop::authentication_method].has_value())
             return _ctx.authenticator.async_auth(
@@ -348,7 +349,7 @@ public:
         auto packet_length = static_cast<uint32_t>(std::distance(first, last));
         auto rv = decoders::decode_auth(packet_length, first);
         if (!rv.has_value())
-            return complete(client::error::malformed_packet);
+            return do_shutdown(client::error::malformed_packet);
         const auto& [reason_code, auth_props] = *rv;
 
         auto rc = to_reason_code<reason_codes::category::auth>(reason_code);
@@ -357,7 +358,7 @@ public:
             auth_props[prop::authentication_method]
                 != _ctx.co_props[prop::authentication_method]
         )
-            return complete(client::error::malformed_packet);
+            return do_shutdown(client::error::malformed_packet);
 
         _ctx.authenticator.async_auth(
             auth_step_e::server_challenge,
@@ -371,7 +372,7 @@ public:
             return complete(asio::error::operation_aborted);
 
         if (ec)
-            return complete(asio::error::try_again);
+            return do_shutdown(asio::error::try_again);
 
         auth_props props;
         props[prop::authentication_method] =
@@ -400,7 +401,7 @@ public:
             return complete(asio::error::operation_aborted);
 
         if (ec)
-            return complete(ec);
+            return do_shutdown(ec);
 
         auto buff = asio::buffer(_buffer_ptr->data(), min_packet_sz);
         asio::async_read(
@@ -414,9 +415,25 @@ public:
             return complete(asio::error::operation_aborted);
 
         if (ec)
-            return complete(asio::error::try_again);
+            return do_shutdown(asio::error::try_again);
 
         complete(error_code {});
+    }
+
+    void do_shutdown(error_code connect_ec) {
+        auto init_shutdown = [&stream = _stream](auto handler) {
+            async_shutdown(stream, std::move(handler));
+        };
+        auto token = asio::prepend(std::move(*this), on_shutdown{}, connect_ec);
+
+        return asio::async_initiate<decltype(token), void(error_code)>(
+            init_shutdown, token
+        );
+    }
+
+    void operator()(on_shutdown, error_code connect_ec, error_code) {
+        // ignore shutdown error_code
+        complete(connect_ec);
     }
 
 private:
@@ -425,7 +442,7 @@ private:
     }
 
     void complete(error_code ec) {
-        _cancellation_state.slot().clear();
+        asio::get_associated_cancellation_slot(_handler).clear();
         std::move(_handler)(ec);
     }
 };

@@ -15,6 +15,7 @@
 #include <boost/mqtt5/impl/endpoints.hpp>
 #include <boost/mqtt5/impl/read_op.hpp>
 #include <boost/mqtt5/impl/reconnect_op.hpp>
+#include <boost/mqtt5/impl/shutdown_op.hpp>
 #include <boost/mqtt5/impl/write_op.hpp>
 
 #include <boost/asio/async_result.hpp>
@@ -66,6 +67,9 @@ private:
     template <typename Owner>
     friend class reconnect_op;
 
+    template <typename Owner>
+    friend class shutdown_op;
+
 public:
     autoconnect_stream(
         const executor_type& ex, stream_context_type& context,
@@ -114,21 +118,26 @@ public:
     }
 
     void cancel() {
-        error_code ec;
-        lowest_layer(*_stream_ptr).cancel(ec);
         _conn_mtx.cancel();
         _connect_timer.cancel();
     }
 
     void close() {
         error_code ec;
-        shutdown(asio::ip::tcp::socket::shutdown_both);
         lowest_layer(*_stream_ptr).close(ec);
     }
 
-    void shutdown(asio::ip::tcp::socket::shutdown_type what) {
-        error_code ec;
-        lowest_layer(*_stream_ptr).shutdown(what, ec);
+    template <typename CompletionToken>
+    void async_shutdown(CompletionToken&& token) {
+        using Signature = void (error_code);
+
+        auto initiation = [](auto handler, self_type& self) {
+            shutdown_op { self, std::move(handler) }.perform();
+        };
+
+        return asio::async_initiate<CompletionToken, Signature>(
+            initiation, token, std::ref(*this)
+        );
     }
 
     bool was_connected() const {

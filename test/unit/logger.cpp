@@ -8,7 +8,7 @@
 #include <boost/mqtt5/logger.hpp>
 #include <boost/mqtt5/logger_traits.hpp>
 #include <boost/mqtt5/mqtt_client.hpp>
-#include <boost/mqtt5/websocket.hpp>
+#include <boost/mqtt5/websocket_ssl.hpp>
 
 #include <boost/mqtt5/detail/log_invoke.hpp>
 
@@ -16,7 +16,6 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
-#include <boost/beast/ssl/ssl_stream.hpp> // async_teardown specialization for websocket ssl stream
 #include <boost/beast/websocket/stream.hpp>
 #include <boost/test/tools/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>

@@ -18,6 +18,7 @@
 #include <boost/mqtt5/impl/publish_rec_op.hpp>
 #include <boost/mqtt5/impl/re_auth_op.hpp>
 
+#include <boost/asio/detached.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>
@@ -128,8 +129,9 @@ private:
                         .value_or(reason_codes::unspecified_error),
                     props
                 );
-                _svc_ptr->close_stream();
-                _svc_ptr->open_stream();
+                return _svc_ptr->async_shutdown(
+                    asio::prepend(std::move(*this), on_disconnect {})
+                );
             }
             break;
             case control_code_e::auth: {

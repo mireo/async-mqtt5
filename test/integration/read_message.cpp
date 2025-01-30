@@ -172,6 +172,52 @@ BOOST_FIXTURE_TEST_CASE(receive_disconnect, shared_test_data) {
     BOOST_TEST(broker.received_all_expected());
 }
 
+BOOST_FIXTURE_TEST_CASE(receive_disconnect_while_reconnecting, shared_test_data) {
+    // packets
+    auto disconnect = encoders::encode_disconnect(0x00, {});
+    constexpr int expected_handlers_called = 1;
+    int handlers_called = 0;
+
+    test::msg_exchange broker_side;
+    broker_side
+        .expect(connect)
+            .complete_with(success, after(1ms))
+            .reply_with(connack, after(2ms))
+        .expect(publish)
+            .complete_with(fail, after(20ms))
+        .send(disconnect, after(30ms))
+        .expect(connect)
+            .complete_with(success, after(20ms))
+            .reply_with(connack, after(30ms))
+        .expect(publish)
+            .complete_with(success, after(0ms));
+
+    asio::io_context ioc;
+    auto executor = ioc.get_executor();
+    auto& broker = asio::make_service<test::test_broker>(
+        ioc, executor, std::move(broker_side)
+    );
+
+    using client_type = mqtt_client<test::test_stream>;
+    client_type c(executor);
+    c.brokers("127.0.0.1,127.0.0.1") // to avoid reconnect backoff
+        .async_run(asio::detached);
+
+    c.async_publish<qos_e::at_most_once>(
+        topic, payload, retain_e::no, {},
+        [&](error_code ec) {
+            BOOST_TEST(handlers_called == 0);
+            handlers_called++;
+            BOOST_TEST(!ec);
+            c.cancel();
+        }
+    );
+
+    ioc.run_for(1s);
+    BOOST_TEST(handlers_called == expected_handlers_called);
+    BOOST_TEST(broker.received_all_expected());
+}
+
 template <typename VerifyFun>
 void run_receive_test(
     test::msg_exchange broker_side, int num_of_receives,

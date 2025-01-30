@@ -79,10 +79,6 @@ public:
         _test_broker = nullptr;
     }
 
-    void shutdown(asio::ip::tcp::socket::shutdown_type, error_code& ec) {
-        ec = {};
-    }
-
     void connect(const endpoint_type& ep, error_code& ec) {
         ec = {};
         _remote_ep = ep;
@@ -165,8 +161,6 @@ public:
     }
 
     void operator()(on_read, error_code ec, size_t bytes_read) {
-        if (ec)
-            _stream_impl->disconnect();
         complete(ec, bytes_read);
     }
 
@@ -223,8 +217,6 @@ public:
     }
 
     void operator()(on_write, error_code ec, size_t bytes_written) {
-        if (ec)
-            _stream_impl->disconnect();
         complete(ec, bytes_written);
     }
 
@@ -300,10 +292,6 @@ public:
         return _impl->is_connected();
     }
 
-    void shutdown(asio::ip::tcp::socket::shutdown_type st, error_code& ec) {
-        return _impl->shutdown(st, ec);
-    }
-
     endpoint_type remote_endpoint(error_code& ec) {
         return _impl->remote_endpoint(ec);
     }
@@ -368,6 +356,10 @@ public:
 
 };
 
+template <typename ShutdownHandler>
+void async_shutdown(test_stream&, ShutdownHandler&& handler) {
+    return std::move(handler)(error_code {});
+}
 
 } // end namespace boost::mqtt5::test
 

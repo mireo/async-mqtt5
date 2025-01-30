@@ -8,6 +8,9 @@
 #ifndef BOOST_MQTT5_WEBSOCKET_HPP
 #define BOOST_MQTT5_WEBSOCKET_HPP
 
+#include <boost/mqtt5/detail/async_traits.hpp>
+#include <boost/mqtt5/detail/shutdown.hpp>
+
 #include <boost/mqtt5/types.hpp>
 
 #include <boost/beast/http/field.hpp>
@@ -48,6 +51,21 @@ struct ws_handshake_traits<boost::beast::websocket::stream<Stream>> {
         );
     }
 };
+
+namespace detail {
+
+// in namespace boost::mqtt5::detail to enable ADL
+template <typename Stream, typename ShutdownHandler>
+void async_shutdown(
+    boost::beast::websocket::stream<Stream>& stream, ShutdownHandler&& handler
+) {
+    stream.async_close(
+        beast::websocket::close_code::normal,
+        std::move(handler)
+    );
+}
+
+} // end namespace detail
 
 } // end namespace boost::mqtt5
 

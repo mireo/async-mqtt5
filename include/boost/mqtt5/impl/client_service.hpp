@@ -400,8 +400,9 @@ public:
         return _stream.is_open();
     }
 
-    void close_stream() {
-        _stream.close();
+    template <typename CompletionToken>
+    decltype(auto) async_shutdown(CompletionToken&& token) {
+        return _stream.async_shutdown(std::forward<CompletionToken>(token));
     }
 
     void cancel() {

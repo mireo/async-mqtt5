@@ -224,6 +224,7 @@ public:
         auto initiation = [this](
             auto handler, const MutableBuffer& buffer
         ) {
+            _pending_read.complete(_ex, asio::error::operation_aborted, 0);
             _pending_read = pending_read(buffer, std::move(handler));
             complete_read();
         };

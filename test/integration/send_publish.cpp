@@ -533,7 +533,7 @@ BOOST_FIXTURE_TEST_CASE(cancel_resending_publish, shared_test_data) {
             [&handlers_called, &c](error_code ec, reason_code rc, puback_props) {
                 ++handlers_called;
 
-                BOOST_TEST(ec = asio::error::operation_aborted);
+                BOOST_TEST(ec == asio::error::operation_aborted);
                 BOOST_TEST(rc == reason_codes::empty);
 
                 c.cancel();

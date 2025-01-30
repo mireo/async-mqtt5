@@ -11,7 +11,7 @@
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 
 #include <boost/mqtt5.hpp>
-#include <boost/mqtt5/websocket.hpp>
+#include <boost/mqtt5/websocket_ssl.hpp>
 
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
@@ -19,7 +19,6 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/beast/ssl/ssl_stream.hpp> // async_teardown specialization for websocket ssl stream
 #include <boost/beast/websocket.hpp>
 #include <boost/system/error_code.hpp>
 

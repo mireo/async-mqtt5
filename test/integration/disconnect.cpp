@@ -11,6 +11,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <chrono>
@@ -308,6 +309,69 @@ BOOST_FIXTURE_TEST_CASE(omit_props, shared_test_data) {
         }
     );
 
+    BOOST_TEST(handlers_called == expected_handlers_called);
+}
+
+struct long_shutdown_stream : public test::test_stream {
+    long_shutdown_stream(typename test::test_stream::executor_type ex) :
+        test::test_stream(std::move(ex)) {}
+};
+
+template <typename ShutdownHandler>
+void async_shutdown(long_shutdown_stream& stream, ShutdownHandler&& handler) {
+    auto timer = std::make_shared<asio::steady_timer>(stream.get_executor());
+    timer->expires_after(std::chrono::seconds(10));
+    timer->async_wait(asio::consign(std::move(handler), std::move(timer)));
+}
+
+BOOST_DATA_TEST_CASE_F(
+    shared_test_data, cancel_disconnect_in_shutdown,
+    boost::unit_test::data::make({ 100, 8000 }), cancel_delay_ms
+) {
+    asio::io_context ioc;
+    auto executor = ioc.get_executor();
+
+    constexpr int expected_handlers_called = 1;
+    int handlers_called = 0;
+
+    test::msg_exchange broker_side;
+    broker_side
+        .expect(connect)
+            .complete_with(success, after(0ms))
+            .reply_with(connack, after(0ms))
+        .expect(disconnect)
+            .complete_with(success, after(0ms));
+
+    auto& broker = asio::make_service<test::test_broker>(
+        ioc, executor, std::move(broker_side)
+    );
+
+    asio::steady_timer timer(executor);
+    mqtt_client<long_shutdown_stream> c(executor);
+    c.brokers("127.0.0.1")
+        .async_run(asio::detached);
+
+    asio::cancellation_signal signal;
+
+    c.async_disconnect(
+        asio::bind_cancellation_slot(
+            signal.slot(),
+            [&](error_code ec) {
+                handlers_called++;
+                BOOST_TEST(ec == asio::error::operation_aborted);
+                timer.cancel();
+            }
+        )
+    );
+
+    timer.expires_after(std::chrono::milliseconds(cancel_delay_ms));
+    timer.async_wait([&signal](error_code) {
+        signal.emit(asio::cancellation_type::all);
+    });
+
+    ioc.run_for(6s);
+
+    BOOST_TEST(broker.received_all_expected());
     BOOST_TEST(handlers_called == expected_handlers_called);
 }
 

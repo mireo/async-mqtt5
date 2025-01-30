@@ -95,7 +95,6 @@ public:
 
     void close() {
         error_code ec;
-        detail::lowest_layer(*_stream_ptr).shutdown(asio::ip::tcp::socket::shutdown_both, ec);
         detail::lowest_layer(*_stream_ptr).close(ec);
     }
 

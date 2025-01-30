@@ -11,13 +11,12 @@
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 
 #include <boost/mqtt5.hpp>
-#include <boost/mqtt5/websocket.hpp>
+#include <boost/mqtt5/websocket_ssl.hpp>
 
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/beast/websocket/ssl.hpp> // async_teardown for asio::ssl::socket
 #include <boost/beast/websocket/stream.hpp>
 
 #include <cstdint>

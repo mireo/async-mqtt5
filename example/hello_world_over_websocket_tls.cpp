@@ -9,13 +9,12 @@
 #include <boost/mqtt5/logger.hpp>
 #include <boost/mqtt5/mqtt_client.hpp>
 #include <boost/mqtt5/types.hpp>
-#include <boost/mqtt5/websocket.hpp> // WebSocket traits
+#include <boost/mqtt5/websocket_ssl.hpp> // WebSocket and OpenSSL traits
 
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/beast/ssl/ssl_stream.hpp> // async_teardown specialization for WebSocket SSL stream
 #include <boost/beast/websocket.hpp>
 
 #include <iostream>

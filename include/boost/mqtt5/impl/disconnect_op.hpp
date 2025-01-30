@@ -45,6 +45,7 @@ class disconnect_op {
     using client_service = ClientService;
 
     struct on_disconnect {};
+    struct on_shutdown {};
 
     std::shared_ptr<client_service> _svc_ptr;
     DisconnectContext _context;
@@ -143,15 +144,15 @@ public:
             return complete(error_code {});
         }
 
-        if (_context.terminal) {
+        return _svc_ptr->async_shutdown(
+            asio::prepend(std::move(*this), on_shutdown {})
+        );
+    }
+
+    void operator()(on_shutdown, error_code ec) {
+        if (_context.terminal)
             _svc_ptr->cancel();
-            return complete(error_code {});
-        }
-
-        _svc_ptr->close_stream();
-        _svc_ptr->open_stream();
-
-        complete(error_code {});
+        complete(ec);
     }
 
 private:

@@ -84,6 +84,11 @@ struct test_tcp_stream : public test::test_stream {
     }
 };
 
+template <typename ShutdownHandler>
+void async_shutdown(test_tcp_stream&, ShutdownHandler&& handler) {
+    return std::move(handler)(error_code {});
+}
+
 using underlying_stream = test_tcp_stream;
 using stream_context = detail::stream_context<underlying_stream, std::monostate>;
 using astream = test::test_autoconnect_stream<underlying_stream, stream_context>;
