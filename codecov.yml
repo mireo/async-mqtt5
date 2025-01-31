@@ -31,4 +31,4 @@ github_checks:
   annotations: true
 
 fixes:
-  - ".*/async_mqtt5/::include/async_mqtt5/"
+  - ".*/boost/mqtt5/::include/boost/mqtt5/"

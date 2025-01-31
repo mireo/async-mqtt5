@@ -18,7 +18,6 @@
 #include <boost/mqtt5/impl/publish_rec_op.hpp>
 #include <boost/mqtt5/impl/re_auth_op.hpp>
 
-#include <boost/asio/detached.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>

@@ -3,7 +3,8 @@ Boost.MQTT5: A C++17 MQTT client based on Boost.Asio
 
 Branch | Windows/Linux Build | Coverage | Documentation |
 -------|---------------------|----------|---------------|
-[`master`](https://github.com/mireo/async-mqtt5/tree/master) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/master) | [Documentation](https://spacetime.mireo.com/async-mqtt5/)
+[`master`](https://github.com/mireo/async-mqtt5/tree/master) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/master) | [documentation](https://spacetime.mireo.com/async-mqtt5/)
+[`develop`](https://github.com/mireo/async-mqtt5/tree/develop) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/develop/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/develop) |
 
 Boost.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This Client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. Boost.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
 
