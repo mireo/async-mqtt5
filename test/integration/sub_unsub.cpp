@@ -93,7 +93,7 @@ void run_test(test::msg_exchange broker_side) {
                 ++handlers_called;
 
                 BOOST_TEST(!ec);
-                BOOST_TEST_REQUIRE(rcs.size() == 1);
+                BOOST_TEST_REQUIRE(rcs.size() == 1u);
                 BOOST_TEST(rcs[0] == reason_codes::granted_qos_0);
 
                 c.cancel();
@@ -106,7 +106,7 @@ void run_test(test::msg_exchange broker_side) {
                 ++handlers_called;
 
                 BOOST_TEST(!ec);
-                BOOST_TEST_REQUIRE(rcs.size() == 1);
+                BOOST_TEST_REQUIRE(rcs.size() == 1u);
                 BOOST_TEST(rcs[0] == reason_codes::success);
 
                 c.cancel();
@@ -423,7 +423,7 @@ void run_cancellation_test(test::msg_exchange broker_side) {
                     ++handlers_called;
 
                     BOOST_TEST(ec == asio::error::operation_aborted);
-                    BOOST_TEST_REQUIRE(rcs.size() == 1);
+                    BOOST_TEST_REQUIRE(rcs.size() == 1u);
                     BOOST_TEST(rcs[0] == reason_codes::empty);
 
                     c.cancel();
@@ -439,7 +439,7 @@ void run_cancellation_test(test::msg_exchange broker_side) {
                     ++handlers_called;
 
                     BOOST_TEST(ec == asio::error::operation_aborted);
-                    BOOST_TEST_REQUIRE(rcs.size() == 1);
+                    BOOST_TEST_REQUIRE(rcs.size() == 1u);
                     BOOST_TEST(rcs[0] == reason_codes::empty);
 
                     c.cancel();

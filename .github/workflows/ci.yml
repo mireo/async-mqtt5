@@ -9,121 +9,11 @@ name: CI
 
 on: [push, pull_request]
 
-env:
-  BOOST_VERSION: 1.82.0
-  BOOST_DIR_VER_NAME: 1_82_0
-
 jobs:
-  windows:
-    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }}"
-    defaults:
-      run:
-        shell: cmd
+  # TODO: windows builds
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # internal compiler error
-          # - toolset: msvc-14.2 win64
-          #   os: windows-2019
-          #   architecture: x64
-          #   generator: "Visual Studio 16 2019"
-          #   cxxstd: 17
-          #   build-type: 'Debug'
-          #   cxxflags: ''
-          #   ldflags: '/machine:x64'
-
-          - toolset: msvc-14.3 win32
-            os: windows-2022
-            architecture: Win32
-            generator: Visual Studio 17 2022
-            cxxstd: 20
-            build-type: 'Debug'
-            cxxflags: ''
-            ldflags: ''
-
-          - toolset: msvc-14.3 win64
-            os: windows-2022
-            architecture: x64
-            generator: Visual Studio 17 2022
-            cxxstd: 20
-            build-type: 'Debug'
-            cxxflags: ''
-            ldflags: ''
-
-    runs-on: ${{ matrix.os }}
-    env:
-      CXXFLAGS: ${{ matrix.cxxflags }} /D_WIN32_WINNT=0x0601 /DWIN32_LEAN_AND_MEAN=1 /DNOMINMAX=1 /D_FILE_OFFSET_BITS=64 /DBOOST_ALL_NO_LIB /EHsc /bigobj
-      LDFLAGS: ${{ matrix.ldflags }}
-      CMAKE_BUILD_PARALLEL_LEVEL: 4
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-        
-    - name: Setup OpenSSL
-      env:
-        OPENSSL_ROOT: "C:\\OpenSSL"
-      run: |
-        if "${{ matrix.architecture }}" == "x64" (
-          choco install --no-progress -y openssl --x64
-        )
-        if "${{ matrix.architecture }}" == "Win32" (
-          set openssl_install_dir="C:\\Program Files (x86)\\OpenSSL-Win32"
-          choco install --no-progress -y openssl --forcex86 --version 1.1.1.2100
-        )
-        if "${{ matrix.architecture }}" == "x64" (
-          if exist "C:\Program Files\OpenSSL\" (
-            set openssl_install_dir="C:\\Program Files\\OpenSSL"
-          ) else (
-            set openssl_install_dir="C:\\Program Files\\OpenSSL-Win64"
-          )
-        )
-        mklink /D %OPENSSL_ROOT% %openssl_install_dir%
-        refreshenv
-        set
-
-    - name: Setup Cmake
-      run: |
-        choco install cmake
-
-    - name: Setup Boost
-      run: |
-        curl -o boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz https://archives.boost.io/release/${{ env.BOOST_VERSION }}/source/boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
-        tar -xf boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
-        mkdir ${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}
-        move boost_${{ env.BOOST_DIR_VER_NAME }}\\boost ${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}
-        del boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
-
-    - name: Setup library
-      run: |
-        cmake -S . -B build -DBoost_INCLUDE_DIR="${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}"
-        cmake --install build
-
-    - name: Build examples
-      run: |
-        cmake -S example -B example\\build -A ${{ matrix.architecture }} ^
-        -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" ^
-        -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" ^
-        -DBoost_INCLUDE_DIR="${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}"
-        cmake --build example\\build -j 4
-
-    - name: Build tests
-      run: |
-        cmake -S test -B test\\build -A ${{ matrix.architecture }} ^
-        -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" ^
-        -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" ^
-        -DBoost_INCLUDE_DIR="${{ github.workspace }}\\boost_${{ env.BOOST_DIR_VER_NAME }}"
-        cmake --build test\\build -j 4
-
-    - name: Run tests
-      run: |
-        .\\test\\build\\${{ matrix.build-type }}\\mqtt-test.exe
-
-  posix:
-    name: "${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.container }}"
-
+  posix-cmake:
+    name: "CMake ${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.cxxflags }}"
     defaults:
       run:
         shell: bash
@@ -132,8 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - toolset: g++-9
-            compiler: g++-9
+          - toolset: gcc-9
             install: g++-9
             os: ubuntu-latest
             container: ubuntu:22.04
@@ -142,8 +31,7 @@ jobs:
             cxxflags: ''
             ldflags: ''
 
-          - toolset: g++-10
-            compiler: g++-10
+          - toolset: gcc-10
             install: g++-10
             os: ubuntu-latest
             container: ubuntu:22.04
@@ -152,8 +40,7 @@ jobs:
             cxxflags: ''
             ldflags: ''
 
-          - toolset: g++-12
-            compiler: g++-12
+          - toolset: gcc-12
             install: g++-12
             os: ubuntu-latest
             container: ubuntu:22.04
@@ -162,8 +49,7 @@ jobs:
             cxxflags: ''
             ldflags: ''
           
-          - toolset: g++-13
-            compiler: g++-13
+          - toolset: gcc-13
             install: g++-13
             os: ubuntu-24.04
             container: ubuntu:24.04
@@ -172,8 +58,7 @@ jobs:
             cxxflags: ''
             ldflags: ''
           
-          - toolset: g++-14 -fsanitize=address,undefined
-            compiler: g++-14
+          - toolset: gcc-14
             install: g++-14
             os: ubuntu-24.04
             container: ubuntu:24.04
@@ -182,8 +67,7 @@ jobs:
             cxxflags: '-fsanitize=address,undefined -fno-sanitize-recover=all'
             ldflags: '-fsanitize=address,undefined'
 
-          - toolset: clang++-12
-            compiler: clang++-12
+          - toolset: clang-12
             install: clang++-12
             os: ubuntu-latest
             container: ubuntu:22.04
@@ -192,8 +76,7 @@ jobs:
             cxxflags: '-fdeclspec'
             ldflags: ''
 
-          - toolset: clang++-13
-            compiler: clang++-13
+          - toolset: clang-13
             install: clang++-13
             os: ubuntu-latest
             container: ubuntu:22.04
@@ -202,8 +85,7 @@ jobs:
             cxxflags: '-fdeclspec'
             ldflags: ''
 
-          - toolset: clang++-14-libc++-14
-            compiler: clang++-14
+          - toolset: clang-14
             install: 'clang++-14 libc++-14-dev libc++abi-14-dev'
             os: ubuntu-latest
             container: ubuntu:22.04
@@ -212,8 +94,7 @@ jobs:
             cxxflags: '-stdlib=libc++'
             ldflags: '-lc++'
 
-          - toolset: clang++-15
-            compiler: clang++-15
+          - toolset: clang-15
             install: clang++-15
             os: ubuntu-latest
             container: ubuntu:22.04
@@ -222,8 +103,7 @@ jobs:
             cxxflags: ''
             ldflags: ''
 
-          - toolset: clang++-16
-            compiler: clang++-16
+          - toolset: clang-16
             install: clang++-16
             os: ubuntu-24.04
             container: ubuntu:24.04
@@ -232,8 +112,7 @@ jobs:
             cxxflags: ''
             ldflags: ''
 
-          - toolset: clang++-17
-            compiler: clang++-17
+          - toolset: clang-17
             install: clang++-17
             os: ubuntu-24.04
             container: ubuntu:24.04
@@ -242,8 +121,7 @@ jobs:
             cxxflags: ''
             ldflags: ''
 
-          - toolset: clang++-18 -fsanitize=address,undefined
-            compiler: clang++-18
+          - toolset: clang-18
             install: clang++-18
             os: ubuntu-24.04
             container: ubuntu:24.04
@@ -267,40 +145,131 @@ jobs:
         if: matrix.container
         run: |
           apt-get update
-          apt-get -y install sudo wget tar cmake openssl libssl-dev pkg-config
+          apt-get -y install --no-install-recommends \
+             sudo git g++ cmake make openssl libssl-dev ca-certificates pkg-config python3
 
-      - name: Install compiler
+      - name: Install toolset
         run: sudo apt-get install -y ${{ matrix.install }}
 
       - name: Setup Boost
         run: |
-          wget https://archives.boost.io/release/${{ env.BOOST_VERSION }}/source/boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
-          tar xzf boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
-          mkdir /usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}
-          mv boost_${{ env.BOOST_DIR_VER_NAME }}/boost /usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}
-          rm boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
+          python3 tools/ci.py setup-boost \
+            --source-dir=$(pwd)
 
-      - name: Setup library
-        run: |
-          cmake -S . -B build -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" \
-          -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
-          sudo cmake --install build
+      - name: Build a Boost distribution using B2
+        run : |
+          python3 tools/ci.py build-b2-distro \
+            --toolset ${{ matrix.toolset }}
 
-      - name: Build examples
+      - name: Build a Boost distribution using CMake
         run: |
-          cmake -S example -B example/build \
-          -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" \
-          -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" \
-          -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
-          cmake --build example/build -j 4
+          python3 tools/ci.py build-cmake-distro \
+            --build-type ${{ matrix.build-type }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --toolset ${{ matrix.toolset }}
+
+      - name: Build standalone examples using CMake
+        run: |
+          python3 tools/ci.py build-cmake-standalone-examples \
+            --build-type ${{ matrix.build-type }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --toolset ${{ matrix.toolset }}
+
+      - name: Build standalone tests using CMake
+        run: |
+          python3 tools/ci.py build-cmake-standalone-tests \
+            --build-type ${{ matrix.build-type }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --toolset ${{ matrix.toolset }}
+
+      - name: Run standalone tests
+        run: |
+          python3 tools/ci.py run-cmake-standalone-tests \
+           --build-type ${{ matrix.build-type }}
+
+      - name: Run CMake find_package test with B2 distribution
+        run: |
+          python3 tools/ci.py run-cmake-b2-find-package-tests \
+            --build-type ${{ matrix.build-type }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --toolset ${{ matrix.toolset }}
+
+      - name: Run CMake find_package test with CMake distribution
+        run : |
+          python3 tools/ci.py run-cmake-find-package-tests \
+            --build-type ${{ matrix.build-type }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --toolset ${{ matrix.toolset }}
+
+      - name: Run CMake add_subdirectory test with CMake distribution
+        run: |
+          python3 tools/ci.py run-cmake-add-subdirectory-tests \
+            --build-type ${{ matrix.build-type }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --toolset ${{ matrix.toolset }}
+
+  posix-b2:
+    name: "B2 ${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.cxxflags }}"
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - toolset: gcc-11
+            install: g++-11
+            os: ubuntu-latest
+            container: ubuntu:22.04
+            build-type: 'debug,release'
+            cxxstd: "17,20"
+            cxxflags: ''
+            ldflags: ''
+
+          - toolset: clang-14
+            install: clang-14
+            os: ubuntu-latest
+            container: ubuntu:22.04
+            build-type: 'debug,release'
+            cxxstd: "17,20"
+            cxxflags: ''
+            ldflags: ''
+
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    env:
+      CXXFLAGS: ${{ matrix.cxxflags }} -Wall -Wextra
+      LDFLAGS:  ${{ matrix.ldflags }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup container environment
+        if: matrix.container
+        run: |
+          apt-get update
+          apt-get -y install --no-install-recommends \
+             sudo git g++ ca-certificates pkg-config python3
+
+      - name: Install toolset
+        run: sudo apt-get install -y ${{ matrix.install }}
+
+      - name: Setup Boost
+        run: |
+          python3 tools/ci.py setup-boost \
+            --source-dir=$(pwd)
+
+      - name: Build a Boost distribution using B2
+        run : |
+          python3 tools/ci.py build-b2-distro \
+            --toolset ${{ matrix.toolset }}
       
-      - name: Build tests
+      - name: Build and run tests using B2
         run: |
-          cmake -S test -B test/build \
-          -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ env.CXXFLAGS }}" \
-          -DCMAKE_CXX_STANDARD="${{ matrix.cxxstd }}" -DCMAKE_EXE_LINKER_FLAGS="${{ env.LDFLAGS }}" -DCMAKE_BUILD_TYPE="${{ matrix.build-type }}" \
-          -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
-          cmake --build test/build -j 4
-
-      - name: Run tests
-        run: ./test/build/mqtt-test
+          python3 tools/ci.py run-b2-tests \
+            --toolset ${{ matrix.toolset }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --variant ${{ matrix.build-type }}

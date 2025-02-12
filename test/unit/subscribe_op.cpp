@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
     auto handler = [&handlers_called](error_code ec, std::vector<reason_code> rcs, suback_props) {
         ++handlers_called;
         BOOST_TEST(ec == client::error::pid_overrun);
-        BOOST_TEST_REQUIRE(rcs.size() == 1);
+        BOOST_TEST_REQUIRE(rcs.size() == 1u);
         BOOST_TEST(rcs[0] == reason_codes::empty);
     };
 
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(large_subscription_id) {
     cprops[prop::subscription_identifier_available] = uint8_t(1);
 
     subscribe_props sprops;
-    sprops[prop::subscription_identifier] = std::numeric_limits<int32_t>::max();
+    sprops[prop::subscription_identifier] = (std::numeric_limits<int32_t>::max)();
 
     run_test(client::error::malformed_packet, "topic", sprops, cprops);
 }

@@ -10,6 +10,7 @@
 
 #include <boost/mqtt5/types.hpp>
 
+#include <boost/assert.hpp>
 #include <boost/smart_ptr/allocate_unique.hpp>
 
 #include <algorithm>
@@ -109,13 +110,13 @@ public:
     }
 
     qos_e qos() const {
-        assert(control_code() == control_code_e::publish);
+        BOOST_ASSERT(control_code() == control_code_e::publish);
         auto byte = (uint8_t(*(_packet->data())) & 0b00000110) >> 1;
         return qos_e(byte);
     }
 
     control_packet& set_dup() {
-        assert(control_code() == control_code_e::publish);
+        BOOST_ASSERT(control_code() == control_code_e::publish);
         auto& byte = *(_packet->data());
         byte |= 0b00001000;
         return *this;

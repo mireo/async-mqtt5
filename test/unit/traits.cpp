@@ -12,15 +12,15 @@
 
 #include <boost/asio/async_result.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/system_executor.hpp>
-#include <boost/beast/websocket/stream.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
 
 #include <string>
 #include <string_view>
 #include <type_traits>
+
+#include "test_common/extra_deps.hpp"
 
 using namespace boost::mqtt5;
 
@@ -62,48 +62,15 @@ BOOST_STATIC_ASSERT(detail::is_authenticator<good_authenticator>);
 BOOST_STATIC_ASSERT(!detail::is_authenticator<bad_authenticator>);
 
 namespace asio = boost::asio;
-namespace beast = boost::beast;
 
 using tcp_layer = asio::ip::tcp::socket;
-using tls_layer = asio::ssl::stream<asio::ip::tcp::socket>;
-using websocket_tcp_layer = beast::websocket::stream<tcp_layer>;
-using websocket_tls_layer = beast::websocket::stream<tls_layer>;
-
 
 BOOST_STATIC_ASSERT(!detail::has_next_layer<tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_next_layer<tls_layer>);
-BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tls_layer>);
-
 BOOST_STATIC_ASSERT(!detail::has_tls_layer<tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_tls_layer<tls_layer>);
-BOOST_STATIC_ASSERT(!detail::has_tls_layer<websocket_tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_tls_layer<websocket_tls_layer>);
-
 BOOST_STATIC_ASSERT(!detail::has_tls_handshake<tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_tls_handshake<tls_layer>);
-BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tcp_layer>);
-BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tls_layer>);
-
 BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tcp_layer>);
-BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tls_layer>);
-BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tls_layer>);
-
-BOOST_STATIC_ASSERT(!detail::has_next_layer<tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_next_layer<tls_layer>);
-BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tcp_layer>);
-BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tls_layer>);
-
 BOOST_STATIC_ASSERT(std::is_same_v<detail::next_layer_type<tcp_layer>, tcp_layer>);
-BOOST_STATIC_ASSERT(std::is_same_v<detail::next_layer_type<tls_layer>, tcp_layer>);
-BOOST_STATIC_ASSERT(std::is_same_v<detail::next_layer_type<websocket_tcp_layer>, tcp_layer>);
-BOOST_STATIC_ASSERT(std::is_same_v<detail::next_layer_type<websocket_tls_layer>, tls_layer>);
-
 BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<tcp_layer>, tcp_layer>);
-BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<tls_layer>, tcp_layer>);
-BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<websocket_tcp_layer>, tcp_layer>);
-BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<websocket_tls_layer>, tcp_layer>);
 
 void tcp_layers_test() {
     asio::system_executor ex;
@@ -115,6 +82,34 @@ void tcp_layers_test() {
     detail::lowest_layer_type<tcp_layer>& llayer = detail::lowest_layer(layer);
     BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
 }
+
+#ifdef BOOST_MQTT5_EXTRA_DEPS
+
+namespace beast = boost::beast;
+using tls_layer = asio::ssl::stream<asio::ip::tcp::socket>;
+using websocket_tcp_layer = beast::websocket::stream<tcp_layer>;
+using websocket_tls_layer = beast::websocket::stream<tls_layer>;
+
+BOOST_STATIC_ASSERT(detail::has_next_layer<tls_layer>);
+BOOST_STATIC_ASSERT(detail::has_tls_layer<tls_layer>);
+BOOST_STATIC_ASSERT(detail::has_tls_handshake<tls_layer>);
+BOOST_STATIC_ASSERT(!detail::has_ws_handshake<tls_layer>);
+BOOST_STATIC_ASSERT(std::is_same_v<detail::next_layer_type<tls_layer>, tcp_layer>);
+BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<tls_layer>, tcp_layer>);
+
+BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(!detail::has_tls_layer<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tcp_layer>);
+BOOST_STATIC_ASSERT(std::is_same_v<detail::next_layer_type<websocket_tcp_layer>, tcp_layer>);
+BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<websocket_tcp_layer>, tcp_layer>);
+
+BOOST_STATIC_ASSERT(detail::has_next_layer<websocket_tls_layer>);
+BOOST_STATIC_ASSERT(detail::has_tls_layer<websocket_tls_layer>);
+BOOST_STATIC_ASSERT(!detail::has_tls_handshake<websocket_tls_layer>);
+BOOST_STATIC_ASSERT(detail::has_ws_handshake<websocket_tls_layer>);
+BOOST_STATIC_ASSERT(std::is_same_v<detail::next_layer_type<websocket_tls_layer>, tls_layer>);
+BOOST_STATIC_ASSERT(std::is_same_v<detail::lowest_layer_type<websocket_tls_layer>, tcp_layer>);
 
 void tls_layers_test() {
     asio::system_executor ex; 
@@ -150,3 +145,5 @@ void websocket_tls_layers_test() {
     detail::lowest_layer_type<websocket_tls_layer>& llayer = detail::lowest_layer(layer);
     BOOST_STATIC_ASSERT(std::is_same_v<boost::remove_cv_ref_t<decltype(llayer)>, tcp_layer>);
 }
+
+#endif // BOOST_MQTT5_EXTRA_DEPS

@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(test_connect) {
     BOOST_TEST(*cprops_[prop::topic_alias_maximum] == topic_alias_max);
     BOOST_TEST(*cprops_[prop::request_response_information] == request_response_information);
     BOOST_TEST(*cprops_[prop::request_problem_information] == request_problem_information);
-    BOOST_TEST_REQUIRE(cprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(cprops_[prop::user_property].size() == 1u);
     BOOST_TEST(cprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(cprops_[prop::user_property][0].second == user_property_2);
     BOOST_TEST(*cprops_[prop::authentication_method] == auth_method);
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_connect) {
     BOOST_TEST(*(will)[prop::content_type] == will_content_type);
     BOOST_TEST(*(will)[prop::response_topic] == will_response_topic);
     BOOST_TEST(*(will)[prop::correlation_data] == will_correlation_data);
-    BOOST_TEST_REQUIRE((will)[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE((will)[prop::user_property].size() == 1u);
     BOOST_TEST((will)[prop::user_property][0].first == will_user_property_1);
     BOOST_TEST((will)[prop::user_property][0].second == will_user_property_2);
 }
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(test_connack) {
     BOOST_TEST(*cprops_[prop::assigned_client_identifier] == assigned_client_id);
     BOOST_TEST(*cprops_[prop::topic_alias_maximum] == topic_alias_max);
     BOOST_TEST(*cprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(cprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(cprops_[prop::user_property].size() == 1u);
     BOOST_TEST(cprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(cprops_[prop::user_property][0].second == user_property_2);
     BOOST_TEST(*cprops_[prop::wildcard_subscription_available] == wildcard_sub);
@@ -261,10 +261,10 @@ BOOST_AUTO_TEST_CASE(test_publish) {
     BOOST_TEST(*pprops_[prop::topic_alias] == topic_alias);
     BOOST_TEST(*pprops_[prop::response_topic] == response_topic);
     BOOST_TEST(*pprops_[prop::correlation_data] == correlation_data);
-    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1u);
     BOOST_TEST(pprops_[prop::user_property][0].first == publish_prop_1);
     BOOST_TEST(pprops_[prop::user_property][0].second == publish_prop_2);
-    BOOST_TEST_REQUIRE(pprops_[prop::subscription_identifier].size() == 1);
+    BOOST_TEST_REQUIRE(pprops_[prop::subscription_identifier].size() == 1u);
     BOOST_TEST(pprops_[prop::subscription_identifier][0] == subscription_identifier);
     BOOST_TEST(*pprops_[prop::content_type] == content_type);
 }
@@ -327,7 +327,7 @@ BOOST_AUTO_TEST_CASE(test_puback) {
     pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(reason_code_ == reason_code);
     BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1u);
     BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE(test_pubrec) {
     pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(reason_code_ == reason_code);
     BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1u);
     BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(test_pubrel) {
     pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(reason_code_ == reason_code);
     BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1u);
     BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE(test_pubcomp) {
     pprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(reason_code_ == reason_code);
     BOOST_TEST(*pprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(pprops_[prop::user_property].size() == 1u);
     BOOST_TEST(pprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(pprops_[prop::user_property][0].second == user_property_2);
 }
@@ -489,7 +489,7 @@ BOOST_AUTO_TEST_CASE(test_subscribe) {
 
     sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(*sprops_[prop::subscription_identifier] == sub_id);
-    BOOST_TEST_REQUIRE(sprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(sprops_[prop::user_property].size() == 1u);
     BOOST_TEST(sprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(sprops_[prop::user_property][0].second == user_property_2);
 }
@@ -525,7 +525,7 @@ BOOST_AUTO_TEST_CASE(test_suback) {
 
     sprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(*sprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(sprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(sprops_[prop::user_property].size() == 1u);
     BOOST_TEST(sprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(sprops_[prop::user_property][0].second == user_property_2);
 }
@@ -558,7 +558,7 @@ BOOST_AUTO_TEST_CASE(test_unsubscribe) {
     BOOST_TEST(topics_ == topics);
 
     uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
-    BOOST_TEST_REQUIRE(uprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(uprops_[prop::user_property].size() == 1u);
     BOOST_TEST(uprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(uprops_[prop::user_property][0].second == user_property_2);
 }
@@ -594,7 +594,7 @@ BOOST_AUTO_TEST_CASE(test_unsuback) {
 
     uprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(*uprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(uprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(uprops_[prop::user_property].size() == 1u);
     BOOST_TEST(uprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(uprops_[prop::user_property][0].second == user_property_2);
 }
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE(test_disconnect) {
     dprops_.visit([](const auto& p, const auto&) { (void)p; BOOST_TEST_REQUIRE(p); return true; });
     BOOST_TEST(*dprops_[prop::session_expiry_interval] == session_expiry_interval);
     BOOST_TEST(*dprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(dprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(dprops_[prop::user_property].size() == 1u);
     BOOST_TEST(dprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(dprops_[prop::user_property][0].second == user_property_2);
     BOOST_TEST(*dprops_[prop::server_reference] == server_reference);
@@ -671,7 +671,7 @@ BOOST_AUTO_TEST_CASE(test_auth) {
     BOOST_TEST(*aprops_[prop::authentication_method] == authentication_method);
     BOOST_TEST(*aprops_[prop::authentication_data] == authentication_data);
     BOOST_TEST(*aprops_[prop::reason_string] == reason_string);
-    BOOST_TEST_REQUIRE(aprops_[prop::user_property].size() == 1);
+    BOOST_TEST_REQUIRE(aprops_[prop::user_property].size() == 1u);
     BOOST_TEST(aprops_[prop::user_property][0].first == user_property_1);
     BOOST_TEST(aprops_[prop::user_property][0].second == user_property_2);
 }
@@ -730,7 +730,7 @@ BOOST_AUTO_TEST_CASE(empty_user_property) {
     const auto& [topic_, packet_id_, flags, pprops_, payload_] = *rv;
 
     auto user_props_ = pprops_[prop::user_property];
-    BOOST_TEST_REQUIRE(user_props_.size() == 1);
+    BOOST_TEST_REQUIRE(user_props_.size() == 1u);
     BOOST_TEST(user_props_[0].first == "");
     BOOST_TEST(user_props_[0].second == "");
 }
@@ -753,7 +753,7 @@ BOOST_AUTO_TEST_CASE(deserialize_user_property) {
 
     const auto& [reason_code_, pprops_] = *rv;
     auto user_props_ = pprops_[prop::user_property];
-    BOOST_TEST_REQUIRE(user_props_.size() == 1);
+    BOOST_TEST_REQUIRE(user_props_.size() == 1u);
     BOOST_TEST(user_props_[0].first == "key");
     BOOST_TEST(user_props_[0].second == "val");
 }
@@ -776,7 +776,7 @@ BOOST_AUTO_TEST_CASE(deserialize_empty_user_property) {
 
     const auto& [reason_code_, pprops_] = *rv;
     auto user_props_ = pprops_[prop::user_property];
-    BOOST_TEST_REQUIRE(user_props_.size() == 1);
+    BOOST_TEST_REQUIRE(user_props_.size() == 1u);
     BOOST_TEST(user_props_[0].first == "");
     BOOST_TEST(user_props_[0].second == "");
 }

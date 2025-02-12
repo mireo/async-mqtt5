@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(pid_overrun) {
     auto handler = [&handlers_called](error_code ec, std::vector<reason_code> rcs, unsuback_props) {
         ++handlers_called;
         BOOST_TEST(ec == client::error::pid_overrun);
-        BOOST_TEST_REQUIRE(rcs.size() == 1);
+        BOOST_TEST_REQUIRE(rcs.size() == 1u);
         BOOST_TEST(rcs[0] == reason_codes::empty);
     };
 

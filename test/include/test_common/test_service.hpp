@@ -19,7 +19,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <cstdint>
-#include <variant>
+#include <variant> // std::monostate
 
 namespace boost::mqtt5::test {
 

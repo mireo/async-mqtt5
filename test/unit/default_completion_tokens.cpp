@@ -5,43 +5,23 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <boost/asio/awaitable.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 
 #include <boost/mqtt5.hpp>
-#include <boost/mqtt5/websocket_ssl.hpp>
 
-#include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl.hpp>
-#include <boost/beast/websocket/stream.hpp>
 
 #include <cstdint>
 #include <string>
 #include <variant> // std::monostate
 #include <vector>
 
-namespace boost::mqtt5 {
+#include "test_common/extra_deps.hpp"
 
-namespace asio = boost::asio;
-
-template <typename StreamBase>
-struct tls_handshake_type<asio::ssl::stream<StreamBase>> {
-    static constexpr auto client = asio::ssl::stream_base::client;
-    static constexpr auto server = asio::ssl::stream_base::server;
-};
-
-template <typename StreamBase>
-void assign_tls_sni(
-    const authority_path& /* ap */,
-    asio::ssl::context& /* ctx */,
-    asio::ssl::stream<StreamBase>& /* stream */
-) {}
-
-namespace test {
+namespace boost::mqtt5::test {
 
 // the following code needs to compile
 
@@ -83,11 +63,13 @@ asio::awaitable<void> test_default_completion_tokens_impl(
     auto dc_props = disconnect_props {};
     co_await c.async_disconnect();
     co_await c.async_disconnect(disconnect_rc_e::normal_disconnection, dc_props);
+    co_return;
 }
 
 asio::awaitable<void> test_default_completion_tokens() {
     co_await test_default_completion_tokens_impl<asio::ip::tcp::socket>();
 
+    #ifdef BOOST_MQTT5_EXTRA_DEPS
     co_await test_default_completion_tokens_impl<
         asio::ssl::stream<asio::ip::tcp::socket>,
         asio::ssl::context
@@ -105,10 +87,9 @@ asio::awaitable<void> test_default_completion_tokens() {
         asio::ssl::context(asio::ssl::context::tls_client),
         logger(log_level::debug)
     );
+    #endif // BOOST_MQTT5_EXTRA_DEPS
 }
 
-} // end namespace test
-
-} // end namespace boost::mqtt5
+} // end namespace boost::mqtt5::test
 
 #endif // BOOST_ASIO_HAS_CO_AWAIT

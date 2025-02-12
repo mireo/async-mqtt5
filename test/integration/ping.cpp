@@ -59,7 +59,7 @@ std::string connack_with_keep_alive(uint16_t keep_alive) {
 void run_test(
     test::msg_exchange broker_side,
     std::chrono::milliseconds cancel_timeout,
-    uint16_t keep_alive = std::numeric_limits<uint16_t>::max()
+    uint16_t keep_alive = (std::numeric_limits<uint16_t>::max)()
 ) {
     asio::io_context ioc;
     auto executor = ioc.get_executor();

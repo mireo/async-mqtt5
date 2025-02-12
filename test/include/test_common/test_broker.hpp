@@ -65,7 +65,7 @@ public:
     pending_read& operator=(const pending_read&) = delete;
 
     size_t consume(const std::vector<uint8_t>& data) {
-        size_t num_bytes = std::min(_buffer_size, data.size());
+        size_t num_bytes = (std::min)(_buffer_size, data.size());
         if (num_bytes == 0)
             return 0;
         std::memcpy(_buffer_data, data.data(), num_bytes);
@@ -169,11 +169,11 @@ public:
                 );
                 BOOST_TEST(buffers_size == expected.size());
 
-                size_t num_packets = std::min(buffers_size, expected.size());
+                size_t num_packets = (std::min)(buffers_size, expected.size());
                 auto it = asio::buffer_sequence_begin(buffers);
                 for (size_t i = 0; i < num_packets; ++i, ++it) {
                     BOOST_TEST(it->size() == expected[i].size());
-                    size_t len = std::min(it->size(), expected[i].size());
+                    size_t len = (std::min)(it->size(), expected[i].size());
                     if (memcmp(it->data(), expected[i].data(), len))
                         BOOST_TEST_MESSAGE(
                             concat_strings(

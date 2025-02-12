@@ -21,6 +21,7 @@
 #include <boost/asio/completion_condition.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/prepend.hpp>
+#include <boost/assert.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <chrono>
@@ -148,7 +149,7 @@ public:
             return complete(ec, 0, {}, {});
 
         _data_span.expand_suffix(bytes_read);
-        assert(_data_span.size());
+        BOOST_ASSERT(_data_span.size());
 
         auto control_byte = uint8_t(*_data_span.first());
 
@@ -187,7 +188,7 @@ private:
         auto negotiated_ka = _svc.negotiated_keep_alive();
         return negotiated_ka ?
             std::chrono::milliseconds(3 * negotiated_ka * 1000 / 2) :
-            duration(std::numeric_limits<duration::rep>::max());
+            duration((std::numeric_limits<duration::rep>::max)());
     }
 
     static bool valid_header(uint8_t control_byte) {

@@ -13,7 +13,6 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/type_traits/remove_cv_ref.hpp>
@@ -23,6 +22,7 @@
 #include <optional>
 #include <string>
 
+#include "test_common/extra_deps.hpp"
 #include "test_common/message_exchange.hpp"
 #include "test_common/packet_util.hpp"
 #include "test_common/test_authenticators.hpp"
@@ -32,7 +32,7 @@
 using namespace boost::mqtt5;
 using namespace std::chrono_literals;
 
-BOOST_AUTO_TEST_SUITE(client_functions/*, *boost::unit_test::disabled()*/)
+BOOST_AUTO_TEST_SUITE(client_functions)
 
 struct shared_test_data {
     error_code success {};
@@ -83,18 +83,6 @@ BOOST_AUTO_TEST_CASE(create_client_with_execution_context) {
     BOOST_CHECK(c.get_executor() == ioc.get_executor());
 }
 
-void assign_tls_context() {
-    // Tests if the tls_context function compiles
-
-    asio::io_context ioc;
-    asio::ssl::context ctx(asio::ssl::context::tls_client);
-
-    mqtt_client<
-        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
-    > tls_client(ioc.get_executor(), std::move(ctx));
-    tls_client.tls_context();
-}
-
 BOOST_FIXTURE_TEST_CASE(assign_credentials, shared_test_data) {
     std::string client_id = "client_id";
     std::string username = "username";
@@ -116,23 +104,6 @@ BOOST_FIXTURE_TEST_CASE(assign_credentials, shared_test_data) {
             c.credentials(client_id, username, password);
         }
     );
-}
-
-void assign_credentials_tls_client() {
-    // Tests if the assign credentials function compiles
-
-    std::string client_id = "client_id";
-    std::string username = "username";
-    std::string password = "password";
-
-    asio::io_context ioc;
-
-    asio::ssl::context ctx(asio::ssl::context::tls_client);
-    mqtt_client<
-        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
-    > ts(ioc.get_executor(), std::move(ctx));
-
-    ts.credentials(client_id, username, password);
 }
 
 BOOST_FIXTURE_TEST_CASE(assign_will, shared_test_data) {
@@ -166,19 +137,6 @@ void assign_authenticator() {
     asio::io_context ioc;
     client_type c(ioc);
     c.authenticator(test::test_authenticator());
-}
-
-void assign_authenticator_tls_client() {
-    // Tests if the authenticator function compiles
-
-    asio::io_context ioc;
-
-    asio::ssl::context ctx(asio::ssl::context::tls_client);
-    mqtt_client<
-        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
-    > ts(ioc.get_executor(), std::move(ctx));
-
-    ts.authenticator(test::test_authenticator());
 }
 
 BOOST_FIXTURE_TEST_CASE(assign_keep_alive, shared_test_data) {
@@ -272,38 +230,6 @@ BOOST_FIXTURE_TEST_CASE(connect_property, shared_connect_prop_test_data) {
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(connect_properties_tls_client, shared_connect_prop_test_data) {
-    // Tests if the connect_properties function compiles
-
-    asio::io_context ioc;
-
-    asio::ssl::context ctx(asio::ssl::context::tls_client);
-    mqtt_client<
-        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
-    > ts(ioc.get_executor(), std::move(ctx));
-
-    ts.connect_properties(cprops);
-}
-
-BOOST_FIXTURE_TEST_CASE(connect_property_tls_client, shared_connect_prop_test_data) {
-    // Tests if the connect_property functions compile
-
-    asio::io_context ioc;
-
-    asio::ssl::context ctx(asio::ssl::context::tls_client);
-    mqtt_client<
-        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
-    > ts(ioc.get_executor(), std::move(ctx));
-
-    ts.connect_property(prop::session_expiry_interval, session_expiry_interval);
-    ts.connect_property(prop::receive_maximum, receive_maximum);
-    ts.connect_property(prop::maximum_packet_size, maximum_packet_size);
-    ts.connect_property(prop::topic_alias_maximum, topic_alias_maximum);
-    ts.connect_property(prop::request_response_information, request_response_information);
-    ts.connect_property(prop::request_problem_information, request_problem_information);
-    ts.connect_property(prop::user_property, user_properties);
-}
-
 struct shared_connack_prop_test_data {
     error_code success {};
 
@@ -382,7 +308,7 @@ void run_test_with_post_fun(
     timer.async_wait(
         [&c, fun = std::forward<TestingClientFun>(client_fun)](error_code) {
             fun(c);
-            c.cancel(); 
+            c.cancel();
         }
     );
 
@@ -440,6 +366,82 @@ BOOST_FIXTURE_TEST_CASE(connack_property, shared_connack_prop_test_data) {
     );
 }
 
+#ifdef BOOST_MQTT5_EXTRA_DEPS
+
+void assign_credentials_tls_client() {
+    // Tests if the assign credentials function compiles
+
+    std::string client_id = "client_id";
+    std::string username = "username";
+    std::string password = "password";
+
+    asio::io_context ioc;
+
+    asio::ssl::context ctx(asio::ssl::context::tls_client);
+    mqtt_client<
+        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
+    > ts(ioc.get_executor(), std::move(ctx));
+
+    ts.credentials(client_id, username, password);
+}
+
+void assign_tls_context() {
+    // Tests if the tls_context function compiles
+
+    asio::io_context ioc;
+    asio::ssl::context ctx(asio::ssl::context::tls_client);
+
+    mqtt_client<
+        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
+    > tls_client(ioc.get_executor(), std::move(ctx));
+    tls_client.tls_context();
+}
+
+void assign_authenticator_tls_client() {
+    // Tests if the authenticator function compiles
+
+    asio::io_context ioc;
+
+    asio::ssl::context ctx(asio::ssl::context::tls_client);
+    mqtt_client<
+        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
+    > ts(ioc.get_executor(), std::move(ctx));
+
+    ts.authenticator(test::test_authenticator());
+}
+
+BOOST_FIXTURE_TEST_CASE(connect_properties_tls_client, shared_connect_prop_test_data) {
+    // Tests if the connect_properties function compiles
+
+    asio::io_context ioc;
+
+    asio::ssl::context ctx(asio::ssl::context::tls_client);
+    mqtt_client<
+        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
+    > ts(ioc.get_executor(), std::move(ctx));
+
+    ts.connect_properties(cprops);
+}
+
+BOOST_FIXTURE_TEST_CASE(connect_property_tls_client, shared_connect_prop_test_data) {
+    // Tests if the connect_property functions compile
+
+    asio::io_context ioc;
+
+    asio::ssl::context ctx(asio::ssl::context::tls_client);
+    mqtt_client<
+        asio::ssl::stream<asio::ip::tcp::socket>, asio::ssl::context
+    > ts(ioc.get_executor(), std::move(ctx));
+
+    ts.connect_property(prop::session_expiry_interval, session_expiry_interval);
+    ts.connect_property(prop::receive_maximum, receive_maximum);
+    ts.connect_property(prop::maximum_packet_size, maximum_packet_size);
+    ts.connect_property(prop::topic_alias_maximum, topic_alias_maximum);
+    ts.connect_property(prop::request_response_information, request_response_information);
+    ts.connect_property(prop::request_problem_information, request_problem_information);
+    ts.connect_property(prop::user_property, user_properties);
+}
+
 void connack_property_with_tls_client() {
     // Tests if the connack_properties & connack_property functions compile
 
@@ -457,5 +459,6 @@ void connack_property_with_tls_client() {
         return true;
     });
 }
+#endif // BOOST_MQTT5_EXTRA_DEPS
 
 BOOST_AUTO_TEST_SUITE_END();

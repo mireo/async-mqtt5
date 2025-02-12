@@ -21,6 +21,7 @@
 #include <boost/asio/error.hpp>
 #include <boost/asio/prepend.hpp>
 #include <boost/asio/recycling_allocator.hpp>
+#include <boost/assert.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -146,7 +147,7 @@ private:
             }
             break;
             default:
-                assert(false);
+                BOOST_ASSERT(false);
         }
 
         perform();

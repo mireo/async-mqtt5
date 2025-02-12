@@ -11,39 +11,21 @@
 #ifdef BOOST_ASIO_HAS_CO_AWAIT
 
 #include <boost/mqtt5.hpp>
-#include <boost/mqtt5/websocket_ssl.hpp>
 
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/ssl.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/beast/websocket.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <chrono>
 
-namespace boost::mqtt5 {
+#include "test_common/extra_deps.hpp"
+#include "test_common/preconditions.hpp"
 
-template <typename StreamBase>
-struct tls_handshake_type<asio::ssl::stream<StreamBase>> {
-    static constexpr auto client = asio::ssl::stream_base::client;
-    static constexpr auto server = asio::ssl::stream_base::server;
-};
-
-template <typename StreamBase>
-void assign_tls_sni(
-    const authority_path& ap,
-    asio::ssl::context& /* ctx */,
-    asio::ssl::stream<StreamBase>& stream
-) {
-    SSL_set_tlsext_host_name(stream.native_handle(), ap.host.c_str());
-}
-
-} // end namespace boost::mqtt5
-
-BOOST_AUTO_TEST_SUITE(client/*, *boost::unit_test::disabled()*/)
+BOOST_AUTO_TEST_SUITE(client,
+    * boost::unit_test::precondition(boost::mqtt5::test::public_broker_cond))
 
 using namespace boost::mqtt5;
 namespace asio = boost::asio;
@@ -138,6 +120,8 @@ BOOST_AUTO_TEST_CASE(tcp_client_check) {
 
     ioc.run();
 }
+
+#ifdef BOOST_MQTT5_EXTRA_DEPS
 
 BOOST_AUTO_TEST_CASE(websocket_tcp_client_check) {
     asio::io_context ioc;
@@ -242,7 +226,8 @@ BOOST_AUTO_TEST_CASE(websocket_tls_client_check) {
 
     ioc.run();
 }
+#endif // BOOST_MQTT5_EXTRA_DEPS
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#endif
+#endif // BOOST_ASIO_HAS_CO_AWAIT

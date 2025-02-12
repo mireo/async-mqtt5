@@ -18,6 +18,7 @@
 #include <boost/asio/strand.hpp>
 #include <boost/asio/thread_pool.hpp>
 
+#include <cassert>
 #include <iostream>
 #include <string>
 #include <thread>

@@ -20,9 +20,7 @@
 #include <boost/asio/require.hpp>
 #include <boost/system/error_code.hpp>
 
-#include <atomic>
 #include <deque>
-#include <mutex>
 
 namespace boost::mqtt5::detail {
 

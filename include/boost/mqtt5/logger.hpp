@@ -222,7 +222,7 @@ private:
 
                     std::clog << property_name(prop) << ":";
                     std::clog << "[";
-                    for (auto i = 0; i < val.size(); i++) {
+                    for (size_t i = 0; i < val.size(); i++) {
                         if constexpr (detail::is_pair<decltype(val[i])>)
                             std::clog << "(" << val[i].first << "," << val[i].second << ")";
                         else

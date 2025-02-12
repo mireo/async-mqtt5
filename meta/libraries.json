@@ -11,5 +11,10 @@
         "Concurrent",
         "IO"
     ],
+    "maintainers": [
+        "Ivica Siladić",
+        "Bruno Iljazović",
+        "Korina Šimičević"
+    ],
     "cxxstd": "17"
 }
