@@ -21,7 +21,9 @@ target_include_directories(
 
 target_compile_features(async_mqtt5 INTERFACE cxx_std_17)
 
-find_package(Boost 1.82 REQUIRED)
+if (NOT ASYNC_MQTT5_SKIP_FIND_PACKAGE)
+    find_package(Boost 1.82 REQUIRED)
+endif()
 target_link_libraries(async_mqtt5
     INTERFACE
     Boost::headers
