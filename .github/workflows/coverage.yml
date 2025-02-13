@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023-2024 Ivica Siladic, Bruno Iljazovic, Korina Simicevic
+# Copyright (c) 2023-2025 Ivica Siladic, Bruno Iljazovic, Korina Simicevic
 #
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,13 +9,9 @@ name: coverage
 
 on: [push, pull_request]
 
-env:
-  BOOST_VERSION: 1.82.0
-  BOOST_DIR_VER_NAME: 1_82_0
-
 jobs:
   posix:
-    name: "coverage ${{ matrix.compiler }} -std=c++${{ matrix.cxxstd }} ${{ matrix.container }}"
+    name: "coverage ${{ matrix.toolset }} -std=c++${{ matrix.cxxstd }} ${{ matrix.container }}"
     defaults:
       run:
         shell: bash
@@ -24,10 +20,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - toolset: coverage
-            compiler: g++-11
+          - toolset: gcc-11
+            install: g++-11
             os: ubuntu-latest
             container: ubuntu:22.04
+            build-type: 'Coverage'
             cxxstd: 20
             cxxflags: '-g -O0 -std=c++20 --coverage -fkeep-inline-functions -fkeep-static-functions'
             ldflags: '--coverage'
@@ -35,6 +32,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
     env:
+      CXXFLAGS: ${{ matrix.cxxflags }}
+      LDFLAGS:  ${{ matrix.ldflags }}
       CMAKE_BUILD_PARALLEL_LEVEL: 4
 
     steps:
@@ -45,38 +44,34 @@ jobs:
         if: matrix.container
         run: |
           apt-get update
-          apt-get -y install sudo wget tar cmake openssl libssl-dev pkg-config lcov gpg git
+          apt-get -y install --no-install-recommends \
+            sudo git g++ cmake make openssl libssl-dev ca-certificates pkg-config \
+            python3 lcov gpg gpg-agent
 
       - name: Install compiler
-        run: sudo apt-get install -y ${{ matrix.compiler }}
+        run: sudo apt-get install -y ${{ matrix.install }}
       
       - name: Setup Boost
         run: |
-          wget https://archives.boost.io/release/${{ env.BOOST_VERSION }}/source/boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
-          tar xzf boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
-          mkdir /usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}
-          mv boost_${{ env.BOOST_DIR_VER_NAME }}/boost /usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}
-          rm boost_${{ env.BOOST_DIR_VER_NAME }}.tar.gz
+          python3 tools/ci.py setup-boost \
+            --source-dir=$(pwd)
 
-      - name: Setup library
+      - name: Build standalone tests using CMake
         run: |
-          cmake -S . -B build -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" \
-          -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
-          sudo cmake --install build
+          python3 tools/ci.py build-cmake-standalone-tests \
+            --build-type ${{ matrix.build-type }} \
+            --cxxstd ${{ matrix.cxxstd }} \
+            --toolset ${{ matrix.toolset }}
 
-      - name: Build tests
+      - name: Run standalone tests
         run: |
-          cmake -S test -B test/build -DCMAKE_CXX_COMPILER="${{ matrix.compiler }}" -DCMAKE_CXX_FLAGS="${{ matrix.cxxflags }}" \
-          -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.ldflags }}" -DCMAKE_BUILD_TYPE="Coverage" \
-          -DBoost_INCLUDE_DIR="/usr/local/boost_${{ env.BOOST_DIR_VER_NAME }}"
-          cmake --build test/build -j 4
-
-      - name: Run tests
-        run: ./test/build/mqtt-test
+          python3 tools/ci.py run-cmake-standalone-tests \
+           --build-type ${{ matrix.build-type }}
 
       - name: Generate Coverage Report
         run: |
-          lcov --capture --output-file coverage.info --directory test/build
+          lcov --capture --output-file coverage.info \
+            --directory ~/boost-root/libs/mqtt5/__build_standalone_tests__/test
           lcov --extract coverage.info '**/boost/mqtt5/*' --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
@@ -88,3 +83,4 @@ jobs:
           fail_ci_if_error: true
           plugin: noop
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: mireo/async-mqtt5

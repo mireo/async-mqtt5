@@ -93,7 +93,8 @@ def _deduce_boost_branch() -> str:
 # with the required dependencies, and leaves it at _boost_root. Places our library,
 # located under source_dir, under $BOOST_ROOT/libs. Also runs the bootstrap script so b2 is usable. 
 def _setup_boost(
-    source_dir: Path
+    source_dir: Path,
+    docs_install: bool = False
 ) -> None:
     assert source_dir.is_absolute()
     assert not _boost_root.exists()
@@ -113,10 +114,22 @@ def _setup_boost(
         ignore=ignore_patterns('__build*__', '.git')
     )
 
+    submodules = [
+        'libs/context',
+        'tools/boostdep',
+        'tools/boostbook',
+        'tools/docca',
+        'tools/quickbook'
+    ] if docs_install else [
+        'tools/boostdep'
+    ]
     # Install Boost dependencies
     _run(["git", "config", "submodule.fetchJobs", "8"])
-    _run(["git", "submodule", "update", "-q", "--init", "tools/boostdep"])
-    _run(["python3", "tools/boostdep/depinst/depinst.py", "--include", "example", "mqtt5"])
+    _run(["git", "submodule", "update", "-q", "--init"] + submodules)
+    if docs_install:
+        _run(['python3', 'tools/boostdep/depinst/depinst.py', '../tools/quickbook'])
+    else:
+        _run(["python3", "tools/boostdep/depinst/depinst.py", "--include", "example", "mqtt5"])
 
     # Bootstrap
     if _is_windows:
@@ -319,6 +332,18 @@ def _run_b2_tests(
     ])
 
 
+def _build_docs():
+    os.chdir(str(_boost_root))
+
+    # Write the config file
+    config_path = os.path.expanduser('~/user-config.jam')
+    with open(config_path, 'wt') as f:
+        f.writelines(['using doxygen ;\n', 'using boostbook ;\n'])
+
+    # Run b2
+    _run([_b2_command, 'libs/mqtt5/doc/'])
+
+
 def main():
     # Command line parsing
     parser = argparse.ArgumentParser()
@@ -326,6 +351,7 @@ def main():
 
     subp = subparsers.add_parser('setup-boost')
     subp.add_argument('--source-dir', type=Path, required=True)
+    subp.add_argument('--docs-install', type=_str2bool, required=False)
     subp.set_defaults(func=_setup_boost)
 
     subp = subparsers.add_parser('build-b2-distro')
@@ -383,6 +409,9 @@ def main():
     subp.add_argument('--cxxstd', default='17,20')
     subp.add_argument('--toolset', default='gcc')
     subp.set_defaults(func=_run_b2_tests)
+
+    subp = subparsers.add_parser('build-docs')
+    subp.set_defaults(func=_build_docs)
 
     # Actually parse the arguments
     args = parser.parse_args()

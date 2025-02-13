@@ -10,36 +10,36 @@ project(boost_mqtt5_tests CXX)
 file(GLOB integration_tests "integration/*.cpp")
 file(GLOB unit_tests "unit/*.cpp")
 
-add_executable(mqtt-test src/run_tests.cpp ${integration_tests} ${unit_tests})
+add_executable(boost_mqtt5-tests src/run_tests.cpp ${integration_tests} ${unit_tests})
 
-target_include_directories(mqtt-test PRIVATE include)
-target_compile_definitions(mqtt-test PRIVATE BOOST_TEST_NO_MAIN=1)
+target_include_directories(boost_mqtt5-tests PRIVATE include)
+target_compile_definitions(boost_mqtt5-tests PRIVATE BOOST_TEST_NO_MAIN=1)
 
 if(BOOST_MQTT5_MAIN_PROJECT)
   find_package(OpenSSL REQUIRED)
-  target_compile_definitions(mqtt-test PRIVATE BOOST_MQTT5_EXTRA_DEPS=1)
+  target_compile_definitions(boost_mqtt5-tests PRIVATE BOOST_MQTT5_EXTRA_DEPS=1)
 
   target_link_libraries(
-    mqtt-test PRIVATE
+    boost_mqtt5-tests PRIVATE
     Boost::mqtt5
     OpenSSL::SSL
   )
 else()
   target_link_libraries(
-    mqtt-test PRIVATE
+    boost_mqtt5-tests PRIVATE
     Boost::mqtt5
     Boost::included_unit_test_framework
   )
 
   # Follow the Boost convention: don't build test targets by default,
   # and only when explicitly requested by building target tests
-  set_target_properties(mqtt-test PROPERTIES EXCLUDE_FROM_ALL ON)
-  add_dependencies(tests mqtt-test)
+  set_target_properties(boost_mqtt5-tests PROPERTIES EXCLUDE_FROM_ALL ON)
+  add_dependencies(tests boost_mqtt5-tests)
 endif()
 
 include(CTest)
-add_test(NAME mqtt-test COMMAND mqtt-test)
+add_test(NAME boost_mqtt5-tests COMMAND boost_mqtt5-tests)
 
 if (BOOST_MQTT5_PUBLIC_BROKER_TESTS)
-  set_property(TEST mqtt-test PROPERTY ENVIRONMENT "BOOST_MQTT5_PUBLIC_BROKER_TESTS=1")
+  set_property(TEST boost_mqtt5-tests PROPERTY ENVIRONMENT "BOOST_MQTT5_PUBLIC_BROKER_TESTS=1")
 endif()
