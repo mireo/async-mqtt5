@@ -1,22 +1,19 @@
 Boost.MQTT5: A C++17 MQTT client based on Boost.Asio
 ===============================
 
-Branch | Windows/Linux Build | Coverage | Documentation |
--------|---------------------|----------|---------------|
-[`master`](https://github.com/mireo/async-mqtt5/tree/master) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/master) | [documentation](https://spacetime.mireo.com/async-mqtt5/)
-[`develop`](https://github.com/mireo/async-mqtt5/tree/develop) | [![build status](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/mireo/async-mqtt5/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/develop/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/branch/develop) |
+Branch | Linux Build | Windows Build | Coverage | Documentation |
+-------|-------------|---------------|----------|---------------|
+[`master`](https://github.com/boostorg/mqtt5/tree/master) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml/badge.svg?branch=master)](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml/badge.svg?branch=master)](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/tree/master) | [documentation](https://www.boost.org/doc/libs/master/libs/mqtt5/doc/html/index.html)
+[`develop`](https://github.com/boostorg/mqtt5/tree/develop) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml/badge.svg?branch=develop)](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml/badge.svg?branch=develop)](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/develop/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/tree/develop) | [documentation](https://www.boost.org/doc/libs/develop/libs/mqtt5/doc/html/index.html)
 
-Boost.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/1_82_0/doc/html/boost_asio.html). This Client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. Boost.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
-
-~~Our clear intention is to include the Boost.MQTT5 library into [Boost](https://www.boost.org/). We are actively working on it.~~\
-As of October 2024, the Boost.MQTT5 library has been **conditionally ACCEPTED** into [Boost](https://www.boost.org/).
+Boost.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/master/doc/html/boost_asio.html). This Client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. Boost.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
 
 Motivation
 ---------
  The [MQTT](https://mqtt.org/) protocol is widely used for communication in various real-world scenarios, primarily as a reliable communication protocol for data transfer to and from IoT devices. While the MQTT protocol is relatively straightforward, integrating it into an application can be complex, primarily due to the challenging implementation of message retransmission after a disconnect/reconnect sequence. To address these challenges and simplify MQTT integration once and for all, Boost.MQTT5 was designed with the following core objectives in mind:
 
  Objective | Description |
- ----------|---------|
+ ----------|-------------|
 "Plug and play" interface that abstracts away MQTT protocol internals, low-level network events, message retransmission and other complexities | Enables developers to publish or receive messages with just a single line of code, significantly reducing the learning curve and development time. Getting started requires basic MQTT knowledge, making the library accessible to developers of all skill levels. |
 Highly reliable and robust Client that handles network losses, unreliable data transport, network latencies, and other unpredictable events | The Client does not expose connect functions (nor asynchronous connect functions); instead, network connectivity, MQTT handshake, and message retransmission are automatically handled within the Client while strictly adhering to the MQTT specification.  This automation eliminates the need for developers to write extensive and error-prone code to handle these scenarios, allowing them to focus on the application's core functionality. |
 Complete adherence to the Boost.Asio's universal asynchronous model | The interfaces and implementation strategies are built upon the foundations of Boost.Asio. This compatibility enables seamless integration with any other library within the Boost.Asio ecosystem. |

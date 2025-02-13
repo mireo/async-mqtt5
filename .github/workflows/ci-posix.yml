@@ -5,13 +5,11 @@
 # (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-name: CI
+name: CI-posix
 
 on: [push, pull_request]
 
 jobs:
-  # TODO: windows builds
-
   posix-cmake:
     name: "CMake ${{ matrix.toolset }} std=c++${{ matrix.cxxstd }} ${{ matrix.cxxflags }}"
     defaults:
