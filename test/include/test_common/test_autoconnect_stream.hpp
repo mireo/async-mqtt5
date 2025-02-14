@@ -1,9 +1,10 @@
 //
-// Copyright (c) 2023-2024 Ivica Siladic, Bruno Iljazovic, Korina Simicevic
+// Copyright (c) 2023-2025 Ivica Siladic, Bruno Iljazovic, Korina Simicevic
 //
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+
 #ifndef BOOST_MQTT5_TEST_AUTOCONNECT_STREAM_HPP
 #define BOOST_MQTT5_TEST_AUTOCONNECT_STREAM_HPP
 
