@@ -30,7 +30,7 @@
 struct config {
     std::string brokers = "broker.hivemq.com";
     uint16_t port = 1883;
-    std::string client_id = "async_mqtt5_tester";
+    std::string client_id = "boost_mqtt5_tester";
 };
 
 // client_type with logging enabled
@@ -59,7 +59,7 @@ boost::asio::awaitable<void> publish_hello_world(
         .async_run(boost::asio::detached); // Start the Client.
 
     auto&& [ec, rc, puback_props] = co_await client.async_publish<boost::mqtt5::qos_e::at_least_once>(
-        "async-mqtt5/test" /* topic */, "Hello world!" /* payload*/, boost::mqtt5::retain_e::no,
+        "boost-mqtt5/test" /* topic */, "Hello world!" /* payload*/, boost::mqtt5::retain_e::no,
         boost::mqtt5::publish_props {}, use_nothrow_awaitable);
 
     co_await client.async_disconnect(use_nothrow_awaitable);

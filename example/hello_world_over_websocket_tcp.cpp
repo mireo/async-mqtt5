@@ -22,7 +22,7 @@
 struct config {
     std::string brokers = "broker.hivemq.com/mqtt"; // Path example: localhost/mqtt
     uint16_t port = 8000; // 8083 is the default Webscoket/TCP MQTT port. However, HiveMQ's public broker uses 8000 instead.
-    std::string client_id = "async_mqtt5_tester";
+    std::string client_id = "boost_mqtt5_tester";
 };
 
 int main(int argc, char** argv) {
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
         .async_run(boost::asio::detached); // Start the Client.
 
     client.async_publish<boost::mqtt5::qos_e::at_most_once>(
-        "async-mqtt5/test", "Hello world!",
+        "boost-mqtt5/test", "Hello world!",
         boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
         [&client](boost::mqtt5::error_code ec) {
             std::cout << ec.message() << std::endl;

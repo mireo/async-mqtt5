@@ -32,7 +32,7 @@
 struct config {
     std::string brokers = "broker.hivemq.com";
     uint16_t port = 1883;
-    std::string client_id = "async_mqtt5_tester";
+    std::string client_id = "boost_mqtt5_tester";
 };
 
 // Modified completion token that will prevent co_await from throwing exceptions.
@@ -54,7 +54,7 @@ boost::asio::awaitable<void> send_over_mqtt(
         .async_run(boost::asio::detached); // Start the Client.
 
     auto&& [pec, prc, puback_props] = co_await client.async_publish<boost::mqtt5::qos_e::at_least_once>(
-        "async-mqtt5/test", "Hello World!",
+        "boost-mqtt5/test", "Hello World!",
         boost::mqtt5::retain_e::no, boost::mqtt5::publish_props {},
         use_nothrow_awaitable
     );

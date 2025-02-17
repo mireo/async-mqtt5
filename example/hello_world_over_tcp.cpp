@@ -20,7 +20,7 @@
 struct config {
     std::string brokers = "broker.hivemq.com";
     uint16_t port = 1883; // 1883 is the default TCP MQTT port.
-    std::string client_id = "async_mqtt5_tester";
+    std::string client_id = "boost_mqtt5_tester";
 };
 
 int main(int argc, char** argv) {
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
     //[publish_hello_world
     client.async_publish<boost::mqtt5::qos_e::at_most_once>(
-        "async-mqtt5/test", "Hello world!",
+        "boost-mqtt5/test", "Hello world!",
         boost::mqtt5::retain_e::yes, boost::mqtt5::publish_props {},
         [&client](boost::mqtt5::error_code ec) {
             std::cout << ec.message() << std::endl;

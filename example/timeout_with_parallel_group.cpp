@@ -27,7 +27,7 @@
 struct config {
     std::string brokers = "broker.hivemq.com";
     uint16_t port = 1883;
-    std::string client_id = "async_mqtt5_tester";
+    std::string client_id = "boost_mqtt5_tester";
 };
 
 int main(int argc, char** argv) {

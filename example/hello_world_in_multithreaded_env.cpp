@@ -27,7 +27,7 @@
 struct config {
     std::string brokers = "broker.hivemq.com";
     uint16_t port = 1883;
-    std::string client_id = "async_mqtt5_tester";
+    std::string client_id = "boost_mqtt5_tester";
 };
 
 int main(int argc, char** argv) {
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
                 assert(strand.running_in_this_thread());
 
                 client.async_publish<boost::mqtt5::qos_e::at_least_once>(
-                    "async-mqtt5/test", "Hello World!", boost::mqtt5::retain_e::no,
+                    "boost-mqtt5/test", "Hello World!", boost::mqtt5::retain_e::no,
                     boost::mqtt5::publish_props {},
                     // You may bind the strand to this handler, but it is not necessary
                     // as the strand is already the default associated handler.

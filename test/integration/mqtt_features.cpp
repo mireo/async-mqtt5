@@ -40,9 +40,9 @@ using stream_type = asio::ip::tcp::socket;
 
 constexpr auto broker = "broker.hivemq.com";
 constexpr auto connect_wait_dur = std::chrono::milliseconds(200);
-constexpr auto topic = "async-mqtt5/test";
-constexpr auto share_topic = "$share/sharename/async-mqtt5/test";
-constexpr auto payload = "hello from async-mqtt5";
+constexpr auto topic = "boost-mqtt5/test";
+constexpr auto share_topic = "$share/sharename/boost-mqtt5/test";
+constexpr auto payload = "hello from boost-mqtt5";
 
 template <typename TestCase>
 void run_test(TestCase&& test_case) {
