@@ -3,8 +3,8 @@ Boost.MQTT5: A C++17 MQTT client based on Boost.Asio
 
 Branch | Linux Build | Windows Build | Coverage | Documentation |
 -------|-------------|---------------|----------|---------------|
-[`master`](https://github.com/boostorg/mqtt5/tree/master) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml/badge.svg?branch=master)](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml/badge.svg?branch=master)](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/tree/master) | [documentation](https://www.boost.org/doc/libs/master/libs/mqtt5/doc/html/index.html)
-[`develop`](https://github.com/boostorg/mqtt5/tree/develop) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml/badge.svg?branch=develop)](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml/badge.svg?branch=develop)](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml) | [![codecov](https://codecov.io/gh/mireo/async-mqtt5/branch/develop/graph/badge.svg)](https://codecov.io/gh/mireo/async-mqtt5/tree/develop) | [documentation](https://www.boost.org/doc/libs/develop/libs/mqtt5/doc/html/index.html)
+[`master`](https://github.com/boostorg/mqtt5/tree/master) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml/badge.svg?branch=master)](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml/badge.svg?branch=master)](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml) | [![codecov](https://codecov.io/gh/boostorg/mqtt5/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/mqtt5/tree/master) | [documentation](https://www.boost.org/doc/libs/master/libs/mqtt5/doc/html/index.html)
+[`develop`](https://github.com/boostorg/mqtt5/tree/develop) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml/badge.svg?branch=develop)](https://github.com/boostorg/mqtt5/actions/workflows/ci-posix.yml) | [![build status](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml/badge.svg?branch=develop)](https://github.com/boostorg/mqtt5/actions/workflows/ci-windows.yml) | [![codecov](https://codecov.io/gh/boostorg/mqtt5/branch/develop/graph/badge.svg)](https://codecov.io/gh/boostorg/mqtt5/tree/develop) | [documentation](https://www.boost.org/doc/libs/develop/libs/mqtt5/doc/html/index.html)
 
 Boost.MQTT5 is a professional, industrial-grade C++17 client built on [Boost.Asio](https://www.boost.org/doc/libs/master/doc/html/boost_asio.html). This Client is designed for publishing or receiving messages from an MQTT 5.0 compatible Broker. Boost.MQTT5 represents a comprehensive implementation of the MQTT 5.0 protocol standard, offering full support for publishing or receiving messages with QoS 0, 1, and 2. 
 
@@ -39,7 +39,7 @@ The library attempts to embody this belief with a range of key features designed
 Feature | Description |
 --------|-------------|
 **Complete TCP, TLS/SSL, and WebSocket support** | The MQTT protocol requires an underlying network protocol that provides ordered, lossless, bi-directional connection (stream). Users can customize this stream through a template parameter. The Boost.MQTT5 library has been tested with the most used transport protocols: TCP/IP using `boost::asio::ip::tcp::socket`, TLS/SSL using `boost::asio::ssl::stream`, WebSocket/TCP and WebSocket/TLS using `boost::beast::websocket::stream`). |
-**Automatic reconnect and retry mechanism** | Automatically handles connection loss, backoffs, reconnections, and message transmissions. Automating these processes enables users to focus entirely on the application's functionality. See [Built-in Auto-Reconnect and Retry Mechanism](https://spacetime.mireo.com/async-mqtt5/async_mqtt5/auto_reconnect.html). |
+**Automatic reconnect and retry mechanism** | Automatically handles connection loss, backoffs, reconnections, and message transmissions. Automating these processes enables users to focus entirely on the application's functionality. See [Built-in Auto-Reconnect and Retry Mechanism](https://www.boost.org/doc/libs/master/libs/mqtt5/doc/html/mqtt5/auto_reconnect.html). |
 **Prioritised efficiency** | Utilises network and memory resources as efficiently as possible. |
 **Minimal memory footprint** | Ensures optimal performance in resource-constrained environments typical of IoT devices. |
  **Completion token** | All asynchronous functions are implemented using Boost.Asio's universal asynchronous model and support CompletionToken. This allows versatile usage with callbacks, coroutines, and futures. |
@@ -111,7 +111,7 @@ int main() {
 	ioc.run();
 }
 ```
-To see more examples, visit [Examples](https://github.com/mireo/async-mqtt5/tree/master/example).
+To see more examples, visit [Examples](https://github.com/boostorg/mqtt5/tree/master/example).
 
 Contributing
 ---------

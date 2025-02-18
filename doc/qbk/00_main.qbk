@@ -75,7 +75,7 @@
 
 [/ MQTT ]
 [def __MQTT__ [@https://mqtt.org/ MQTT]]
-[def __Self__ [@https://github.com/mireo/async-mqtt5/ Boost.MQTT5]]
+[def __Self__ [@https://github.com/boostorg/mqtt5/ Boost.MQTT5]]
 [def __Client__ [reflink2 mqtt_client `mqtt_client`]]
 
 [def __UTF8_STRING_PAIR__ [mqttlink 3901013 `UTF-8 String Pair`]]

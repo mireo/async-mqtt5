@@ -46,7 +46,7 @@ jobs:
           apt-get update
           apt-get -y install --no-install-recommends \
             sudo git g++ cmake make openssl libssl-dev ca-certificates pkg-config \
-            python3 lcov gpg gpg-agent
+            python3 lcov gpg gpg-agent curl
 
       - name: Install compiler
         run: sudo apt-get install -y ${{ matrix.install }}
@@ -75,11 +75,10 @@ jobs:
           lcov --extract coverage.info '**/boost/mqtt5/*' --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           verbose: true
-          file: coverage.info
+          files: coverage.info
           disable_search: true
           fail_ci_if_error: true
-          plugin: noop
-          token: ${{ secrets.CODECOV_TOKEN }}
+          plugins: noop

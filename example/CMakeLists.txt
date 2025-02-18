@@ -7,7 +7,7 @@
 
 cmake_minimum_required(VERSION 3.8...3.20)
 
-project(async-mqtt5-examples LANGUAGES CXX)
+project(boost-mqtt5-examples LANGUAGES CXX)
 
 function(add_example name)
   add_executable("${name}" ${ARGN})

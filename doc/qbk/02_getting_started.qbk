@@ -100,7 +100,7 @@ and `jitter` is a randomly chosen value between `-500ms` to `500ms`, intended to
 [section:using_the_client Using the Client]
 
 After calling [refmem mqtt_client async_run], you can now use the Client according to your application needs.
-In this case, we will publish a "Hello World!" message to `async-mqtt5/test` topic with Quality of Service 0 (at most once) using the [refmem mqtt_client async_publish] function.
+In this case, we will publish a "Hello World!" message to `boost-mqtt5/test` topic with Quality of Service 0 (at most once) using the [refmem mqtt_client async_publish] function.
 
 [publish_hello_world]
 
