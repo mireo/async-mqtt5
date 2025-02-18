@@ -83,4 +83,3 @@ jobs:
           fail_ci_if_error: true
           plugin: noop
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: mireo/async-mqtt5
