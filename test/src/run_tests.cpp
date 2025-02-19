@@ -5,7 +5,7 @@
 // (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define BOOST_TEST_MODULE boost::mqtt5_tests
+#define BOOST_TEST_MODULE boost_mqtt5_tests
 
 #include <boost/test/included/unit_test.hpp>
 
@@ -24,5 +24,5 @@ int main(int argc, char* argv[]) {
 * example: ./mqtt-test --log_level=test_suite
 *
 * all boost test parameters can be found here:
-* https://www.boost.org/doc/libs/1_82_0/libs/test/doc/html/boost_test/runtime_config/summary.html
+* https://www.boost.org/doc/libs/master/libs/test/doc/html/boost_test/runtime_config/summary.html
 */

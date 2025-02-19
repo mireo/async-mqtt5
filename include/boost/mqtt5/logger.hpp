@@ -69,7 +69,7 @@ public:
      *
      * \param level Messages with a log level higher than the given log level will be suppressed.
      */
-    logger(log_level level = log_level::warning) : _level(level) {}
+    logger(log_level level = log_level::info) : _level(level) {}
 
     /**
      * \brief Outputs the results of the resolve operation.
@@ -90,7 +90,7 @@ public:
         std::clog
             << "resolve: "
             << host << ":" << port;
-        std::clog << " - " << ec.message();
+        std::clog << " - " << ec.message() << ".";
 
         if (_level == log_level::debug) {
             std::clog << " [";
@@ -118,7 +118,7 @@ public:
         std::clog
             << "TCP connect: "
             << ep.address().to_string() << ":" << ep.port()
-            << " - " << ec.message()
+            << " - " << ec.message() << "."
         << std::endl;
     }
 
@@ -136,7 +136,7 @@ public:
         std::clog
             << "TLS handshake: "
             << ep.address().to_string() << ":" << ep.port()
-            << " - " << ec.message()
+            << " - " << ec.message() << "."
         << std::endl;
     }
 
@@ -154,7 +154,7 @@ public:
         std::clog
             << "WebSocket handshake: "
             << ep.address().to_string() << ":" << ep.port()
-            << " - " << ec.message()
+            << " - " << ec.message() << "."
         << std::endl;
     }
 
@@ -230,7 +230,7 @@ private:
                         if (i + 1 < val.size())
                             std::clog << ", ";
                     }
-                    std::clog << "]";
+                    std::clog << "] ";
                 }
                 return true;
             }
