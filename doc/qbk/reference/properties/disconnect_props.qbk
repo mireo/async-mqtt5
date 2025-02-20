@@ -15,7 +15,7 @@ This section lists all possible __DISCONNECT__ Properties and describes their us
     [[Identifier] [Value type] [Description]]
     [[session_expiry_interval] [`uint32_t`] [Represents the Session Expiry Internal in seconds. Can only be sent by the Client.]]
     [[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
-    [[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
+    [[user_property] [`std::vector<std::pair<std::string, std::string>>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
         This property may be used to provide additional diagnostic or other information. ]]
     [[server_reference] [`std::string`] [A UTF-8 Encoded String which can be used by the Client to identfy another Server to use.]]
 ]

@@ -14,7 +14,7 @@ This section lists all possible __PUBREC__ Properties and describes their usage:
 [table:pubrec_props PUBREC properties
     [[Identifier] [Value type] [Description]]
     [[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
-    [[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
+    [[user_property] [`std::vector<std::pair<std::string, std::string>>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
         This property may be used to provide additional diagnostic or other information. ]]
 ]
 

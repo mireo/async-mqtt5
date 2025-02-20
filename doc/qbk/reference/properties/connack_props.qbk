@@ -21,7 +21,7 @@ This section lists all possible __CONNACK__ Properties and describes their usage
     [[assigned_client_identifier] [`std::string`] [The Client Identifier which was assigned by the Server because a zero length Client Identifier was found in the __CONNECT__ packet]]
     [[topic_alias_maximum] [`uint16_t`] [The highest value that the Server will accept as a Topic Alias sent by the Client.]]
     [[reason_string] [`std::string`] [A UTF-8 Encoded String representing the reason associated with this response.]]
-    [[user_property] [`std::pair<std::string, std::string>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
+    [[user_property] [`std::vector<std::pair<std::string, std::string>>`] [Name, value pair (__UTF8_STRING_PAIR__) defining User Property. There can be multiple pairs in one packet. 
         The meaning of these properties is not defined by the specification.]]
     [[wildcard_subscription_available] [`uint8_t`] [A value of 0 means that Wildcard Subscriptions are not supported. 
         A value of 1 means they are supported. If not present, they are supported.]]

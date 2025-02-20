@@ -4,9 +4,9 @@
     (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 ]
 
-[section:is_authenticator is_authenticator concept]
+[section:Authenticator Authenticator concept]
 
-A type `Authenticator` satisfies `is_authenticator` concept if it satisifes the requirements listed below.
+A type `T` satisfies `Authenticator` concept if it satisifes the requirements listed below.
 
 [table
     [[operation] [type] [arguments]]
@@ -27,6 +27,5 @@ A type `Authenticator` satisfies `is_authenticator` concept if it satisifes the 
         []
     ]
 ]
-
 
 [endsect]

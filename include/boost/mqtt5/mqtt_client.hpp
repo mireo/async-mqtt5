@@ -131,15 +131,13 @@ public:
 
     /**
      * \brief Move-construct an mqtt_client from another.
-     *
-     * \details Moved-from client can only be destructed
      */
     mqtt_client(mqtt_client&&) noexcept = default;
 
     /**
      * \brief Move assignment operator.
      *
-     * \details Cancels this client first. Moved-from client can only be destructed.
+     * \details Cancels this client first.
      */
     mqtt_client& operator=(mqtt_client&& other) noexcept {
         _impl->cancel();
@@ -313,7 +311,7 @@ public:
      * Re-authentication can be initiated by calling \ref re_authenticate.
      *
      * \param authenticator Object that will be stored (move-constructed or by reference)
-     * and used for authentication. It needs to satisfy \__is_authenticator\__ concept.
+     * and used for authentication. It needs to satisfy \__Authenticator\__ concept.
      *
      * \attention This function takes action when the client is in a non-operational state,
      * meaning the \ref async_run function has not been invoked.
@@ -321,11 +319,12 @@ public:
      * before the \ref async_run function is invoked again.
      *
      */
-    template <
-        typename Authenticator,
-        std::enable_if_t<detail::is_authenticator<Authenticator>, bool> = true
-    >
+    template <typename Authenticator>
     mqtt_client& authenticator(Authenticator&& authenticator) {
+        static_assert(
+            detail::is_authenticator<Authenticator>,
+            "The type does not satisfy the Authenticator concept"
+        );
         _impl->authenticator(std::forward<Authenticator>(authenticator));
         return *this;
     }

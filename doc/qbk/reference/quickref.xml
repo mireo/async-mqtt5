@@ -23,10 +23,9 @@
         </simplelist>
         <bridgehead renderas="sect3">Concepts</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="mqtt5.ref.ExecutionContext">ExecutionContext</link></member>
           <member><link linkend="mqtt5.ref.StreamType">StreamType</link></member>
           <member><link linkend="mqtt5.ref.TlsContext">TlsContext</link></member>
-          <member><link linkend="mqtt5.ref.is_authenticator">is_authenticator</link></member>
+          <member><link linkend="mqtt5.ref.Authenticator">Authenticator</link></member>
         </simplelist>
       </entry>
       <entry valign="top">

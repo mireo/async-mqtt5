@@ -6,9 +6,13 @@
 
 [section:TlsContext TlsContext concept]
 
-`TlsContext` represents an object that defines user's configuration
-for establishing TLS/SSL connections.
+`TlsContext` represents an object that defines the user's configuration for establishing TLS/SSL connections.
+If TLS/SSL is not required, this parameter defaults to `std::monostate`.
 
-The type [asioreflink ssl__context ssl::context] meets these requirements.
+The __Client__ treats the `TlsContext` object as an opaque entity.
+It is primarily utilized when creating the underlying transport stream and is not directly manipulated by the __Client__.
+
+For instance, establishing a secure connection using using __SSL_STREAM__ requires __SSL_CONTEXT__ as the `TlsContext` type.
+An example of this can be found in the [link mqtt5.hello_world_over_tls hello_world_over_tls.cpp] example.
 
 [endsect]

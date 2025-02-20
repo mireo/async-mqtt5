@@ -81,12 +81,12 @@ enum class auth_step_e {
     /** \brief The Client needs to send initial authentication data. */
     client_initial,
 
-    /** \brief Server responded with reason_codes.continue_authentication and possibly
+    /** \brief Server responded with \ref reason_codes::continue_authentication and possibly
      * authentication data, the Client needs to send further authentication data.
      */
     server_challenge,
 
-    /** \brief Server responded with reason_codes.success and final
+    /** \brief Server responded with \ref reason_codes::success and final
      * authentication data, which the Client validates.
      */
     server_final
